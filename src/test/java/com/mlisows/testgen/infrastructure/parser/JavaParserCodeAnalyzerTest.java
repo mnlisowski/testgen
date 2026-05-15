@@ -12,6 +12,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaParserCodeAnalyzerTest {
 
+
+    @Test
+    void shouldDetectCoverageGoalsForMultipleIfStatements() {
+        JavaParserCodeAnalyzer analyzer = new JavaParserCodeAnalyzer();
+
+        ClassAnalysisResult result = analyzer.analyze(Path.of(
+                "src/test/resources/sample/MultiBranchCalculator.java"
+        ));
+
+        assertEquals("sample.MultiBranchCalculator", result.getClassName());
+        assertEquals(6, result.getCoverageGoals().size());
+
+        long calculateGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getMethodName().equals("calculate"))
+                .count();
+
+        long isPositiveGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getMethodName().equals("isPositive"))
+                .count();
+
+        assertEquals(4, calculateGoalsCount);
+        assertEquals(2, isPositiveGoalsCount);
+    }
+
     @Test
     void shouldDetectTrueAndFalseCoverageGoalsForIfStatement() {
         JavaParserCodeAnalyzer analyzer = new JavaParserCodeAnalyzer();
