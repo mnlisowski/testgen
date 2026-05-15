@@ -14,6 +14,8 @@ import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.mlisows.testgen.domain.BranchKind;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,6 +46,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             collectIfGoals(className, method, coverageGoals);
             collectForGoals(className, method, coverageGoals);
             collectWhileGoals(className, method, coverageGoals);
+            collectSwitchGoals(className, method, coverageGoals);
         }
 
         return new ClassAnalysisResult(className, coverageGoals);
@@ -135,6 +138,47 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             coverageGoals.add(falseGoal);
         }
     }
+
+    private void collectSwitchGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
+        String methodName = method.getNameAsString();
+        List<SwitchStmt> switchStatements = method.findAll(SwitchStmt.class);
+
+        for (SwitchStmt switchStatement : switchStatements) {
+            int lineNumber = getLineNumber(switchStatement);
+            String selector = switchStatement.getSelector().toString();
+
+            for (SwitchEntry entry : switchStatement.getEntries()) {
+                if (entry.getLabels().isEmpty()) {
+                    BranchId defaultBranchId = new BranchId(
+                            className,
+                            methodName,
+                            lineNumber,
+                            BranchKind.SWITCH,
+                            BranchType.DEFAULT,
+                            ""
+                    );
+
+                    CoverageGoal defaultGoal = new CoverageGoal(defaultBranchId, selector);
+                    coverageGoals.add(defaultGoal);
+                } else {
+                    String discriminator = entry.getLabels().get(0).toString();
+
+                    BranchId caseBranchId = new BranchId(
+                            className,
+                            methodName,
+                            lineNumber,
+                            BranchKind.SWITCH,
+                            BranchType.CASE,
+                            discriminator
+                    );
+
+                    CoverageGoal caseGoal = new CoverageGoal(caseBranchId, selector);
+                    coverageGoals.add(caseGoal);
+                }
+            }
+        }
+    }
+
 
 
 }
