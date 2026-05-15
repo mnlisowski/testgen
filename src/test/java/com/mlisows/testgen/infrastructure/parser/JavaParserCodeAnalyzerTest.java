@@ -1,5 +1,6 @@
 package com.mlisows.testgen.infrastructure.parser;
 
+import com.mlisows.testgen.domain.BranchKind;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.CoverageGoal;
@@ -12,6 +13,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaParserCodeAnalyzerTest {
 
+
+    @Test
+    void shouldDetectCoverageGoalsForLoopStatements() {
+        JavaParserCodeAnalyzer analyzer = new JavaParserCodeAnalyzer();
+
+        ClassAnalysisResult result = analyzer.analyze(Path.of(
+                "src/test/resources/sample/LoopExamples.java"
+        ));
+
+        assertEquals("sample.LoopExamples", result.getClassName());
+        assertEquals(4, result.getCoverageGoals().size());
+
+        long whileGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getBranchKind() == BranchKind.WHILE)
+                .count();
+
+        long forGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getBranchKind() == BranchKind.FOR)
+                .count();
+
+        assertEquals(2, whileGoalsCount);
+        assertEquals(2, forGoalsCount);
+    }
 
     @Test
     void shouldDetectCoverageGoalsForMultipleIfStatements() {
