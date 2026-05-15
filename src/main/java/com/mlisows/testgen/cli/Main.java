@@ -27,14 +27,11 @@ public class Main {
 
         for (CoverageGoal goal : result.getCoverageGoals()) {
             System.out.println("- "
-                    + goal.getBranchId().getMethodName()
-                    + ":"
-                    + goal.getBranchId().getLineNumber()
-                    + ":"
-                    + goal.getBranchId().getBranchType()
+                    + goal.getBranchId().asString()
                     + " condition="
                     + goal.getCondition());
         }
+
     }
 }
 

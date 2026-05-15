@@ -42,4 +42,16 @@ public final class BranchId {
         return discriminator;
     }
 
+    public String asString() {
+        String baseId = className + "." + methodName + ".L" + lineNumber + "." + branchType;
+
+        if (discriminator.isEmpty()) {
+            return baseId;
+        }
+
+        return baseId + "." + discriminator;
+    }
+
+
+
 }
