@@ -12,11 +12,12 @@ class BranchIdTest {
                 "sample.SimpleDiscountCalculator",
                 "calculate",
                 6,
+                BranchKind.IF,
                 BranchType.TRUE,
                 ""
         );
 
-        assertEquals("sample.SimpleDiscountCalculator.calculate.L6.TRUE", branchId.asString());
+        assertEquals("sample.SimpleDiscountCalculator.calculate.L6.IF.TRUE", branchId.asString());
     }
 
     @Test
@@ -25,10 +26,11 @@ class BranchIdTest {
                 "sample.DiscountCalculator",
                 "calculate",
                 20,
+                BranchKind.SWITCH,
                 BranchType.CASE,
                 "GOLD"
         );
 
-        assertEquals("sample.DiscountCalculator.calculate.L20.CASE.GOLD", branchId.asString());
+        assertEquals("sample.DiscountCalculator.calculate.L20.SWITCH.CASE.GOLD", branchId.asString());
     }
 }

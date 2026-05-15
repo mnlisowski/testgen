@@ -106,11 +106,11 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             int lineNumber = getLineNumber(whileStatement);
             String condition = whileStatement.getCondition().toString();
 
-            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchKind.IF, BranchType.TRUE, "");
+            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchKind.WHILE, BranchType.TRUE, "");
             CoverageGoal trueGoal = new CoverageGoal(trueBranchId, condition);
             coverageGoals.add(trueGoal);
 
-            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchKind.IF, BranchType.FALSE, "");
+            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchKind.WHILE, BranchType.FALSE, "");
             CoverageGoal falseGoal = new CoverageGoal(falseBranchId, condition);
             coverageGoals.add(falseGoal);
         }
@@ -126,11 +126,11 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
                     .map(Object::toString)
                     .orElse("");
 
-            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchKind.IF, BranchType.TRUE, "");
+            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchKind.FOR, BranchType.TRUE, "");
             CoverageGoal trueGoal = new CoverageGoal(trueBranchId, condition);
             coverageGoals.add(trueGoal);
 
-            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchKind.IF, BranchType.FALSE, "");
+            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchKind.FOR, BranchType.FALSE, "");
             CoverageGoal falseGoal = new CoverageGoal(falseBranchId, condition);
             coverageGoals.add(falseGoal);
         }
