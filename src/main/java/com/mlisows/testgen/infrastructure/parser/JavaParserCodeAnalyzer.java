@@ -6,6 +6,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.stmt.WhileStmt;
 import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
@@ -39,6 +42,8 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
         for (MethodDeclaration method : methods) {
             collectIfGoals(className, method, coverageGoals);
+            collectForGoals(className, method, coverageGoals);
+            collectWhileGoals(className, method, coverageGoals);
         }
 
         return new ClassAnalysisResult(className, coverageGoals);
@@ -81,8 +86,8 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         }
     }
 
-    private int getLineNumber(IfStmt ifStatement) {
-        Optional<Position> beginPosition = ifStatement.getBegin();
+    private int getLineNumber(Node node) {
+        Optional<Position> beginPosition = node.getBegin();
 
         if (beginPosition.isEmpty()) {
             throw new IllegalStateException("If statement has no source position");
@@ -90,4 +95,23 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
         return beginPosition.get().line;
     }
+
+    private void collectWhileGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
+        String methodName = method.getNameAsString();
+        List<WhileStmt> whileStatements = method.findAll(WhileStmt.class);
+
+        for (WhileStmt whileStatement : whileStatements) {
+            int lineNumber = getLineNumber(whileStatement);
+            String condition = whileStatement.getCondition().toString();
+
+            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchType.TRUE, "");
+            CoverageGoal trueGoal = new CoverageGoal(trueBranchId, condition);
+            coverageGoals.add(trueGoal);
+
+            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchType.FALSE, "");
+            CoverageGoal falseGoal = new CoverageGoal(falseBranchId, condition);
+            coverageGoals.add(falseGoal);
+        }
+    }
+
 }
