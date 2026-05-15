@@ -114,4 +114,25 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         }
     }
 
+    private void collectForGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
+        String methodName = method.getNameAsString();
+        List<ForStmt> forStatements = method.findAll(ForStmt.class);
+
+        for (ForStmt forStatement : forStatements) {
+            int lineNumber = getLineNumber(forStatement);
+            String condition = forStatement.getCompare()
+                    .map(Object::toString)
+                    .orElse("");
+
+            BranchId trueBranchId = new BranchId(className, methodName, lineNumber, BranchType.TRUE, "");
+            CoverageGoal trueGoal = new CoverageGoal(trueBranchId, condition);
+            coverageGoals.add(trueGoal);
+
+            BranchId falseBranchId = new BranchId(className, methodName, lineNumber, BranchType.FALSE, "");
+            CoverageGoal falseGoal = new CoverageGoal(falseBranchId, condition);
+            coverageGoals.add(falseGoal);
+        }
+    }
+
+
 }
