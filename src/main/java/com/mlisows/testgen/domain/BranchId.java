@@ -10,7 +10,7 @@ public final class BranchId {
     private final String discriminator;
 
     public BranchId(String className, String methodName, int lineNumber, BranchType branchType, String discriminator){
-        this.className = Objects.requireNonNull(className, "className must be not null");
+        this.className = Objects.requireNonNull(className, "className must not be null");
         this.methodName = Objects.requireNonNull(methodName, "methodName must not be null");
         this.branchType = Objects.requireNonNull(branchType, "branchType must not be null");
 

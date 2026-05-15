@@ -3,7 +3,7 @@ package com.mlisows.testgen.domain;
 import java.util.Objects;
 
 
-public class CoverageGoal {
+public final class CoverageGoal {
     private final BranchId branchId;
     private final String condition;
 
