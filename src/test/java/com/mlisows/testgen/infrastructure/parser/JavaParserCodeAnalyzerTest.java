@@ -83,4 +83,31 @@ class JavaParserCodeAnalyzerTest {
             assertEquals("calculate", goal.getBranchId().getMethodName());
         }
     }
+
+    @Test
+    void shouldDetectCoverageGoalsForSwitchStatement() {
+        JavaParserCodeAnalyzer analyzer = new JavaParserCodeAnalyzer();
+
+        ClassAnalysisResult result = analyzer.analyze(Path.of(
+                "src/test/resources/sample/SwitchDiscountCalculator.java"
+        ));
+
+        assertEquals("sample.SwitchDiscountCalculator", result.getClassName());
+        assertEquals(4, result.getCoverageGoals().size());
+
+        long caseGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getBranchKind() == BranchKind.SWITCH)
+                .filter(goal -> goal.getBranchId().getBranchType() == BranchType.CASE)
+                .count();
+
+        long defaultGoalsCount = result.getCoverageGoals().stream()
+                .filter(goal -> goal.getBranchId().getBranchKind() == BranchKind.SWITCH)
+                .filter(goal -> goal.getBranchId().getBranchType() == BranchType.DEFAULT)
+                .count();
+
+        assertEquals(3, caseGoalsCount);
+        assertEquals(1, defaultGoalsCount);
+    }
+
+
 }
