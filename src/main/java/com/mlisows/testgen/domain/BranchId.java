@@ -6,12 +6,14 @@ public final class BranchId {
     private final String className;
     private final String methodName;
     private final int lineNumber;
+    private final BranchKind branchKind;
     private final BranchType branchType;
     private final String discriminator;
 
-    public BranchId(String className, String methodName, int lineNumber, BranchType branchType, String discriminator){
+    public BranchId(String className, String methodName, int lineNumber, BranchKind branchKind, BranchType branchType, String discriminator){
         this.className = Objects.requireNonNull(className, "className must not be null");
         this.methodName = Objects.requireNonNull(methodName, "methodName must not be null");
+        this.branchKind = Objects.requireNonNull(branchKind, "branchKind must not be null");
         this.branchType = Objects.requireNonNull(branchType, "branchType must not be null");
 
         if (lineNumber < 1) {
@@ -34,6 +36,10 @@ public final class BranchId {
         return lineNumber;
     }
 
+    public BranchKind getBranchKind() {
+        return branchKind;
+    }
+
     public BranchType getBranchType() {
         return branchType;
     }
@@ -43,7 +49,8 @@ public final class BranchId {
     }
 
     public String asString() {
-        String baseId = className + "." + methodName + ".L" + lineNumber + "." + branchType;
+        String baseId = className + "." + methodName + ".L" + lineNumber + "." + branchKind + "." + branchType;
+
 
         if (discriminator.isEmpty()) {
             return baseId;
