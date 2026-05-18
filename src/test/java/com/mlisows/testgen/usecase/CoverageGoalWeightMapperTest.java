@@ -66,4 +66,27 @@ class CoverageGoalWeightMapperTest {
         assertEquals(10.0, weightedGoals.get(0).getWeight().getValue());
     }
 
+    @Test
+    void shouldUseDefaultWeightWhenProfileDoesNotContainBranchId() {
+        CoverageGoal coverageGoal = new CoverageGoal(
+                new BranchId(
+                        "sample.SimpleDiscountCalculator",
+                        "calculate",
+                        6,
+                        BranchKind.IF,
+                        BranchType.TRUE,
+                        ""
+                ),
+                "amount > 100"
+        );
+
+        BranchWeightProfile profile = new BranchWeightProfile(Map.of());
+        CoverageGoalWeightMapper mapper = new CoverageGoalWeightMapper();
+
+        List<WeightedCoverageGoal> weightedGoals = mapper.assignWeights(List.of(coverageGoal), profile);
+
+        assertEquals(1.0, weightedGoals.get(0).getWeight().getValue());
+    }
+
+
 }
