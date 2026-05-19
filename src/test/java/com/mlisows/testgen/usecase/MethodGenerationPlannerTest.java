@@ -7,6 +7,10 @@ import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import org.junit.jupiter.api.Test;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.TypeInfo;
+import com.mlisows.testgen.domain.TypeKind;
+
 
 import java.util.List;
 
@@ -77,4 +81,79 @@ class MethodGenerationPlannerTest {
 
         assertTrue(plans.get(0).getRequirements().contains(GenerationRequirement.OBJECT_FIXTURE));
     }
+
+    @Test
+    void shouldRequireEnumArgumentWhenTypeIndexContainsEnum() {
+        ClassStructure classStructure = new ClassStructure(
+                "sample.DiscountCalculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(new MethodModel(
+                        "calculate",
+                        "double",
+                        true,
+                        List.of(new ParameterModel("customerType", "CustomerType"))
+                ))
+        );
+
+        ProjectTypeIndex typeIndex = new ProjectTypeIndex(List.of(
+                new TypeInfo("CustomerType", "sample.DiscountCalculator.CustomerType", TypeKind.ENUM)
+        ));
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        List<MethodGenerationPlan> plans = planner.plan(classStructure, typeIndex);
+
+        assertTrue(plans.get(0).getRequirements().contains(GenerationRequirement.ENUM_ARGUMENT));
+    }
+
+    @Test
+    void shouldRequireInterfaceMockWhenTypeIndexContainsInterface() {
+        ClassStructure classStructure = new ClassStructure(
+                "sample.OrderService",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(new MethodModel(
+                        "pay",
+                        "boolean",
+                        true,
+                        List.of(new ParameterModel("gateway", "PaymentGateway"))
+                ))
+        );
+
+        ProjectTypeIndex typeIndex = new ProjectTypeIndex(List.of(
+                new TypeInfo("PaymentGateway", "sample.PaymentGateway", TypeKind.INTERFACE)
+        ));
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        List<MethodGenerationPlan> plans = planner.plan(classStructure, typeIndex);
+
+        assertTrue(plans.get(0).getRequirements().contains(GenerationRequirement.INTERFACE_MOCK));
+    }
+
+
+    @Test
+    void shouldRequireObjectFixtureWhenTypeIndexContainsClass() {
+        ClassStructure classStructure = new ClassStructure(
+                "sample.OrderService",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(new MethodModel(
+                        "process",
+                        "void",
+                        true,
+                        List.of(new ParameterModel("order", "Order"))
+                ))
+        );
+
+        ProjectTypeIndex typeIndex = new ProjectTypeIndex(List.of(
+                new TypeInfo("Order", "sample.Order", TypeKind.CLASS)
+        ));
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        List<MethodGenerationPlan> plans = planner.plan(classStructure, typeIndex);
+
+        assertTrue(plans.get(0).getRequirements().contains(GenerationRequirement.OBJECT_FIXTURE));
+    }
+
+
 }

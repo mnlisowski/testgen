@@ -6,15 +6,24 @@ import com.mlisows.testgen.domain.GenerationRequirement;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.TypeInfo;
+import com.mlisows.testgen.domain.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class MethodGenerationPlanner {
 
     public List<MethodGenerationPlan> plan(ClassStructure classStructure) {
+        return plan(classStructure, new ProjectTypeIndex(List.of()));
+    }
+
+    public List<MethodGenerationPlan> plan(ClassStructure classStructure, ProjectTypeIndex typeIndex) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
+        Objects.requireNonNull(typeIndex, "typeIndex must not be null");
 
         List<MethodGenerationPlan> plans = new ArrayList<>();
 
@@ -28,7 +37,7 @@ public final class MethodGenerationPlanner {
             }
 
             for (ParameterModel parameter : method.getParameters()) {
-                requirements.add(requirementForType(parameter.getType()));
+                requirements.add(requirementForType(parameter.getType(), typeIndex));
             }
 
             plans.add(new MethodGenerationPlan(
@@ -55,7 +64,7 @@ public final class MethodGenerationPlanner {
         return false;
     }
 
-    private GenerationRequirement requirementForType(String type) {
+    private GenerationRequirement requirementForType(String type, ProjectTypeIndex typeIndex) {
         if (isPrimitiveType(type)) {
             return GenerationRequirement.PRIMITIVE_ARGUMENT;
         }
@@ -72,6 +81,24 @@ public final class MethodGenerationPlanner {
             return GenerationRequirement.MAP_FIXTURE;
         }
 
+        Optional<TypeInfo> typeInfo = typeIndex.findByName(type);
+
+        if (typeInfo.isPresent()) {
+            TypeKind kind = typeInfo.get().getKind();
+
+            if (kind == TypeKind.ENUM) {
+                return GenerationRequirement.ENUM_ARGUMENT;
+            }
+
+            if (kind == TypeKind.INTERFACE) {
+                return GenerationRequirement.INTERFACE_MOCK;
+            }
+
+            if (kind == TypeKind.CLASS) {
+                return GenerationRequirement.OBJECT_FIXTURE;
+            }
+        }
+
         return GenerationRequirement.OBJECT_FIXTURE;
     }
 
@@ -86,4 +113,3 @@ public final class MethodGenerationPlanner {
                 || type.equals("char");
     }
 }
-
