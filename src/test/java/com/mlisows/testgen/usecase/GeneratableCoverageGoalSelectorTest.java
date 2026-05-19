@@ -9,6 +9,9 @@ import com.mlisows.testgen.domain.GenerationRequirement;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.WeightedCoverageGoal;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import java.util.List;
 
@@ -125,6 +128,33 @@ class GeneratableCoverageGoalSelectorTest {
         assertEquals(1, selectedGoals.size());
         assertSame(simpleGoal, selectedGoals.get(0));
     }
+
+    @Test
+    void shouldReportWhetherMethodPlanIsSupported() {
+        MethodGenerationPlan supportedPlan = new MethodGenerationPlan(
+                "sample.Calculator",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.PRIMITIVE_ARGUMENT
+                )
+        );
+
+        MethodGenerationPlan unsupportedPlan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.OBJECT_FIXTURE
+                )
+        );
+
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+
+        assertTrue(selector.isSupportedByCurrentGenerator(supportedPlan));
+        assertFalse(selector.isSupportedByCurrentGenerator(unsupportedPlan));
+    }
+
 
 
 }

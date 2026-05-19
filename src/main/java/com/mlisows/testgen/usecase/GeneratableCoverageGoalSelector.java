@@ -43,7 +43,9 @@ public final class GeneratableCoverageGoalSelector {
         return null;
     }
 
-    private boolean isSupportedByCurrentGenerator(MethodGenerationPlan plan) {
+    public boolean isSupportedByCurrentGenerator(MethodGenerationPlan plan) {
+        Objects.requireNonNull(plan, "plan must not be null");
+
         for (GenerationRequirement requirement : plan.getRequirements()) {
             if (!isSupportedRequirement(requirement)) {
                 return false;
@@ -52,6 +54,7 @@ public final class GeneratableCoverageGoalSelector {
 
         return true;
     }
+
 
     private boolean isSupportedRequirement(GenerationRequirement requirement) {
         return requirement == GenerationRequirement.NO_ARG_CONSTRUCTOR
