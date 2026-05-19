@@ -77,4 +77,19 @@ class GeneratableCoverageGoalSelectorTest {
 
         return new WeightedCoverageGoal(coverageGoal, new BranchWeight(1.0));
     }
+
+    @Test
+    void shouldSkipGoalWhenNoMethodPlanExists() {
+        WeightedCoverageGoal weightedGoal = weightedGoal("sample.Calculator", "calculate");
+
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+
+        List<WeightedCoverageGoal> selectedGoals = selector.selectGeneratableGoals(
+                List.of(weightedGoal),
+                List.of()
+        );
+
+        assertEquals(0, selectedGoals.size());
+    }
+
 }
