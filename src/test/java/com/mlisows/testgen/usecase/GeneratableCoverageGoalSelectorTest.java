@@ -92,4 +92,39 @@ class GeneratableCoverageGoalSelectorTest {
         assertEquals(0, selectedGoals.size());
     }
 
+    @Test
+    void shouldSelectOnlyGoalsForSupportedMethods() {
+        WeightedCoverageGoal simpleGoal = weightedGoal("sample.Calculator", "calculate");
+        WeightedCoverageGoal complexGoal = weightedGoal("sample.OrderService", "process");
+
+        MethodGenerationPlan simplePlan = new MethodGenerationPlan(
+                "sample.Calculator",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.PRIMITIVE_ARGUMENT
+                )
+        );
+
+        MethodGenerationPlan complexPlan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.OBJECT_FIXTURE
+                )
+        );
+
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+
+        List<WeightedCoverageGoal> selectedGoals = selector.selectGeneratableGoals(
+                List.of(simpleGoal, complexGoal),
+                List.of(simplePlan, complexPlan)
+        );
+
+        assertEquals(1, selectedGoals.size());
+        assertSame(simpleGoal, selectedGoals.get(0));
+    }
+
+
 }
