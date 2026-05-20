@@ -70,4 +70,60 @@ class GeneratedTestSuiteFactoryTest {
         assertEquals("100", testSuite.getTestCases().get(4).getMethodArguments().get(0).getValue());
 
     }
+
+    @Test
+    void shouldCreateSeededTestCasesForMultipleSupportedMethods() {
+        MethodModel calculateMethod = new MethodModel(
+                "calculate",
+                "int",
+                true,
+                List.of(new ParameterModel("amount", "int"))
+        );
+
+        MethodModel validateMethod = new MethodModel(
+                "validate",
+                "boolean",
+                true,
+                List.of(new ParameterModel("active", "boolean"))
+        );
+
+        ClassStructure classStructure = new ClassStructure(
+                "sample.Calculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(calculateMethod, validateMethod)
+        );
+
+        List<MethodGenerationPlan> methodPlans = List.of(
+                new MethodGenerationPlan(
+                        "sample.Calculator",
+                        "calculate",
+                        List.of(
+                                GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                                GenerationRequirement.PRIMITIVE_ARGUMENT
+                        )
+                ),
+                new MethodGenerationPlan(
+                        "sample.Calculator",
+                        "validate",
+                        List.of(
+                                GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                                GenerationRequirement.PRIMITIVE_ARGUMENT
+                        )
+                )
+        );
+
+        GeneratedTestSuiteFactory factory = new GeneratedTestSuiteFactory(
+                new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
+                new GeneratableCoverageGoalSelector()
+        );
+
+        GeneratedTestSuite testSuite = factory.create(classStructure, methodPlans);
+
+        assertEquals(7, testSuite.getTestCases().size());
+        assertEquals("shouldCallCalculate1", testSuite.getTestCases().get(0).getTestName());
+        assertEquals("shouldCallCalculate5", testSuite.getTestCases().get(4).getTestName());
+        assertEquals("shouldCallValidate1", testSuite.getTestCases().get(5).getTestName());
+        assertEquals("shouldCallValidate2", testSuite.getTestCases().get(6).getTestName());
+    }
+
 }
