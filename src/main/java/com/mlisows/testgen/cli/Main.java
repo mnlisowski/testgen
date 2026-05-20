@@ -14,18 +14,28 @@ import com.mlisows.testgen.usecase.MethodGenerationPlanner;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.mlisows.testgen.usecase.ports.TypeIndexAnalyzer;
+import com.mlisows.testgen.infrastructure.writer.GeneratedTestFileWriter;
+import com.mlisows.testgen.usecase.GenerateTestSuiteUseCase;
+import com.mlisows.testgen.usecase.GeneratedTestCaseFactory;
+import com.mlisows.testgen.usecase.GeneratedTestSuiteFactory;
+import com.mlisows.testgen.usecase.JUnitTestWriter;
+import com.mlisows.testgen.usecase.SimpleArgumentGenerator;
+
 
 import java.nio.file.Path;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("Usage: testgen <source-file>");
+        if (args.length < 1 || args.length > 2) {
+            System.out.println("Usage: testgen <source-file> [output-test-root]");
             return;
         }
 
+
         Path sourcePath = Path.of(args[0]);
+        Path outputRoot = args.length == 2 ? Path.of(args[1]) : null;
+
 
         CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
         ClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
@@ -66,5 +76,22 @@ public class Main {
                     + " requirements="
                     + plan.getRequirements());
         }
+
+        if (outputRoot != null) {
+            GenerateTestSuiteUseCase generateTestSuiteUseCase = new GenerateTestSuiteUseCase(
+                    new GeneratedTestSuiteFactory(
+                            new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
+                            selector
+                    ),
+                    new JUnitTestWriter(),
+                    new GeneratedTestFileWriter(outputRoot)
+            );
+
+            Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans);
+
+            System.out.println();
+            System.out.println("Generated test file: " + writtenPath);
+        }
+
     }
 }
