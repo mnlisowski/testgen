@@ -32,8 +32,9 @@ public final class GeneratedTestSuiteFactory {
             MethodGenerationPlan plan = findPlan(methodPlans, classStructure.getClassName(), method.getName());
 
             if (plan != null && selector.isSupportedByCurrentGenerator(plan)) {
-                testCases.add(testCaseFactory.create(classStructure, method));
+                testCases.addAll(testCaseFactory.createAll(classStructure, method));
             }
+
         }
 
         return new GeneratedTestSuite(classStructure.getClassName(), testCases);

@@ -4,9 +4,8 @@ import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.MethodModel;
+
 import java.util.ArrayList;
-
-
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +28,6 @@ public final class GeneratedTestCaseFactory {
                 new SeededArgumentSetGenerator(new SeedValueGenerator())
         );
     }
-
 
     public GeneratedTestCase create(ClassStructure classStructure, MethodModel method) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
@@ -67,7 +65,6 @@ public final class GeneratedTestCaseFactory {
 
         return testCases;
     }
-
 
     private String capitalize(String value) {
         if (value.isEmpty()) {

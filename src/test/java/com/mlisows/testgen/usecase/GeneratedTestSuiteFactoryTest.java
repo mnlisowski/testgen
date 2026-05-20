@@ -64,7 +64,10 @@ class GeneratedTestSuiteFactoryTest {
         GeneratedTestSuite testSuite = factory.create(classStructure, methodPlans);
 
         assertEquals("sample.Calculator", testSuite.getClassName());
-        assertEquals(1, testSuite.getTestCases().size());
+        assertEquals(5, testSuite.getTestCases().size());
         assertEquals("calculate", testSuite.getTestCases().get(0).getMethodName());
+        assertEquals("-1", testSuite.getTestCases().get(0).getMethodArguments().get(0).getValue());
+        assertEquals("100", testSuite.getTestCases().get(4).getMethodArguments().get(0).getValue());
+
     }
 }

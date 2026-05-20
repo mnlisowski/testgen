@@ -50,7 +50,10 @@ class GeneratedTestSuitePipelineTest {
         String code = writer.write(testSuite);
 
         assertTrue(code.contains("class CalculatorTest"));
-        assertTrue(code.contains("void shouldCallCalculate()"));
-        assertTrue(code.contains("calculator.calculate(0);"));
+        assertTrue(code.contains("void shouldCallCalculate1()"));
+        assertTrue(code.contains("calculator.calculate(-1);"));
+        assertTrue(code.contains("void shouldCallCalculate5()"));
+        assertTrue(code.contains("calculator.calculate(100);"));
+
     }
 }
