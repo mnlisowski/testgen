@@ -3,8 +3,7 @@ package com.mlisows.testgen.usecase;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.GeneratedTestSuite;
-
-
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -13,36 +12,12 @@ public final class JUnitTestWriter {
     public String write(GeneratedTestCase testCase) {
         Objects.requireNonNull(testCase, "testCase must not be null");
 
-        String simpleClassName = simpleName(testCase.getClassName());
-        String testClassName = simpleClassName + "Test";
-        String instanceName = decapitalize(simpleClassName);
-        String constructorArguments = argumentValues(testCase.getConstructorArguments());
-        String methodArguments = argumentValues(testCase.getMethodArguments());
-
-        return """
-                  import org.junit.jupiter.api.Test;
-
-                  class %s {
-
-                      @Test
-                      void %s() {
-                          %s %s = new %s(%s);
-
-                          %s.%s(%s);
-                      }
-                  }
-                  """.formatted(
-                testClassName,
-                testCase.getTestName(),
-                simpleClassName,
-                instanceName,
-                simpleClassName,
-                constructorArguments,
-                instanceName,
-                testCase.getMethodName(),
-                methodArguments
-        );
+        return write(new GeneratedTestSuite(
+                testCase.getClassName(),
+                List.of(testCase)
+        ));
     }
+
 
     public String write(GeneratedTestSuite testSuite) {
         Objects.requireNonNull(testSuite, "testSuite must not be null");
@@ -94,7 +69,7 @@ public final class JUnitTestWriter {
     }
 
 
-    private String argumentValues(java.util.List<GeneratedArgument> arguments) {
+    private String argumentValues(List<GeneratedArgument> arguments) {
         return arguments.stream()
                 .map(GeneratedArgument::getValue)
                 .collect(Collectors.joining(", "));
