@@ -28,6 +28,11 @@ public final class MethodGenerationPlanner {
         List<MethodGenerationPlan> plans = new ArrayList<>();
 
         for (MethodModel method : classStructure.getMethods()) {
+
+            if (!method.isPublicMethod()) {
+                continue;
+            }
+
             List<GenerationRequirement> requirements = new ArrayList<>();
 
             if (hasNoArgConstructor(classStructure)) {

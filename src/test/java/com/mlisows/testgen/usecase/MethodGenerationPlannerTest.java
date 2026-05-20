@@ -155,5 +155,34 @@ class MethodGenerationPlannerTest {
         assertTrue(plans.get(0).getRequirements().contains(GenerationRequirement.OBJECT_FIXTURE));
     }
 
+    @Test
+    void shouldSkipNonPublicMethods() {
+        ClassStructure classStructure = new ClassStructure(
+                "sample.Calculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(
+                        new MethodModel(
+                                "calculate",
+                                "int",
+                                true,
+                                List.of(new ParameterModel("amount", "int"))
+                        ),
+                        new MethodModel(
+                                "helper",
+                                "int",
+                                false,
+                                List.of(new ParameterModel("amount", "int"))
+                        )
+                )
+        );
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        List<MethodGenerationPlan> plans = planner.plan(classStructure);
+
+        assertEquals(1, plans.size());
+        assertEquals("calculate", plans.get(0).getMethodName());
+    }
+
 
 }
