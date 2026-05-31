@@ -12,8 +12,6 @@ public final class GeneratedTestCase {
     private final String targetVariableName;
     private final List<GeneratedArgument> methodArguments;
 
-
-
     public GeneratedTestCase(
             String className,
             String methodName,
@@ -52,7 +50,6 @@ public final class GeneratedTestCase {
         return targetVariableName;
     }
 
-
     public List<GeneratedArgument> getMethodArguments() {
         return methodArguments;
     }
@@ -60,5 +57,4 @@ public final class GeneratedTestCase {
     public List<GeneratedSetupObject> getSetupObjects() {
         return setupObjects;
     }
-
 }

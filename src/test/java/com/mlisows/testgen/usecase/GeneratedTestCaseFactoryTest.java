@@ -2,6 +2,7 @@ package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.ConstructorModel;
+import com.mlisows.testgen.domain.GeneratedSetupObject;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
@@ -34,8 +35,15 @@ class GeneratedTestCaseFactoryTest {
 
         assertEquals("sample.Calculator", testCase.getClassName());
         assertEquals("calculate", testCase.getMethodName());
+        assertEquals("int", testCase.getReturnType());
         assertEquals("shouldCallCalculate", testCase.getTestName());
-        assertEquals(List.of(), testCase.getConstructorArguments());
+        assertEquals("calculator", testCase.getTargetVariableName());
+        assertEquals(1, testCase.getSetupObjects().size());
+
+        GeneratedSetupObject setupObject = testCase.getSetupObjects().get(0);
+        assertEquals("Calculator", setupObject.getType());
+        assertEquals("calculator", setupObject.getVariableName());
+        assertEquals(List.of(), setupObject.getArguments());
 
         assertEquals(1, testCase.getMethodArguments().size());
         assertEquals("int", testCase.getMethodArguments().get(0).getType());

@@ -13,8 +13,14 @@ class GeneratedTestSuiteTest {
         GeneratedTestCase testCase = new GeneratedTestCase(
                 "sample.Calculator",
                 "calculate",
+                "int",
                 "shouldCallCalculate",
-                List.of(),
+                List.of(new GeneratedSetupObject(
+                        "Calculator",
+                        "calculator",
+                        List.of()
+                )),
+                "calculator",
                 List.of(new GeneratedArgument("int", "0"))
         );
 

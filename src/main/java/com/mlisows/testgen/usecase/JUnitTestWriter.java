@@ -36,7 +36,6 @@ public final class JUnitTestWriter {
         }
 
         builder.append("import org.junit.jupiter.api.Test;\n\n");
-        builder.append("import org.junit.jupiter.api.Test;\n\n");
         builder.append("class ").append(testClassName).append(" {\n\n");
 
         for (GeneratedTestCase testCase : testSuite.getTestCases()) {
@@ -49,14 +48,12 @@ public final class JUnitTestWriter {
     }
 
     private void appendTestMethod(StringBuilder builder, GeneratedTestCase testCase) {
-        String simpleClassName = simpleName(testCase.getClassName());
-        String instanceName = decapitalize(simpleClassName);
         String methodArguments = argumentValues(testCase.getMethodArguments());
 
         builder.append("    @Test\n");
         builder.append("    void ").append(testCase.getTestName()).append("() {\n");
 
-        for (GeneratedSetupObject setupObject: testCase.getSetupObjects()) {
+        for (GeneratedSetupObject setupObject : testCase.getSetupObjects()) {
             appendObjectCreation(builder, setupObject);
         }
 

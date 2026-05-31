@@ -77,7 +77,7 @@ public final class GeneratedTestCaseFactory {
                     classStructure.getClassName(),
                     method.getName(),
                     method.getReturnType(),
-                    "shouldCall" + capitalize(method.getName()),
+                    "shouldCall" + capitalize(method.getName()) + index,
                     setupObjects,
                     targetVariableName,
                     methodArguments
