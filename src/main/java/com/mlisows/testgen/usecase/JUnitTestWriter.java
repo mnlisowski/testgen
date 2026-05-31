@@ -65,13 +65,20 @@ public final class JUnitTestWriter {
                 .append(constructorArguments)
                 .append(");\n\n");
 
-        builder.append("        ")
-                .append(instanceName)
+        builder.append("        ");
+
+        if (!testCase.getReturnType().equals("void")) {
+            builder.append(testCase.getReturnType())
+                    .append(" result = ");
+        }
+
+        builder.append(instanceName)
                 .append(".")
                 .append(testCase.getMethodName())
                 .append("(")
                 .append(methodArguments)
                 .append(");\n");
+
 
         builder.append("    }\n\n");
     }

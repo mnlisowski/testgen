@@ -38,10 +38,12 @@ public final class GeneratedTestCaseFactory {
         return new GeneratedTestCase(
                 classStructure.getClassName(),
                 method.getName(),
+                method.getReturnType(),
                 "shouldCall" + capitalize(method.getName()),
                 List.of(),
                 methodArguments
         );
+
     }
 
     public List<GeneratedTestCase> createAll(ClassStructure classStructure, MethodModel method) {
@@ -56,7 +58,8 @@ public final class GeneratedTestCaseFactory {
             testCases.add(new GeneratedTestCase(
                     classStructure.getClassName(),
                     method.getName(),
-                    "shouldCall" + capitalize(method.getName()) + index,
+                    method.getReturnType(),
+                    "shouldCall" + capitalize(method.getName()),
                     List.of(),
                     methodArguments
             ));

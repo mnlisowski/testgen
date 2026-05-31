@@ -9,16 +9,20 @@ public final class GeneratedTestCase {
     private final String testName;
     private final List<GeneratedArgument> constructorArguments;
     private final List<GeneratedArgument> methodArguments;
+    private final String returnType;
+
 
     public GeneratedTestCase(
             String className,
             String methodName,
+            String returnType,
             String testName,
             List<GeneratedArgument> constructorArguments,
             List<GeneratedArgument> methodArguments
     ) {
         this.className = Objects.requireNonNull(className, "className must not be null");
         this.methodName = Objects.requireNonNull(methodName, "methodName must not be null");
+        this.returnType = Objects.requireNonNull(returnType, "returnType must not be null");
         this.testName = Objects.requireNonNull(testName, "testName must not be null");
         this.constructorArguments = List.copyOf(Objects.requireNonNull(constructorArguments, "constructorArguments must not be null"));
         this.methodArguments = List.copyOf(Objects.requireNonNull(methodArguments, "methodArguments must not be null"));
@@ -30,6 +34,10 @@ public final class GeneratedTestCase {
 
     public String getMethodName() {
         return methodName;
+    }
+
+    public String getReturnType() {
+        return returnType;
     }
 
     public String getTestName() {

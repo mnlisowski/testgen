@@ -104,4 +104,42 @@ class JUnitTestWriterTest {
         assertTrue(code.startsWith("import org.junit.jupiter.api.Test;"));
     }
 
+    @Test
+    void shouldAssignMethodResultWhenMethodReturnsValue() {
+        GeneratedTestCase testCase = new GeneratedTestCase(
+                "sample.Calculator",
+                "calculate",
+                "int",
+                "shouldCallCalculate",
+                List.of(),
+                List.of(new GeneratedArgument("int", "100"))
+        );
+
+        JUnitTestWriter writer = new JUnitTestWriter();
+
+        String code = writer.write(testCase);
+
+        assertTrue(code.contains("int result = calculator.calculate(100);"));
+    }
+
+    @Test
+    void shouldNotAssignMethodResultWhenMethodReturnsVoid() {
+        GeneratedTestCase testCase = new GeneratedTestCase(
+                "sample.Calculator",
+                "process",
+                "void",
+                "shouldCallProcess",
+                List.of(),
+                List.of(new GeneratedArgument("int", "100"))
+        );
+
+        JUnitTestWriter writer = new JUnitTestWriter();
+
+        String code = writer.write(testCase);
+
+        assertTrue(code.contains("calculator.process(100);"));
+        assertTrue(!code.contains("void result ="));
+    }
+
+
 }
