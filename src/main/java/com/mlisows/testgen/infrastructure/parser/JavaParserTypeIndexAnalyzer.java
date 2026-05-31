@@ -3,6 +3,7 @@ package com.mlisows.testgen.infrastructure.parser;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
 import com.mlisows.testgen.domain.TypeInfo;
@@ -51,10 +52,15 @@ public final class JavaParserTypeIndexAnalyzer implements TypeIndexAnalyzer {
         }
 
         for (EnumDeclaration declaration : compilationUnit.findAll(EnumDeclaration.class)) {
+            List<String> constants = declaration.getEntries().stream()
+                    .map(EnumConstantDeclaration::getNameAsString)
+                    .toList();
+
             types.add(new TypeInfo(
                     declaration.getNameAsString(),
                     declaration.getFullyQualifiedName().orElse(declaration.getNameAsString()),
-                    TypeKind.ENUM
+                    TypeKind.ENUM,
+                    constants
             ));
         }
 

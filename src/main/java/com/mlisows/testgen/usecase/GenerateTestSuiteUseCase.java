@@ -3,6 +3,7 @@ package com.mlisows.testgen.usecase;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.GeneratedTestSuite;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
 import com.mlisows.testgen.usecase.ports.TestFileWriter;
 
 import java.nio.file.Path;
@@ -25,10 +26,19 @@ public final class GenerateTestSuiteUseCase {
     }
 
     public Path execute(ClassStructure classStructure, List<MethodGenerationPlan> methodPlans) {
+        return execute(classStructure, methodPlans, new ProjectTypeIndex(List.of()));
+    }
+
+    public Path execute(
+            ClassStructure classStructure,
+            List<MethodGenerationPlan> methodPlans,
+            ProjectTypeIndex typeIndex
+    ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(methodPlans, "methodPlans must not be null");
+        Objects.requireNonNull(typeIndex, "typeIndex must not be null");
 
-        GeneratedTestSuite testSuite = testSuiteFactory.create(classStructure, methodPlans);
+        GeneratedTestSuite testSuite = testSuiteFactory.create(classStructure, methodPlans, typeIndex);
         String code = testWriter.write(testSuite);
 
         return fileWriter.write(testSuite, code);

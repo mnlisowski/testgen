@@ -2,6 +2,9 @@ package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.ParameterModel;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.TypeInfo;
+import com.mlisows.testgen.domain.TypeKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -48,4 +51,26 @@ class SeededArgumentSetGeneratorTest {
         assertEquals("-1", argumentSets.get(0).get(0).getValue());
         assertEquals("false", argumentSets.get(0).get(1).getValue());
     }
+    @Test
+    void shouldGenerateArgumentSetsForEnumParameter() {
+        SeededArgumentSetGenerator generator = new SeededArgumentSetGenerator(new SeedValueGenerator());
+        ProjectTypeIndex typeIndex = new ProjectTypeIndex(List.of(
+                new TypeInfo(
+                        "CustomerType",
+                        "sample.CustomerType",
+                        TypeKind.ENUM,
+                        List.of("REGULAR", "GOLD")
+                )
+        ));
+
+        List<List<GeneratedArgument>> argumentSets = generator.generateArgumentSets(
+                List.of(new ParameterModel("customerType", "CustomerType")),
+                typeIndex
+        );
+
+        assertEquals(2, argumentSets.size());
+        assertEquals("sample.CustomerType.REGULAR", argumentSets.get(0).get(0).getValue());
+        assertEquals("sample.CustomerType.GOLD", argumentSets.get(1).get(0).getValue());
+    }
+
 }

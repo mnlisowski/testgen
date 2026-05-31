@@ -1,16 +1,23 @@
 package com.mlisows.testgen.domain;
 
+import java.util.List;
 import java.util.Objects;
 
 public final class TypeInfo {
     private final String name;
     private final String fullyQualifiedName;
     private final TypeKind kind;
+    private final List<String> enumConstants;
 
     public TypeInfo(String name, String fullyQualifiedName, TypeKind kind) {
+        this(name, fullyQualifiedName, kind, List.of());
+    }
+
+    public TypeInfo(String name, String fullyQualifiedName, TypeKind kind, List<String> enumConstants) {
         this.name = Objects.requireNonNull(name, "name must not be null");
         this.fullyQualifiedName = Objects.requireNonNull(fullyQualifiedName, "fullyQualifiedName must not be null");
         this.kind = Objects.requireNonNull(kind, "kind must not be null");
+        this.enumConstants = List.copyOf(Objects.requireNonNull(enumConstants, "enumConstants must not be null"));
     }
 
     public String getName() {
@@ -23,5 +30,9 @@ public final class TypeInfo {
 
     public TypeKind getKind() {
         return kind;
+    }
+
+    public List<String> getEnumConstants() {
+        return enumConstants;
     }
 }

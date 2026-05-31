@@ -5,6 +5,7 @@ import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.GeneratedTestSuite;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,17 @@ public final class GeneratedTestSuiteFactory {
     }
 
     public GeneratedTestSuite create(ClassStructure classStructure, List<MethodGenerationPlan> methodPlans) {
+        return create(classStructure, methodPlans, new ProjectTypeIndex(List.of()));
+    }
+
+    public GeneratedTestSuite create(
+            ClassStructure classStructure,
+            List<MethodGenerationPlan> methodPlans,
+            ProjectTypeIndex typeIndex
+    ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(methodPlans, "methodPlans must not be null");
+        Objects.requireNonNull(typeIndex, "typeIndex must not be null");
 
         List<GeneratedTestCase> testCases = new ArrayList<>();
 
@@ -32,9 +42,8 @@ public final class GeneratedTestSuiteFactory {
             MethodGenerationPlan plan = findPlan(methodPlans, classStructure.getClassName(), method.getName());
 
             if (plan != null && selector.isSupportedByCurrentGenerator(plan)) {
-                testCases.addAll(testCaseFactory.createAll(classStructure, method));
+                testCases.addAll(testCaseFactory.createAll(classStructure, method, typeIndex));
             }
-
         }
 
         return new GeneratedTestSuite(classStructure.getClassName(), testCases);

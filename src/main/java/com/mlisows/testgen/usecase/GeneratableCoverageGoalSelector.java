@@ -59,6 +59,7 @@ public final class GeneratableCoverageGoalSelector {
     private boolean isSupportedRequirement(GenerationRequirement requirement) {
         return requirement == GenerationRequirement.NO_ARG_CONSTRUCTOR
                 || requirement == GenerationRequirement.PRIMITIVE_ARGUMENT
-                || requirement == GenerationRequirement.STRING_ARGUMENT;
+                || requirement == GenerationRequirement.STRING_ARGUMENT
+                || requirement == GenerationRequirement.ENUM_ARGUMENT;
     }
 }

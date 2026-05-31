@@ -99,7 +99,7 @@ public class Main {
                         new GeneratedTestFileWriter(outputRoot)
                 );
 
-                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans);
+                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans, typeIndex);
 
                 System.out.println();
                 System.out.println("Generated test file: " + writtenPath);

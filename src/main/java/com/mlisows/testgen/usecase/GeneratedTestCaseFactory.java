@@ -4,6 +4,7 @@ import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
 import com.mlisows.testgen.domain.GeneratedSetupObject;
 
 import java.util.ArrayList;
@@ -58,10 +59,22 @@ public final class GeneratedTestCaseFactory {
     }
 
     public List<GeneratedTestCase> createAll(ClassStructure classStructure, MethodModel method) {
+        return createAll(classStructure, method, new ProjectTypeIndex(List.of()));
+    }
+
+    public List<GeneratedTestCase> createAll(
+            ClassStructure classStructure,
+            MethodModel method,
+            ProjectTypeIndex typeIndex
+    ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
+        Objects.requireNonNull(typeIndex, "typeIndex must not be null");
 
-        List<List<GeneratedArgument>> argumentSets = argumentSetGenerator.generateArgumentSets(method.getParameters());
+        List<List<GeneratedArgument>> argumentSets = argumentSetGenerator.generateArgumentSets(
+                method.getParameters(),
+                typeIndex
+        );
         List<GeneratedTestCase> testCases = new ArrayList<>();
         String targetVariableName = decapitalize(simpleName(classStructure.getClassName()));
 

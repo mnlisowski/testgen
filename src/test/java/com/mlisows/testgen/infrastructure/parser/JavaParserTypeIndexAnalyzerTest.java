@@ -35,6 +35,7 @@ class JavaParserTypeIndexAnalyzerTest {
         assertEquals(TypeKind.INTERFACE, paymentGateway.get().getKind());
         assertEquals(TypeKind.CLASS, order.get().getKind());
         assertEquals(TypeKind.ENUM, customerType.get().getKind());
+        assertEquals(List.of("REGULAR", "GOLD"), customerType.get().getEnumConstants());
     }
 
     @Test

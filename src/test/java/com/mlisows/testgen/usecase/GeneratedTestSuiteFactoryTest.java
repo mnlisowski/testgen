@@ -7,6 +7,9 @@ import com.mlisows.testgen.domain.GenerationRequirement;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
+import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.TypeInfo;
+import com.mlisows.testgen.domain.TypeKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -124,6 +127,50 @@ class GeneratedTestSuiteFactoryTest {
         assertEquals("shouldCallCalculate5", testSuite.getTestCases().get(4).getTestName());
         assertEquals("shouldCallValidate1", testSuite.getTestCases().get(5).getTestName());
         assertEquals("shouldCallValidate2", testSuite.getTestCases().get(6).getTestName());
+    }
+
+    @Test
+    void shouldCreateTestCasesForEnumArguments() {
+        MethodModel calculateMethod = new MethodModel(
+                "calculate",
+                "double",
+                true,
+                List.of(new ParameterModel("customerType", "CustomerType"))
+        );
+
+        ClassStructure classStructure = new ClassStructure(
+                "sample.SwitchDiscountCalculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(calculateMethod)
+        );
+
+        List<MethodGenerationPlan> methodPlans = List.of(new MethodGenerationPlan(
+                "sample.SwitchDiscountCalculator",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.ENUM_ARGUMENT
+                )
+        ));
+
+        ProjectTypeIndex typeIndex = new ProjectTypeIndex(List.of(new TypeInfo(
+                "CustomerType",
+                "sample.SwitchDiscountCalculator.CustomerType",
+                TypeKind.ENUM,
+                List.of("REGULAR", "SILVER", "GOLD")
+        )));
+
+        GeneratedTestSuiteFactory factory = new GeneratedTestSuiteFactory(
+                new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
+                new GeneratableCoverageGoalSelector()
+        );
+
+        GeneratedTestSuite testSuite = factory.create(classStructure, methodPlans, typeIndex);
+
+        assertEquals(3, testSuite.getTestCases().size());
+        assertEquals("sample.SwitchDiscountCalculator.CustomerType.REGULAR", testSuite.getTestCases().get(0).getMethodArguments().get(0).getValue());
+        assertEquals("sample.SwitchDiscountCalculator.CustomerType.SILVER", testSuite.getTestCases().get(1).getMethodArguments().get(0).getValue());
+        assertEquals("sample.SwitchDiscountCalculator.CustomerType.GOLD", testSuite.getTestCases().get(2).getMethodArguments().get(0).getValue());
     }
 
 }

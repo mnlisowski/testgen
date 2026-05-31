@@ -154,7 +154,20 @@ class GeneratableCoverageGoalSelectorTest {
         assertTrue(selector.isSupportedByCurrentGenerator(supportedPlan));
         assertFalse(selector.isSupportedByCurrentGenerator(unsupportedPlan));
     }
+    @Test
+    void shouldSupportEnumArguments() {
+        MethodGenerationPlan enumPlan = new MethodGenerationPlan(
+                "sample.SwitchDiscountCalculator",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.ENUM_ARGUMENT
+                )
+        );
 
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
 
+        assertTrue(selector.isSupportedByCurrentGenerator(enumPlan));
+    }
 
 }
