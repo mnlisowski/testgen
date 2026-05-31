@@ -54,10 +54,19 @@ public class Main {
 
         ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(sourcePaths);
         for (Path sourcePath : sourcePaths) {
-            ClassAnalysisResult result = useCase.execute(sourcePath);
-            ClassStructure classStructure = classStructureAnalyzer.analyze(sourcePath);
+            ClassAnalysisResult result;
+            ClassStructure classStructure;
+
+            try {
+                result = useCase.execute(sourcePath);
+                classStructure = classStructureAnalyzer.analyze(sourcePath);
+            } catch (IllegalArgumentException exception) {
+                System.out.println("Skipping source file: " + sourcePath + " reason=" + exception.getMessage());
+                continue;
+            }
 
             List<MethodGenerationPlan> methodPlans = planner.plan(classStructure, typeIndex);
+
 
             System.out.println("Class: " + result.getClassName());
             System.out.println();
