@@ -20,6 +20,11 @@ import com.mlisows.testgen.usecase.GeneratedTestCaseFactory;
 import com.mlisows.testgen.usecase.GeneratedTestSuiteFactory;
 import com.mlisows.testgen.usecase.JUnitTestWriter;
 import com.mlisows.testgen.usecase.SimpleArgumentGenerator;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Comparator;
+import java.util.stream.Stream;
+
 
 
 import java.nio.file.Path;
@@ -33,7 +38,9 @@ public class Main {
         }
 
 
-        Path sourcePath = Path.of(args[0]);
+        Path inputPath = Path.of(args[0]);
+        List<Path> sourcePaths = sourcePaths(inputPath);
+
         Path outputRoot = args.length == 2 ? Path.of(args[1]) : null;
 
 
@@ -45,53 +52,80 @@ public class Main {
         MethodGenerationPlanner planner = new MethodGenerationPlanner();
         GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
 
-        ClassAnalysisResult result = useCase.execute(sourcePath);
-        ClassStructure classStructure = classStructureAnalyzer.analyze(sourcePath);
-        ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(List.of(sourcePath));
+        ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(sourcePaths);
+        for (Path sourcePath : sourcePaths) {
+            ClassAnalysisResult result = useCase.execute(sourcePath);
+            ClassStructure classStructure = classStructureAnalyzer.analyze(sourcePath);
 
-        List<MethodGenerationPlan> methodPlans = planner.plan(classStructure, typeIndex);
+            List<MethodGenerationPlan> methodPlans = planner.plan(classStructure, typeIndex);
 
-        System.out.println("Class: " + result.getClassName());
-        System.out.println();
+            System.out.println("Class: " + result.getClassName());
+            System.out.println();
 
-        System.out.println("Coverage goals:");
-        for (CoverageGoal goal : result.getCoverageGoals()) {
-            System.out.println("- "
-                    + goal.getBranchId().asString()
-                    + " condition="
-                    + goal.getCondition());
-        }
-
-        System.out.println();
-        System.out.println("Method generation plan:");
-        for (MethodGenerationPlan plan : methodPlans) {
-            String status = selector.isSupportedByCurrentGenerator(plan) ? "supported" : "skipped";
-
-            System.out.println("- "
-                    + plan.getClassName()
-                    + "."
-                    + plan.getMethodName()
-                    + " "
-                    + status
-                    + " requirements="
-                    + plan.getRequirements());
-        }
-
-        if (outputRoot != null) {
-            GenerateTestSuiteUseCase generateTestSuiteUseCase = new GenerateTestSuiteUseCase(
-                    new GeneratedTestSuiteFactory(
-                            new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
-                            selector
-                    ),
-                    new JUnitTestWriter(),
-                    new GeneratedTestFileWriter(outputRoot)
-            );
-
-            Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans);
+            System.out.println("Coverage goals:");
+            for (CoverageGoal goal : result.getCoverageGoals()) {
+                System.out.println("- "
+                        + goal.getBranchId().asString()
+                        + " condition="
+                        + goal.getCondition());
+            }
 
             System.out.println();
-            System.out.println("Generated test file: " + writtenPath);
+            System.out.println("Method generation plan:");
+            for (MethodGenerationPlan plan : methodPlans) {
+                String status = selector.isSupportedByCurrentGenerator(plan) ? "supported" : "skipped";
+
+                System.out.println("- "
+                        + plan.getClassName()
+                        + "."
+                        + plan.getMethodName()
+                        + " "
+                        + status
+                        + " requirements="
+                        + plan.getRequirements());
+            }
+
+            if (outputRoot != null) {
+                GenerateTestSuiteUseCase generateTestSuiteUseCase = new GenerateTestSuiteUseCase(
+                        new GeneratedTestSuiteFactory(
+                                new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
+                                selector
+                        ),
+                        new JUnitTestWriter(),
+                        new GeneratedTestFileWriter(outputRoot)
+                );
+
+                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans);
+
+                System.out.println();
+                System.out.println("Generated test file: " + writtenPath);
+            }
+
+        }
         }
 
+
+
+
+
+    private static List<Path> sourcePaths(Path inputPath) {
+        if (Files.isRegularFile(inputPath)) {
+            return List.of(inputPath);
+        }
+
+        if (!Files.isDirectory(inputPath)) {
+            throw new IllegalArgumentException("Input path is not a file or directory: " + inputPath);
+        }
+
+        try (Stream<Path> paths = Files.walk(inputPath)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".java"))
+                    .sorted(Comparator.comparing(Path::toString))
+                    .toList();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot read source directory: " + inputPath, exception);
+        }
     }
+
 }

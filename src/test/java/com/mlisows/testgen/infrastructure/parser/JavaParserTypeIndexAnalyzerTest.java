@@ -36,4 +36,18 @@ class JavaParserTypeIndexAnalyzerTest {
         assertEquals(TypeKind.CLASS, order.get().getKind());
         assertEquals(TypeKind.ENUM, customerType.get().getKind());
     }
+
+    @Test
+    void shouldAnalyzeTypesFromMultipleSourceFiles() {
+        JavaParserTypeIndexAnalyzer analyzer = new JavaParserTypeIndexAnalyzer();
+
+        ProjectTypeIndex typeIndex = analyzer.analyze(List.of(
+                Path.of("src/test/resources/sample/Order.java"),
+                Path.of("src/test/resources/sample/CustomerType.java")
+        ));
+
+        assertTrue(typeIndex.findByName("Order").isPresent());
+        assertTrue(typeIndex.findByName("CustomerType").isPresent());
+    }
+
 }
