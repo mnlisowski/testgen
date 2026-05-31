@@ -67,4 +67,41 @@ class JUnitTestWriterTest {
         assertTrue(code.contains("calculator.subtract(0, 0);"));
     }
 
+    @Test
+    void shouldWritePackageDeclarationForPackagedClass() {
+        GeneratedTestCase testCase = new GeneratedTestCase(
+                "sample.Calculator",
+                "calculate",
+                "shouldCallCalculate",
+                List.of(),
+                List.of(new GeneratedArgument("int", "0"))
+        );
+
+        JUnitTestWriter writer = new JUnitTestWriter();
+
+        String code = writer.write(testCase);
+
+        assertTrue(code.startsWith("package sample;\n\n"));
+        assertTrue(code.contains("import org.junit.jupiter.api.Test;"));
+        assertTrue(code.contains("class CalculatorTest"));
+    }
+
+
+    @Test
+    void shouldNotWritePackageDeclarationForDefaultPackageClass() {
+        GeneratedTestCase testCase = new GeneratedTestCase(
+                "Calculator",
+                "calculate",
+                "shouldCallCalculate",
+                List.of(),
+                List.of(new GeneratedArgument("int", "0"))
+        );
+
+        JUnitTestWriter writer = new JUnitTestWriter();
+
+        String code = writer.write(testCase);
+
+        assertTrue(code.startsWith("import org.junit.jupiter.api.Test;"));
+    }
+
 }

@@ -24,9 +24,17 @@ public final class JUnitTestWriter {
 
         String simpleClassName = simpleName(testSuite.getClassName());
         String testClassName = simpleClassName + "Test";
+        String packageName = packageName(testSuite.getClassName());
 
         StringBuilder builder = new StringBuilder();
 
+        if (!packageName.isEmpty()) {
+            builder.append("package ")
+                    .append(packageName)
+                    .append(";\n\n");
+        }
+
+        builder.append("import org.junit.jupiter.api.Test;\n\n");
         builder.append("import org.junit.jupiter.api.Test;\n\n");
         builder.append("class ").append(testClassName).append(" {\n\n");
 
@@ -92,4 +100,16 @@ public final class JUnitTestWriter {
 
         return value.substring(0, 1).toLowerCase() + value.substring(1);
     }
+
+    private String packageName(String className) {
+        int lastDotIndex = className.lastIndexOf('.');
+
+        if (lastDotIndex == -1) {
+            return "";
+        }
+
+        return className.substring(0, lastDotIndex);
+    }
+
+
 }
