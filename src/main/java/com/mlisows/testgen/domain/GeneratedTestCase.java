@@ -6,10 +6,12 @@ import java.util.Objects;
 public final class GeneratedTestCase {
     private final String className;
     private final String methodName;
-    private final String testName;
-    private final List<GeneratedArgument> constructorArguments;
-    private final List<GeneratedArgument> methodArguments;
     private final String returnType;
+    private final String testName;
+    private final List<GeneratedSetupObject> setupObjects;
+    private final String targetVariableName;
+    private final List<GeneratedArgument> methodArguments;
+
 
 
     public GeneratedTestCase(
@@ -17,14 +19,16 @@ public final class GeneratedTestCase {
             String methodName,
             String returnType,
             String testName,
-            List<GeneratedArgument> constructorArguments,
+            List<GeneratedSetupObject> setupObjects,
+            String targetVariableName,
             List<GeneratedArgument> methodArguments
     ) {
         this.className = Objects.requireNonNull(className, "className must not be null");
         this.methodName = Objects.requireNonNull(methodName, "methodName must not be null");
         this.returnType = Objects.requireNonNull(returnType, "returnType must not be null");
         this.testName = Objects.requireNonNull(testName, "testName must not be null");
-        this.constructorArguments = List.copyOf(Objects.requireNonNull(constructorArguments, "constructorArguments must not be null"));
+        this.setupObjects = List.copyOf(Objects.requireNonNull(setupObjects, "setupObjects must not be null"));
+        this.targetVariableName = Objects.requireNonNull(targetVariableName, "targetVariableName must not be null");
         this.methodArguments = List.copyOf(Objects.requireNonNull(methodArguments, "methodArguments must not be null"));
     }
 
@@ -44,11 +48,17 @@ public final class GeneratedTestCase {
         return testName;
     }
 
-    public List<GeneratedArgument> getConstructorArguments() {
-        return constructorArguments;
+    public String getTargetVariableName() {
+        return targetVariableName;
     }
+
 
     public List<GeneratedArgument> getMethodArguments() {
         return methodArguments;
     }
+
+    public List<GeneratedSetupObject> getSetupObjects() {
+        return setupObjects;
+    }
+
 }

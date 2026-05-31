@@ -4,6 +4,7 @@ import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.GeneratedSetupObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +36,24 @@ public final class GeneratedTestCaseFactory {
 
         List<GeneratedArgument> methodArguments = argumentGenerator.generateArguments(method.getParameters());
 
+        String targetVariableName = decapitalize(simpleName(classStructure.getClassName()));
+
+        List<GeneratedSetupObject> setupObjects = List.of(new GeneratedSetupObject(
+                simpleName(classStructure.getClassName()),
+                targetVariableName,
+                List.of()
+        ));
+
         return new GeneratedTestCase(
                 classStructure.getClassName(),
                 method.getName(),
                 method.getReturnType(),
                 "shouldCall" + capitalize(method.getName()),
-                List.of(),
+                setupObjects,
+                targetVariableName,
                 methodArguments
         );
+
 
     }
 
@@ -52,6 +63,13 @@ public final class GeneratedTestCaseFactory {
 
         List<List<GeneratedArgument>> argumentSets = argumentSetGenerator.generateArgumentSets(method.getParameters());
         List<GeneratedTestCase> testCases = new ArrayList<>();
+        String targetVariableName = decapitalize(simpleName(classStructure.getClassName()));
+
+        List<GeneratedSetupObject> setupObjects = List.of(new GeneratedSetupObject(
+                simpleName(classStructure.getClassName()),
+                targetVariableName,
+                List.of()
+        ));
 
         int index = 1;
         for (List<GeneratedArgument> methodArguments : argumentSets) {
@@ -60,7 +78,8 @@ public final class GeneratedTestCaseFactory {
                     method.getName(),
                     method.getReturnType(),
                     "shouldCall" + capitalize(method.getName()),
-                    List.of(),
+                    setupObjects,
+                    targetVariableName,
                     methodArguments
             ));
             index++;
@@ -76,6 +95,25 @@ public final class GeneratedTestCaseFactory {
 
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
+
+    private String simpleName(String className) {
+        int lastDotIndex = className.lastIndexOf('.');
+
+        if (lastDotIndex == -1) {
+            return className;
+        }
+
+        return className.substring(lastDotIndex + 1);
+    }
+
+    private String decapitalize(String value) {
+        if (value.isEmpty()) {
+            return value;
+        }
+
+        return value.substring(0, 1).toLowerCase() + value.substring(1);
+    }
+
 }
 
 

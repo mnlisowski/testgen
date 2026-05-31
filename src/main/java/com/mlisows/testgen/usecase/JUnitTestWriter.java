@@ -3,6 +3,7 @@ package com.mlisows.testgen.usecase;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedTestCase;
 import com.mlisows.testgen.domain.GeneratedTestSuite;
+import com.mlisows.testgen.domain.GeneratedSetupObject;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -50,21 +51,16 @@ public final class JUnitTestWriter {
     private void appendTestMethod(StringBuilder builder, GeneratedTestCase testCase) {
         String simpleClassName = simpleName(testCase.getClassName());
         String instanceName = decapitalize(simpleClassName);
-        String constructorArguments = argumentValues(testCase.getConstructorArguments());
         String methodArguments = argumentValues(testCase.getMethodArguments());
 
         builder.append("    @Test\n");
         builder.append("    void ").append(testCase.getTestName()).append("() {\n");
-        builder.append("        ")
-                .append(simpleClassName)
-                .append(" ")
-                .append(instanceName)
-                .append(" = new ")
-                .append(simpleClassName)
-                .append("(")
-                .append(constructorArguments)
-                .append(");\n\n");
 
+        for (GeneratedSetupObject setupObject: testCase.getSetupObjects()) {
+            appendObjectCreation(builder, setupObject);
+        }
+
+        builder.append("\n");
         builder.append("        ");
 
         if (!testCase.getReturnType().equals("void")) {
@@ -72,15 +68,15 @@ public final class JUnitTestWriter {
                     .append(" result = ");
         }
 
-        builder.append(instanceName)
+        builder.append(testCase.getTargetVariableName())
                 .append(".")
                 .append(testCase.getMethodName())
                 .append("(")
                 .append(methodArguments)
                 .append(");\n");
 
-
         builder.append("    }\n\n");
+
     }
 
 
@@ -117,6 +113,19 @@ public final class JUnitTestWriter {
 
         return className.substring(0, lastDotIndex);
     }
+
+    private void appendObjectCreation(StringBuilder builder, GeneratedSetupObject objectCreation) {
+        builder.append("        ")
+                .append(objectCreation.getType())
+                .append(" ")
+                .append(objectCreation.getVariableName())
+                .append(" = new ")
+                .append(objectCreation.getType())
+                .append("(")
+                .append(argumentValues(objectCreation.getArguments()))
+                .append(");\n");
+    }
+
 
 
 }
