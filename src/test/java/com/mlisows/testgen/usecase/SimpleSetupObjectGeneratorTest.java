@@ -136,5 +136,86 @@ class SimpleSetupObjectGeneratorTest {
 
         assertTrue(setupObject.isEmpty());
     }
+
+    @Test
+    void shouldGenerateNestedSetupObjectForConstructorObjectArgument() {
+        ClassStructure customer = new ClassStructure(
+                "sample.Customer",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(new ParameterModel("type", "String"))
+                )),
+                List.of()
+        );
+
+        ClassStructure order = new ClassStructure(
+                "sample.Order",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(
+                                new ParameterModel("total", "int"),
+                                new ParameterModel("customer", "Customer")
+                        )
+                )),
+                List.of()
+        );
+
+        SimpleSetupObjectGenerator generator = new SimpleSetupObjectGenerator(new SeedValueGenerator());
+
+        Optional<SetupObjectResolution> resolution = generator.generateSetup(
+                new ParameterModel("order", "Order"),
+                new ProjectClassStructureIndex(List.of(order, customer)),
+                new ProjectTypeIndex(List.of())
+        );
+
+        assertTrue(resolution.isPresent());
+        assertEquals(2, resolution.get().getSetupObjects().size());
+
+        GeneratedSetupObject customerSetup = resolution.get().getSetupObjects().get(0);
+        assertEquals("Customer", customerSetup.getType());
+        assertEquals("customer", customerSetup.getVariableName());
+        assertEquals("\"\"", customerSetup.getArguments().get(0).getValue());
+
+        GeneratedSetupObject orderSetup = resolution.get().getSetupObjects().get(1);
+        assertEquals("Order", orderSetup.getType());
+        assertEquals("order", orderSetup.getVariableName());
+        assertEquals("-1", orderSetup.getArguments().get(0).getValue());
+        assertEquals("customer", orderSetup.getArguments().get(1).getValue());
+
+        assertEquals("Order", resolution.get().getReferenceArgument().getType());
+        assertEquals("order", resolution.get().getReferenceArgument().getValue());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenObjectSetupHasCycle() {
+        ClassStructure customer = new ClassStructure(
+                "sample.Customer",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(new ParameterModel("order", "Order"))
+                )),
+                List.of()
+        );
+
+        ClassStructure order = new ClassStructure(
+                "sample.Order",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(new ParameterModel("customer", "Customer"))
+                )),
+                List.of()
+        );
+
+        SimpleSetupObjectGenerator generator = new SimpleSetupObjectGenerator(new SeedValueGenerator());
+
+        Optional<SetupObjectResolution> resolution = generator.generateSetup(
+                new ParameterModel("order", "Order"),
+                new ProjectClassStructureIndex(List.of(order, customer)),
+                new ProjectTypeIndex(List.of())
+        );
+
+        assertTrue(resolution.isEmpty());
+    }
+
 }
 
