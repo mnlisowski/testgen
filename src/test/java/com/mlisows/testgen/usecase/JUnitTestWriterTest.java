@@ -192,4 +192,46 @@ class JUnitTestWriterTest {
                 methodArguments
         );
     }
+
+    @Test
+    void shouldWriteNestedSetupObjectsBeforeMethodCall() {
+        GeneratedTestCase testCase = new GeneratedTestCase(
+                "sample.DiscountService",
+                "calculate",
+                "int",
+                "shouldCallCalculate",
+                List.of(
+                        new GeneratedSetupObject(
+                                "Customer",
+                                "customer",
+                                List.of(new GeneratedArgument("String", "\"\""))
+                        ),
+                        new GeneratedSetupObject(
+                                "Order",
+                                "order",
+                                List.of(
+                                        new GeneratedArgument("int", "-1"),
+                                        new GeneratedArgument("Customer", "customer")
+                                )
+                        ),
+                        new GeneratedSetupObject(
+                                "DiscountService",
+                                "discountService",
+                                List.of()
+                        )
+                ),
+                "discountService",
+                List.of(new GeneratedArgument("Order", "order"))
+        );
+
+        JUnitTestWriter writer = new JUnitTestWriter();
+
+        String code = writer.write(testCase);
+
+        assertTrue(code.contains("Customer customer = new Customer(\"\");"));
+        assertTrue(code.contains("Order order = new Order(-1, customer);"));
+        assertTrue(code.contains("DiscountService discountService = new DiscountService();"));
+        assertTrue(code.contains("int result = discountService.calculate(order);"));
+    }
+
 }
