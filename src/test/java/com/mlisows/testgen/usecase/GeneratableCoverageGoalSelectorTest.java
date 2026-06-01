@@ -44,7 +44,7 @@ class GeneratableCoverageGoalSelectorTest {
     }
 
     @Test
-    void shouldSkipGoalWhenMethodRequiresObjectFixture() {
+    void shouldSelectGoalWhenMethodRequiresObjectFixture() {
         WeightedCoverageGoal weightedGoal = weightedGoal("sample.OrderService", "process");
         MethodGenerationPlan plan = new MethodGenerationPlan(
                 "sample.OrderService",
@@ -62,8 +62,10 @@ class GeneratableCoverageGoalSelectorTest {
                 List.of(plan)
         );
 
-        assertEquals(0, selectedGoals.size());
+        assertEquals(1, selectedGoals.size());
+        assertSame(weightedGoal, selectedGoals.get(0));
     }
+
 
     private WeightedCoverageGoal weightedGoal(String className, String methodName) {
         CoverageGoal coverageGoal = new CoverageGoal(
@@ -109,12 +111,12 @@ class GeneratableCoverageGoalSelectorTest {
                 )
         );
 
-        MethodGenerationPlan complexPlan = new MethodGenerationPlan(
+        MethodGenerationPlan unsupportedPlan = new MethodGenerationPlan(
                 "sample.OrderService",
                 "process",
                 List.of(
                         GenerationRequirement.NO_ARG_CONSTRUCTOR,
-                        GenerationRequirement.OBJECT_FIXTURE
+                        GenerationRequirement.COLLECTION_FIXTURE
                 )
         );
 
@@ -122,38 +124,13 @@ class GeneratableCoverageGoalSelectorTest {
 
         List<WeightedCoverageGoal> selectedGoals = selector.selectGeneratableGoals(
                 List.of(simpleGoal, complexGoal),
-                List.of(simplePlan, complexPlan)
+                List.of(simplePlan, unsupportedPlan)
         );
 
         assertEquals(1, selectedGoals.size());
         assertSame(simpleGoal, selectedGoals.get(0));
     }
 
-    @Test
-    void shouldReportWhetherMethodPlanIsSupported() {
-        MethodGenerationPlan supportedPlan = new MethodGenerationPlan(
-                "sample.Calculator",
-                "calculate",
-                List.of(
-                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
-                        GenerationRequirement.PRIMITIVE_ARGUMENT
-                )
-        );
-
-        MethodGenerationPlan unsupportedPlan = new MethodGenerationPlan(
-                "sample.OrderService",
-                "process",
-                List.of(
-                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
-                        GenerationRequirement.OBJECT_FIXTURE
-                )
-        );
-
-        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
-
-        assertTrue(selector.isSupportedByCurrentGenerator(supportedPlan));
-        assertFalse(selector.isSupportedByCurrentGenerator(unsupportedPlan));
-    }
     @Test
     void shouldSupportEnumArguments() {
         MethodGenerationPlan enumPlan = new MethodGenerationPlan(
@@ -169,5 +146,43 @@ class GeneratableCoverageGoalSelectorTest {
 
         assertTrue(selector.isSupportedByCurrentGenerator(enumPlan));
     }
+
+    @Test
+    void shouldReportWhetherMethodPlanIsSupported() {
+        MethodGenerationPlan supportedPlan = new MethodGenerationPlan(
+                "sample.Calculator",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.PRIMITIVE_ARGUMENT
+                )
+        );
+
+        MethodGenerationPlan objectFixturePlan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.OBJECT_FIXTURE
+                )
+        );
+
+        MethodGenerationPlan unsupportedPlan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.COLLECTION_FIXTURE
+                )
+        );
+
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+
+        assertTrue(selector.isSupportedByCurrentGenerator(supportedPlan));
+        assertTrue(selector.isSupportedByCurrentGenerator(objectFixturePlan));
+        assertFalse(selector.isSupportedByCurrentGenerator(unsupportedPlan));
+    }
+
+
 
 }

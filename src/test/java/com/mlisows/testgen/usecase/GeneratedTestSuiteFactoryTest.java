@@ -10,6 +10,7 @@ import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -172,5 +173,69 @@ class GeneratedTestSuiteFactoryTest {
         assertEquals("sample.SwitchDiscountCalculator.CustomerType.SILVER", testSuite.getTestCases().get(1).getMethodArguments().get(0).getValue());
         assertEquals("sample.SwitchDiscountCalculator.CustomerType.GOLD", testSuite.getTestCases().get(2).getMethodArguments().get(0).getValue());
     }
+
+    @Test
+    void shouldCreateTestCasesForSimpleObjectArguments() {
+        MethodModel calculateMethod = new MethodModel(
+                "calculate",
+                "int",
+                true,
+                List.of(new ParameterModel("order", "Order"))
+        );
+
+        ClassStructure discountService = new ClassStructure(
+                "sample.DiscountService",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(calculateMethod)
+        );
+
+        ClassStructure customer = new ClassStructure(
+                "sample.Customer",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(new ParameterModel("type", "String"))
+                )),
+                List.of()
+        );
+
+        ClassStructure order = new ClassStructure(
+                "sample.Order",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(
+                                new ParameterModel("total", "int"),
+                                new ParameterModel("customer", "Customer")
+                        )
+                )),
+                List.of()
+        );
+
+        List<MethodGenerationPlan> methodPlans = List.of(new MethodGenerationPlan(
+                "sample.DiscountService",
+                "calculate",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.OBJECT_FIXTURE
+                )
+        ));
+
+        GeneratedTestSuiteFactory factory = new GeneratedTestSuiteFactory(
+                new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
+                new GeneratableCoverageGoalSelector()
+        );
+
+        GeneratedTestSuite testSuite = factory.create(
+                discountService,
+                methodPlans,
+                new ProjectTypeIndex(List.of()),
+                new ProjectClassStructureIndex(List.of(discountService, order, customer))
+        );
+
+        assertEquals(1, testSuite.getTestCases().size());
+        assertEquals("calculate", testSuite.getTestCases().get(0).getMethodName());
+        assertEquals("order", testSuite.getTestCases().get(0).getMethodArguments().get(0).getValue());
+        assertEquals(3, testSuite.getTestCases().get(0).getSetupObjects().size());
+    }
+
 
 }

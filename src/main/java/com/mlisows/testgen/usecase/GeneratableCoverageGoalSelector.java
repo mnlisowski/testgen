@@ -60,6 +60,8 @@ public final class GeneratableCoverageGoalSelector {
         return requirement == GenerationRequirement.NO_ARG_CONSTRUCTOR
                 || requirement == GenerationRequirement.PRIMITIVE_ARGUMENT
                 || requirement == GenerationRequirement.STRING_ARGUMENT
-                || requirement == GenerationRequirement.ENUM_ARGUMENT;
+                || requirement == GenerationRequirement.ENUM_ARGUMENT
+                || requirement == GenerationRequirement.OBJECT_FIXTURE;
+
     }
 }
