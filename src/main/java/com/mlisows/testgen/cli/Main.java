@@ -53,8 +53,13 @@ public class Main {
         ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(sourcePaths);
 
         List<ClassStructure> classStructures = sourcePaths.stream()
+                .filter(sourcePath -> {
+                    TypeInfo sourceType = typeIndex.findByName(sourceTypeName(sourcePath)).orElse(null);
+                    return sourceType != null && sourceType.getKind() == TypeKind.CLASS;
+                })
                 .map(classStructureAnalyzer::analyze)
                 .toList();
+
 
         ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
 
