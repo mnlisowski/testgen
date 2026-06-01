@@ -22,6 +22,8 @@ import com.mlisows.testgen.usecase.SimpleArgumentGenerator;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.mlisows.testgen.usecase.ports.TypeIndexAnalyzer;
+import com.mlisows.testgen.domain.ProjectClassStructureIndex;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,6 +52,13 @@ public class Main {
         GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
         ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(sourcePaths);
 
+        List<ClassStructure> classStructures = sourcePaths.stream()
+                .map(classStructureAnalyzer::analyze)
+                .toList();
+
+        ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
+
+
         for (Path sourcePath : sourcePaths) {
             TypeInfo sourceType = typeIndex.findByName(sourceTypeName(sourcePath)).orElse(null);
 
@@ -60,7 +69,7 @@ public class Main {
             }
 
             ClassAnalysisResult result = useCase.execute(sourcePath);
-            ClassStructure classStructure = classStructureAnalyzer.analyze(sourcePath);
+            ClassStructure classStructure = classIndex.findByName(result.getClassName()).orElseThrow();
             List<MethodGenerationPlan> methodPlans = planner.plan(classStructure, typeIndex);
 
             System.out.println("Class: " + result.getClassName());
@@ -99,7 +108,8 @@ public class Main {
                         new GeneratedTestFileWriter(outputRoot)
                 );
 
-                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans, typeIndex);
+                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans, typeIndex, classIndex);
+
 
                 System.out.println();
                 System.out.println("Generated test file: " + writtenPath);
