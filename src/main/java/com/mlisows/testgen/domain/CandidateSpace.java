@@ -39,17 +39,25 @@ public final class CandidateSpace {
         private final String ownerId;
         private final String argumentName;
         private final String type;
+        private final int argumentIndex;
 
         public CandidateValueSlot(
                 CandidateValueSlotKind kind,
                 String ownerId,
                 String argumentName,
-                String type
+                String type,
+                int argumentIndex
         ) {
             this.kind = Objects.requireNonNull(kind, "kind must not be null");
             this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");
             this.argumentName = Objects.requireNonNull(argumentName, "argumentName must not be null");
             this.type = Objects.requireNonNull(type, "type must not be null");
+
+            if (argumentIndex < 0) {
+                throw new IllegalArgumentException("argumentIndex must not be negative");
+            }
+
+            this.argumentIndex = argumentIndex;
         }
 
         public CandidateValueSlotKind getKind() {
@@ -66,6 +74,10 @@ public final class CandidateSpace {
 
         public String getType() {
             return type;
+        }
+
+        public int getArgumentIndex() {
+            return argumentIndex;
         }
 
         public String id() {

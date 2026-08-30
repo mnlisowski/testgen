@@ -34,6 +34,7 @@ class CandidateSpaceTest {
         assertEquals(pool, foundPool.get());
         assertEquals("sample.Calculator.calculate.amount", foundPool.get().getSlot().id());
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, foundPool.get().getSlot().getKind());
+        assertEquals(0, foundPool.get().getSlot().getArgumentIndex());
         assertEquals("int", foundPool.get().getValues().get(0).getType());
         assertEquals("-1", foundPool.get().getValues().get(0).getValue());
     }
@@ -59,7 +60,8 @@ class CandidateSpaceTest {
                 CandidateValueSlotKind.METHOD_ARGUMENT,
                 slotId.substring(0, lastDotIndex),
                 slotId.substring(lastDotIndex + 1),
-                "int"
+                "int",
+                0
         );
 
         return new CandidateValuePool(

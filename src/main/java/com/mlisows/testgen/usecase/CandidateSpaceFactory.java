@@ -85,7 +85,8 @@ public final class CandidateSpaceFactory {
                             CandidateValueSlotKind.METHOD_ARGUMENT,
                             ownerId,
                             parameter.getName(),
-                            parameter.getType()
+                            parameter.getType(),
+                            index
                     ),
                     valuesFor(parameter.getType(), typeIndex, baseValue)
             ));
@@ -145,7 +146,8 @@ public final class CandidateSpaceFactory {
                             CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT,
                             ownerId,
                             parameter.getName(),
-                            parameter.getType()
+                            parameter.getType(),
+                            index
                     ),
                     valuesFor(parameter.getType(), typeIndex, baseValue)
             ));
