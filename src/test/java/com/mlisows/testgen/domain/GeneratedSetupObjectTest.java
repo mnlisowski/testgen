@@ -22,4 +22,18 @@ class GeneratedSetupObjectTest {
         assertEquals("customer", objectCreation.getVariableName());
         assertEquals(List.of(argument), objectCreation.getArguments());
     }
+
+    @Test
+    void shouldKeepConstructorParameterMetadata() {
+        ParameterModel parameter = new ParameterModel("total", "int");
+
+        GeneratedSetupObject setupObject = new GeneratedSetupObject(
+                "Order",
+                "order",
+                List.of(new GeneratedArgument("int", "-1")),
+                List.of(parameter)
+        );
+
+        assertEquals(List.of(parameter), setupObject.getConstructorParameters());
+    }
 }

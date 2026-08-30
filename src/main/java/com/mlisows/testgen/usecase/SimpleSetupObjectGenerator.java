@@ -94,7 +94,8 @@ public final class SimpleSetupObjectGenerator {
                 setupObjects.add(new GeneratedSetupObject(
                         simpleName(className),
                         variableName,
-                        constructorResolution.get().arguments()
+                        constructorResolution.get().arguments(),
+                        constructor.getParameters()
                 ));
 
                 return Optional.of(new SetupObjectResolution(

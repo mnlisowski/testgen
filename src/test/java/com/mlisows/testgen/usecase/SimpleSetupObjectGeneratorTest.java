@@ -80,6 +80,37 @@ class SimpleSetupObjectGeneratorTest {
         assertEquals("sample.CustomerType.REGULAR", setupObject.get().getArguments().get(0).getValue());
     }
 
+
+    @Test
+    void shouldKeepConstructorParametersInGeneratedSetupObject() {
+        ClassStructure order = new ClassStructure(
+                "sample.Order",
+                List.of(new ConstructorModel(
+                        true,
+                        List.of(
+                                new ParameterModel("total", "int"),
+                                new ParameterModel("code", "String")
+                        )
+                )),
+                List.of()
+        );
+
+        SimpleSetupObjectGenerator generator = new SimpleSetupObjectGenerator(new SeedValueGenerator());
+
+        Optional<GeneratedSetupObject> setupObject = generator.generate(
+                new ParameterModel("order", "Order"),
+                new ProjectClassStructureIndex(List.of(order)),
+                new ProjectTypeIndex(List.of())
+        );
+
+        assertTrue(setupObject.isPresent());
+        assertEquals(2, setupObject.get().getConstructorParameters().size());
+        assertEquals("total", setupObject.get().getConstructorParameters().get(0).getName());
+        assertEquals("int", setupObject.get().getConstructorParameters().get(0).getType());
+        assertEquals("code", setupObject.get().getConstructorParameters().get(1).getName());
+        assertEquals("String", setupObject.get().getConstructorParameters().get(1).getType());
+    }
+
     @Test
     void shouldReturnEmptyWhenTypeIsNotProjectClass() {
         SimpleSetupObjectGenerator generator = new SimpleSetupObjectGenerator(new SeedValueGenerator());

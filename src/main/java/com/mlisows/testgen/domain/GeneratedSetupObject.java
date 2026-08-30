@@ -7,11 +7,25 @@ public final class GeneratedSetupObject {
     private final String type;
     private final String variableName;
     private final List<GeneratedArgument> arguments;
+    private final List<ParameterModel> constructorParameters;
 
     public GeneratedSetupObject(String type, String variableName, List<GeneratedArgument> arguments) {
+        this(type, variableName, arguments, List.of());
+    }
+
+    public GeneratedSetupObject(
+            String type,
+            String variableName,
+            List<GeneratedArgument> arguments,
+            List<ParameterModel> constructorParameters
+    ) {
         this.type = Objects.requireNonNull(type, "type must not be null");
         this.variableName = Objects.requireNonNull(variableName, "variableName must not be null");
         this.arguments = List.copyOf(Objects.requireNonNull(arguments, "arguments must not be null"));
+        this.constructorParameters = List.copyOf(Objects.requireNonNull(
+                constructorParameters,
+                "constructorParameters must not be null"
+        ));
     }
 
     public String getType() {
@@ -24,5 +38,9 @@ public final class GeneratedSetupObject {
 
     public List<GeneratedArgument> getArguments() {
         return arguments;
+    }
+
+    public List<ParameterModel> getConstructorParameters() {
+        return constructorParameters;
     }
 }
