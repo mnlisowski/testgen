@@ -13,6 +13,7 @@ import com.github.javaparser.ast.stmt.WhileStmt;
 import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
+import com.mlisows.testgen.domain.StaticArgumentValueHint;
 import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.github.javaparser.ast.stmt.SwitchEntry;
@@ -41,6 +42,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
 
         List<CoverageGoal> coverageGoals = new ArrayList<>();
+        List<StaticArgumentValueHint> staticArgumentValueHints = new ArrayList<>();
         List<MethodDeclaration> methods = classDeclaration.getMethods();
 
         for (MethodDeclaration method : methods) {
@@ -50,7 +52,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             collectSwitchGoals(className, method, coverageGoals);
         }
 
-        return new ClassAnalysisResult(className, coverageGoals);
+        return new ClassAnalysisResult(className, coverageGoals, staticArgumentValueHints);
     }
 
     private CompilationUnit parseSource(Path sourcePath) {
