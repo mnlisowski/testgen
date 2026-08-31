@@ -240,6 +240,51 @@ class JavaParserBranchInstrumenterTest {
         ));
     }
 
+    @Test
+    void shouldInstrumentSwitchBranchesUsingCoverageGoals() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int calculate(int level) {
+                          switch (level) {
+                              case 1:
+                                  return 10;
+                              case 2:
+                                  return 20;
+                              default:
+                                  return 0;
+                          }
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.CASE, "1"),
+                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.CASE, "2"),
+                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.DEFAULT, "")
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.calculate.L5.SWITCH.CASE.1\")"
+        ));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.calculate.L5.SWITCH.CASE.2\")"
+        ));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.calculate.L5.SWITCH.DEFAULT\")"
+        ));
+    }
+
     private static CoverageGoal goal(
             String className,
             String methodName,
@@ -256,6 +301,17 @@ class JavaParserBranchInstrumenterTest {
             BranchKind branchKind,
             BranchType branchType
     ) {
+        return goal(className, methodName, lineNumber, branchKind, branchType, "");
+    }
+
+    private static CoverageGoal goal(
+            String className,
+            String methodName,
+            int lineNumber,
+            BranchKind branchKind,
+            BranchType branchType,
+            String discriminator
+    ) {
         return new CoverageGoal(
                 new BranchId(
                         className,
@@ -263,7 +319,7 @@ class JavaParserBranchInstrumenterTest {
                         lineNumber,
                         branchKind,
                         branchType,
-                        ""
+                        discriminator
                 ),
                 ""
         );

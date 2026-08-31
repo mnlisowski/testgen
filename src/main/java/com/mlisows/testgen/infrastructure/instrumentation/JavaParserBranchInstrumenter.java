@@ -11,6 +11,8 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
@@ -207,14 +209,74 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             );
         }
 
+        @Override
+        public Visitable visit(SwitchStmt switchStatement, Void argument) {
+            super.visit(switchStatement, argument);
+
+            Optional<MethodDeclaration> method = switchStatement.findAncestor(MethodDeclaration.class);
+
+            if (method.isEmpty()) {
+                return switchStatement;
+            }
+
+            int lineNumber = switchStatement.getBegin()
+                    .orElseThrow(() -> new IllegalStateException("Switch statement has no source position"))
+                    .line;
+
+            for (SwitchEntry entry : switchStatement.getEntries()) {
+                Optional<CoverageGoal> goal = findSwitchGoal(
+                        method.get().getNameAsString(),
+                        lineNumber,
+                        entry
+                );
+
+                goal.ifPresent(coverageGoal -> entry.getStatements().add(
+                        0,
+                        hitStatement(coverageGoal.getBranchId().asString())
+                ));
+            }
+
+            return switchStatement;
+        }
+
+        private Optional<CoverageGoal> findSwitchGoal(
+                String methodName,
+                int lineNumber,
+                SwitchEntry entry
+        ) {
+            if (entry.getLabels().isEmpty()) {
+                return findGoal(methodName, lineNumber, BranchKind.SWITCH, BranchType.DEFAULT, "");
+            }
+
+            String discriminator = entry.getLabels().get(0).toString();
+            return findGoal(methodName, lineNumber, BranchKind.SWITCH, BranchType.CASE, discriminator);
+        }
+
         private Optional<CoverageGoal> findGoal(
                 String methodName,
                 int lineNumber,
                 BranchKind branchKind,
                 BranchType branchType
         ) {
+            return findGoal(methodName, lineNumber, branchKind, branchType, "");
+        }
+
+        private Optional<CoverageGoal> findGoal(
+                String methodName,
+                int lineNumber,
+                BranchKind branchKind,
+                BranchType branchType,
+                String discriminator
+        ) {
             return coverageGoals.stream()
-                    .filter(goal -> matchesGoal(goal.getBranchId(), methodName, lineNumber, branchKind, branchType))
+                    .filter(goal -> matchesGoal(
+                            goal.getBranchId(),
+                            methodName,
+                            lineNumber,
+                            branchKind,
+                            branchType,
+                            discriminator
+                    ))
                     .findFirst();
         }
 
@@ -223,12 +285,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                 String methodName,
                 int lineNumber,
                 BranchKind branchKind,
-                BranchType branchType
+                BranchType branchType,
+                String discriminator
         ) {
             return branchId.getMethodName().equals(methodName)
                     && branchId.getLineNumber() == lineNumber
                     && branchId.getBranchKind() == branchKind
-                    && branchId.getBranchType() == branchType;
+                    && branchId.getBranchType() == branchType
+                    && branchId.getDiscriminator().equals(discriminator);
         }
 
         private Statement withHitFirst(Statement statement, String branchId) {
