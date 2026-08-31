@@ -248,8 +248,17 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                 return findGoal(methodName, lineNumber, BranchKind.SWITCH, BranchType.DEFAULT, "");
             }
 
-            String discriminator = entry.getLabels().get(0).toString();
+            String discriminator = switchLabelDiscriminator(entry.getLabels().get(0));
             return findGoal(methodName, lineNumber, BranchKind.SWITCH, BranchType.CASE, discriminator);
+
+        }
+
+        private String switchLabelDiscriminator(Expression expression) {
+            if (expression.isStringLiteralExpr()) {
+                return expression.asStringLiteralExpr().asString();
+            }
+
+            return expression.toString();
         }
 
         private Optional<CoverageGoal> findGoal(

@@ -7,6 +7,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.mlisows.testgen.domain.BranchId;
@@ -161,7 +162,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
                     CoverageGoal defaultGoal = new CoverageGoal(defaultBranchId, selector);
                     coverageGoals.add(defaultGoal);
                 } else {
-                    String discriminator = entry.getLabels().get(0).toString();
+                    String discriminator = switchLabelDiscriminator(entry.getLabels().get(0));
 
                     BranchId caseBranchId = new BranchId(
                             className,
@@ -179,6 +180,12 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         }
     }
 
+    private String switchLabelDiscriminator(Expression expression) {
+        if (expression.isStringLiteralExpr()) {
+            return expression.asStringLiteralExpr().asString();
+        }
 
+        return expression.toString();
+    }
 
 }
