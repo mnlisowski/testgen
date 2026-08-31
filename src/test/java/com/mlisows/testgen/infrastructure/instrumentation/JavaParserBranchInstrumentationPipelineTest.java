@@ -44,10 +44,6 @@ class JavaParserBranchInstrumentationPipelineTest {
 
         String instrumentedSource = Files.readString(outputPath);
 
-        System.out.println(outputPath);
-        System.out.println(Files.readString(outputPath));
-
-
         assertTrue(instrumentedSource.contains(
                 "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.calculate.L5.IF.TRUE\")"
         ));

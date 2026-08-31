@@ -23,7 +23,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class JavaParserBranchInstrumentationRuntimeTest {
+class SJavaParserBranchInstrumentationRuntimeTest {
 
     @TempDir
     Path tempDir;
