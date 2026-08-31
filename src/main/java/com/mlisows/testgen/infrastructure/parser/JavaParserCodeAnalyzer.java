@@ -19,6 +19,9 @@ import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.mlisows.testgen.domain.BranchKind;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,6 +53,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             collectForGoals(className, method, coverageGoals);
             collectWhileGoals(className, method, coverageGoals);
             collectSwitchGoals(className, method, coverageGoals);
+            collectNumericStaticArgumentValueHints(className, method, staticArgumentValueHints);
         }
 
         return new ClassAnalysisResult(className, coverageGoals, staticArgumentValueHints);
@@ -177,7 +181,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
                     CoverageGoal defaultGoal = new CoverageGoal(defaultBranchId, selector);
                     coverageGoals.add(defaultGoal);
                 } else {
-                    String discriminator = switchLabelDiscriminator(entry.getLabels().get(0));
+                    String discriminator = entry.getLabels().get(0).toString();
 
                     BranchId caseBranchId = new BranchId(
                             className,
@@ -203,4 +207,27 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         return expression.toString();
     }
 
+    private void collectNumericStaticArgumentValueHints(
+            String className,
+            MethodDeclaration method,
+            List<StaticArgumentValueHint> hints
+    ) {
+        for (IfStmt ifStatement : method.findAll(IfStmt.class)) {
+            collectNumericExpressionHints(className, method, ifStatement.getCondition(), hints);
+        }
+    }
+
+    private void collectNumericExpressionHints(
+            String className,
+            MethodDeclaration method,
+            Expression expression,
+            List<StaticArgumentValueHint> hints
+    ) {
+        if (!expression.isBinaryExpr()) {
+            return;
+        }
+
+        BinaryExpr binaryExpression = expression.asBinaryExpr();
+
+    }
 }
