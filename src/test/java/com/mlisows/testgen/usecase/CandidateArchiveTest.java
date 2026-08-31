@@ -28,7 +28,7 @@ class CandidateArchiveTest {
         assertTrue(added);
         assertEquals(List.of(result), archive.getSelectedResults());
         assertTrue(archive.getCoveredBranchIds().contains(
-                "sample.Calculator.calculate.L10.IF.TRUE.TRUE"
+                "sample.Calculator|calculate|10|IF|TRUE|TRUE"
         ));
     }
 

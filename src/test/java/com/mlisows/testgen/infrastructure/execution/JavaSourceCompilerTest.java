@@ -27,7 +27,7 @@ class JavaSourceCompilerTest {
 
                   public class Calculator {
                       public int calculate(int amount) {
-                          com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit("sample.Calculator.calculate.L5.IF.TRUE");
+                          com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit("sample.Calculator|calculate|5|IF|TRUE");
                           return amount;
                       }
                   }

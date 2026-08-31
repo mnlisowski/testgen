@@ -49,14 +49,13 @@ public final class BranchId {
     }
 
     public String asString() {
-        String baseId = className + "." + methodName + ".L" + lineNumber + "." + branchKind + "." + branchType;
-
+        String baseId = className + "|" + methodName + "|" + lineNumber + "|" + branchKind + "|" + branchType;
 
         if (discriminator.isEmpty()) {
             return baseId;
         }
 
-        return baseId + "." + discriminator;
+        return baseId + "|" + discriminator;
     }
 
 

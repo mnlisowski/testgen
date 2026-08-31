@@ -17,25 +17,25 @@ class BranchRecorderTest {
 
     @Test
     void shouldRecordBranchHit() {
-        BranchRecorder.hit("sample.Calculator.calculate.L10.IF.TRUE");
+        BranchRecorder.hit("sample.Calculator|calculate|10|IF|TRUE");
 
         assertEquals(Map.of(
-                "sample.Calculator.calculate.L10.IF.TRUE",
+                "sample.Calculator|calculate|10|IF|TRUE",
                 1
         ), BranchRecorder.snapshot());
     }
 
     @Test
     void shouldCountMultipleHitsForSameBranch() {
-        BranchRecorder.hit("sample.Calculator.calculate.L10.IF.TRUE");
-        BranchRecorder.hit("sample.Calculator.calculate.L10.IF.TRUE");
+        BranchRecorder.hit("sample.Calculator|calculate|10|IF|TRUE");
+        BranchRecorder.hit("sample.Calculator|calculate|10|IF|TRUE");
 
-        assertEquals(2, BranchRecorder.snapshot().get("sample.Calculator.calculate.L10.IF.TRUE"));
+        assertEquals(2, BranchRecorder.snapshot().get("sample.Calculator|calculate|10|IF|TRUE"));
     }
 
     @Test
     void shouldResetRecordedHits() {
-        BranchRecorder.hit("sample.Calculator.calculate.L10.IF.TRUE");
+        BranchRecorder.hit("sample.Calculator|calculate|10|IF|TRUE");
 
         BranchRecorder.reset();
 
