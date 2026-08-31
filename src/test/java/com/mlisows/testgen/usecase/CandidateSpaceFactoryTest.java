@@ -13,6 +13,7 @@ import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.StaticArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
@@ -61,6 +62,53 @@ class CandidateSpaceFactoryTest {
         assertEquals("int", amountPool.getSlot().getType());
         assertValues(amountPool, "-1", "0", "1", "10", "100");
         assertTiers(amountPool,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK
+        );
+    }
+
+
+    @Test
+    void shouldAddStaticHintsAsExactMethodArgumentValues() {
+        MethodModel method = new MethodModel(
+                "calculate",
+                "int",
+                true,
+                List.of(new ParameterModel("amount", "int"))
+        );
+
+        ClassStructure calculator = new ClassStructure(
+                "sample.Calculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(method)
+        );
+
+        Optional<CandidateSpace> candidateSpace = new CandidateSpaceFactory().create(
+                calculator,
+                method,
+                new ProjectTypeIndex(List.of()),
+                new ProjectClassStructureIndex(List.of(calculator)),
+                List.of(new StaticArgumentValueHint(
+                        "sample.Calculator.calculate",
+                        "amount",
+                        "int",
+                        "101",
+                        "direct-static-condition"
+                ))
+        );
+
+        assertTrue(candidateSpace.isPresent());
+
+        CandidateValuePool amountPool = candidateSpace.get()
+                .findPoolBySlotId("sample.Calculator.calculate.amount")
+                .orElseThrow();
+
+        assertValues(amountPool, "101", "-1", "0", "1", "10", "100");
+        assertTiers(amountPool,
+                CandidateValueTier.EXACT,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,

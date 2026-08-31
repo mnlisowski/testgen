@@ -4,6 +4,7 @@ import com.mlisows.testgen.domain.BranchKind;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.StaticArgumentValueHint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -159,6 +160,95 @@ class JavaParserCodeAnalyzerTest {
                 .toList();
 
         assertEquals(List.of("calculate"), methodNames);
+    }
+
+    @Test
+    void shouldCollectBoundaryHintsForDirectNumericParameterCondition() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+
+        Files.writeString(sourcePath, """
+                package sample;
+
+                public class Calculator {
+                    int calculate(int amount) {
+                        if (amount > 100) {
+                            return 10;
+                        }
+                        return 0;
+                    }
+                }
+                """);
+
+        ClassAnalysisResult result = new JavaParserCodeAnalyzer().analyze(sourcePath);
+
+        assertEquals(
+                List.of("99", "100", "101"),
+                valuesForSlot(result, "sample.Calculator.calculate.amount")
+        );
+    }
+
+    @Test
+    void shouldCollectStringHintsForDirectMethodCallCondition() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+
+        Files.writeString(sourcePath, """
+                package sample;
+
+                public class Calculator {
+                    int calculate(String status) {
+                        if (status.equals("VIP")) {
+                            return 10;
+                        }
+                        if ("BLOCKED".equals(status)) {
+                            return -1;
+                        }
+                        return 0;
+                    }
+                }
+                """);
+
+        ClassAnalysisResult result = new JavaParserCodeAnalyzer().analyze(sourcePath);
+
+        assertEquals(
+                List.of("\"VIP\"", "\"BLOCKED\""),
+                valuesForSlot(result, "sample.Calculator.calculate.status")
+        );
+    }
+
+    @Test
+    void shouldCollectSwitchCaseHintsForSelectorParameter() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+
+        Files.writeString(sourcePath, """
+                package sample;
+
+                public class Calculator {
+                    int calculate(int level) {
+                        switch (level) {
+                            case 1:
+                                return 10;
+                            case 2:
+                                return 20;
+                            default:
+                                return 0;
+                        }
+                    }
+                }
+                """);
+
+        ClassAnalysisResult result = new JavaParserCodeAnalyzer().analyze(sourcePath);
+
+        assertEquals(
+                List.of("1", "2"),
+                valuesForSlot(result, "sample.Calculator.calculate.level")
+        );
+    }
+
+    private static List<String> valuesForSlot(ClassAnalysisResult result, String slotId) {
+        return result.getStaticArgumentValueHints().stream()
+                .filter(hint -> hint.slotId().equals(slotId))
+                .map(StaticArgumentValueHint::getValue)
+                .toList();
     }
 
 
