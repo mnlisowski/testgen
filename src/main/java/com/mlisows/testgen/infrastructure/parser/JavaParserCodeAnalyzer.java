@@ -56,6 +56,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             collectSwitchGoals(className, method, coverageGoals);
             collectNumericStaticArgumentValueHints(className, method, staticArgumentValueHints);
             collectStringStaticArgumentValueHints(className, method, staticArgumentValueHints);
+            collectSwitchStaticArgumentValueHints(className, method, staticArgumentValueHints);
         }
 
         return new ClassAnalysisResult(className, coverageGoals, staticArgumentValueHints);
@@ -347,6 +348,37 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
                             hints,
                             hint(className, method, parameter, scope.toString(), "direct-static-call")
                     ));
+        }
+    }
+
+    private void collectSwitchStaticArgumentValueHints(
+            String className,
+            MethodDeclaration method,
+            List<StaticArgumentValueHint> hints
+    ) {
+        for (SwitchStmt switchStatement : method.findAll(SwitchStmt.class)) {
+            Optional<Parameter> selectorParameter = directParameterReference(switchStatement.getSelector(), method);
+
+            if (selectorParameter.isEmpty()) {
+                continue;
+            }
+
+            for (SwitchEntry entry : switchStatement.getEntries()) {
+                for (Expression label : entry.getLabels()) {
+                    if (isSupportedLiteral(label)) {
+                        addHintIfMissing(
+                                hints,
+                                hint(
+                                        className,
+                                        method,
+                                        selectorParameter.get(),
+                                        label.toString(),
+                                        "static-switch-case"
+                                )
+                        );
+                    }
+                }
+            }
         }
     }
 
