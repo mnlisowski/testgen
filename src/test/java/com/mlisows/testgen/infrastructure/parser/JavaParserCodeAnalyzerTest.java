@@ -5,7 +5,9 @@ import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.CoverageGoal;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -13,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaParserCodeAnalyzerTest {
 
+    @TempDir
+    Path tempDir;
 
     @Test
     void shouldDetectCoverageGoalsForLoopStatements() {
@@ -107,6 +111,54 @@ class JavaParserCodeAnalyzerTest {
 
         assertEquals(3, caseGoalsCount);
         assertEquals(1, defaultGoalsCount);
+    }
+
+    @Test
+    void shouldAnalyzeSourceClassMatchingFileNameAndIgnoreInnerClassMethods() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+
+        Files.writeString(sourcePath, """
+                package sample;
+
+                class Helper {
+                    int ignored(int amount) {
+                        if (amount > 0) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                }
+
+                public class Calculator {
+                    int calculate(int amount) {
+                        if (amount > 100) {
+                            return 10;
+                        }
+                        return 0;
+                    }
+
+                    class Inner {
+                        int ignoredInner(int amount) {
+                            if (amount > 5) {
+                                return 1;
+                            }
+                            return 0;
+                        }
+                    }
+                }
+                """);
+
+        ClassAnalysisResult result = new JavaParserCodeAnalyzer().analyze(sourcePath);
+
+        assertEquals("sample.Calculator", result.getClassName());
+        assertEquals(2, result.getCoverageGoals().size());
+
+        List<String> methodNames = result.getCoverageGoals().stream()
+                .map(goal -> goal.getBranchId().getMethodName())
+                .distinct()
+                .toList();
+
+        assertEquals(List.of("calculate"), methodNames);
     }
 
 

@@ -41,7 +41,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
 
         List<CoverageGoal> coverageGoals = new ArrayList<>();
-        List<MethodDeclaration> methods = classDeclaration.findAll(MethodDeclaration.class);
+        List<MethodDeclaration> methods = classDeclaration.getMethods();
 
         for (MethodDeclaration method : methods) {
             collectIfGoals(className, method, coverageGoals);
@@ -62,14 +62,27 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private ClassOrInterfaceDeclaration findClassDeclaration(CompilationUnit compilationUnit, Path sourcePath) {
-        Optional<ClassOrInterfaceDeclaration> classDeclaration =
-                compilationUnit.findFirst(ClassOrInterfaceDeclaration.class);
+        List<ClassOrInterfaceDeclaration> topLevelClasses = compilationUnit.findAll(ClassOrInterfaceDeclaration.class)
+                .stream()
+                .filter(this::isTopLevel)
+                .toList();
 
-        if (classDeclaration.isEmpty()) {
+        if (topLevelClasses.isEmpty()) {
             throw new IllegalArgumentException("No class found in source file: " + sourcePath);
         }
 
-        return classDeclaration.get();
+        String fileName = sourcePath.getFileName().toString().replaceFirst("\\.java$", "");
+
+        return topLevelClasses.stream()
+                .filter(classDeclaration -> classDeclaration.getNameAsString().equals(fileName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No top-level class matching file name found in source file: " + sourcePath
+                ));
+    }
+
+    private boolean isTopLevel(ClassOrInterfaceDeclaration classDeclaration) {
+        return classDeclaration.findAncestor(ClassOrInterfaceDeclaration.class).isEmpty();
     }
 
     private void collectIfGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
