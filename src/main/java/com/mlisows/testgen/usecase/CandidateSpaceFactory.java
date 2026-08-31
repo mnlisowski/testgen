@@ -13,6 +13,7 @@ import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.StaticArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TypeKind;
 
@@ -46,10 +47,21 @@ public final class CandidateSpaceFactory {
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex
     ) {
+        return create(classStructure, method, typeIndex, classIndex, List.of());
+    }
+
+    public Optional<CandidateSpace> create(
+            ClassStructure classStructure,
+            MethodModel method,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
+            List<StaticArgumentValueHint> staticHints
+    ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
         Objects.requireNonNull(classIndex, "classIndex must not be null");
+        Objects.requireNonNull(staticHints, "staticHints must not be null");
 
         Optional<TestCandidate> baseCandidate = initialCandidateFactory.create(
                 classStructure,
@@ -63,8 +75,8 @@ public final class CandidateSpaceFactory {
         }
 
         List<CandidateValuePool> valuePools = new ArrayList<>();
-        valuePools.addAll(methodArgumentPools(classStructure, method, baseCandidate.get(), typeIndex));
-        valuePools.addAll(setupObjectArgumentPools(baseCandidate.get(), classIndex, typeIndex));
+        valuePools.addAll(methodArgumentPools(classStructure, method, baseCandidate.get(), typeIndex, staticHints));
+        valuePools.addAll(setupObjectArgumentPools(baseCandidate.get(), classIndex, typeIndex, staticHints));
 
         return Optional.of(new CandidateSpace(baseCandidate.get(), valuePools));
     }
@@ -73,7 +85,8 @@ public final class CandidateSpaceFactory {
             ClassStructure classStructure,
             MethodModel method,
             TestCandidate baseCandidate,
-            ProjectTypeIndex typeIndex
+            ProjectTypeIndex typeIndex,
+            List<StaticArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = classStructure.getClassName() + "." + method.getName();
@@ -82,15 +95,17 @@ public final class CandidateSpaceFactory {
             ParameterModel parameter = method.getParameters().get(index);
             GeneratedArgument baseValue = baseCandidate.getMethodArguments().get(index);
 
+            CandidateValueSlot slot = new CandidateValueSlot(
+                    CandidateValueSlotKind.METHOD_ARGUMENT,
+                    ownerId,
+                    parameter.getName(),
+                    parameter.getType(),
+                    index
+            );
+
             pools.add(new CandidateValuePool(
-                    new CandidateValueSlot(
-                            CandidateValueSlotKind.METHOD_ARGUMENT,
-                            ownerId,
-                            parameter.getName(),
-                            parameter.getType(),
-                            index
-                    ),
-                    optionsFor(parameter.getType(), typeIndex, baseValue)
+                    slot,
+                    optionsFor(parameter.getType(), typeIndex, baseValue, staticHints, slot.id())
             ));
         }
 
@@ -100,7 +115,8 @@ public final class CandidateSpaceFactory {
     private List<CandidateValuePool> setupObjectArgumentPools(
             TestCandidate baseCandidate,
             ProjectClassStructureIndex classIndex,
-            ProjectTypeIndex typeIndex
+            ProjectTypeIndex typeIndex,
+            List<StaticArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
 
@@ -123,7 +139,8 @@ public final class CandidateSpaceFactory {
                     setupClassName,
                     constructorParameters,
                     setupObject.getArguments(),
-                    typeIndex
+                    typeIndex,
+                    staticHints
             ));
         }
 
@@ -134,7 +151,8 @@ public final class CandidateSpaceFactory {
             String setupClassName,
             List<ParameterModel> constructorParameters,
             List<GeneratedArgument> arguments,
-            ProjectTypeIndex typeIndex
+            ProjectTypeIndex typeIndex,
+            List<StaticArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = setupClassName + ".<init>";
@@ -143,15 +161,17 @@ public final class CandidateSpaceFactory {
             ParameterModel parameter = constructorParameters.get(index);
             GeneratedArgument baseValue = arguments.get(index);
 
+            CandidateValueSlot slot = new CandidateValueSlot(
+                    CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT,
+                    ownerId,
+                    parameter.getName(),
+                    parameter.getType(),
+                    index
+            );
+
             pools.add(new CandidateValuePool(
-                    new CandidateValueSlot(
-                            CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT,
-                            ownerId,
-                            parameter.getName(),
-                            parameter.getType(),
-                            index
-                    ),
-                    optionsFor(parameter.getType(), typeIndex, baseValue)
+                    slot,
+                    optionsFor(parameter.getType(), typeIndex, baseValue, staticHints, slot.id())
             ));
         }
 
@@ -161,9 +181,22 @@ public final class CandidateSpaceFactory {
     private List<CandidateValueOption> optionsFor(
             String type,
             ProjectTypeIndex typeIndex,
-            GeneratedArgument baseValue
+            GeneratedArgument baseValue,
+            List<StaticArgumentValueHint> staticHints,
+            String slotId
     ) {
         List<CandidateValueOption> options = new ArrayList<>();
+
+        staticHints.stream()
+                .filter(hint -> hint.slotId().equals(slotId))
+                .filter(hint -> hint.getType().equals(type))
+                .forEach(hint -> addIfMissing(
+                        options,
+                        new GeneratedArgument(type, hint.getValue()),
+                        CandidateValueTier.EXACT,
+                        hint.getSource()
+                ));
+
         addIfMissing(options, baseValue, CandidateValueTier.FALLBACK, "base-candidate");
 
         for (String seedValue : seedValueGenerator.seedValuesFor(type)) {
