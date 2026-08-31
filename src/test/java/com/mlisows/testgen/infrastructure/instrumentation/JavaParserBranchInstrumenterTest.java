@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JavaParserBranchInstrumenterTest {
@@ -160,7 +161,83 @@ class JavaParserBranchInstrumenterTest {
 
         String instrumentedSource = Files.readString(outputPath);
 
-        assertTrue(!instrumentedSource.contains("BranchRecorder.hit"));
+        assertFalse(instrumentedSource.contains("BranchRecorder.hit"));
+    }
+
+    @Test
+    void shouldInstrumentForBranchesUsingCoverageGoals() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int sum(int limit) {
+                          int result = 0;
+                          for (int index = 0; index < limit; index++) {
+                              result += index;
+                          }
+                          return result;
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "sum", 6, BranchKind.FOR, BranchType.TRUE),
+                        goal("sample.Calculator", "sum", 6, BranchKind.FOR, BranchType.FALSE)
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.sum.L6.FOR.TRUE\")"
+        ));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.sum.L6.FOR.FALSE\")"
+        ));
+    }
+
+    @Test
+    void shouldInstrumentWhileBranchesUsingCoverageGoals() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int sum(int limit) {
+                          int result = 0;
+                          while (result < limit) {
+                              result++;
+                          }
+                          return result;
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.TRUE),
+                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.FALSE)
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.sum.L6.WHILE.TRUE\")"
+        ));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator.sum.L6.WHILE.FALSE\")"
+        ));
     }
 
     private static CoverageGoal goal(
@@ -169,16 +246,26 @@ class JavaParserBranchInstrumenterTest {
             int lineNumber,
             BranchType branchType
     ) {
+        return goal(className, methodName, lineNumber, BranchKind.IF, branchType);
+    }
+
+    private static CoverageGoal goal(
+            String className,
+            String methodName,
+            int lineNumber,
+            BranchKind branchKind,
+            BranchType branchType
+    ) {
         return new CoverageGoal(
                 new BranchId(
                         className,
                         methodName,
                         lineNumber,
-                        BranchKind.IF,
+                        branchKind,
                         branchType,
                         ""
                 ),
-                "amount > 100"
+                ""
         );
     }
 }

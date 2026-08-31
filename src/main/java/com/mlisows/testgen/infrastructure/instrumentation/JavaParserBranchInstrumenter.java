@@ -8,8 +8,10 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.mlisows.testgen.domain.BranchId;
@@ -35,7 +37,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
 
         CompilationUnit compilationUnit = parseSource(sourcePath);
 
-        new IfBranchInstrumentationVisitor(coverageGoals).visit(compilationUnit, null);
+        new BranchInstrumentationVisitor(coverageGoals).visit(compilationUnit, null);
 
         writeInstrumentedSource(compilationUnit, outputPath);
         return outputPath;
@@ -63,10 +65,10 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
         }
     }
 
-    private static final class IfBranchInstrumentationVisitor extends ModifierVisitor<Void> {
+    private static final class BranchInstrumentationVisitor extends ModifierVisitor<Void> {
         private final List<CoverageGoal> coverageGoals;
 
-        private IfBranchInstrumentationVisitor(List<CoverageGoal> coverageGoals) {
+        private BranchInstrumentationVisitor(List<CoverageGoal> coverageGoals) {
             this.coverageGoals = coverageGoals;
         }
 
@@ -87,12 +89,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             Optional<CoverageGoal> trueGoal = findGoal(
                     method.get().getNameAsString(),
                     lineNumber,
+                    BranchKind.IF,
                     BranchType.TRUE
             );
 
             Optional<CoverageGoal> falseGoal = findGoal(
                     method.get().getNameAsString(),
                     lineNumber,
+                    BranchKind.IF,
                     BranchType.FALSE
             );
 
@@ -117,9 +121,100 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             return ifStatement;
         }
 
-        private Optional<CoverageGoal> findGoal(String methodName, int lineNumber, BranchType branchType) {
+        @Override
+        public Visitable visit(ForStmt forStatement, Void argument) {
+            super.visit(forStatement, argument);
+
+            Optional<MethodDeclaration> method = forStatement.findAncestor(MethodDeclaration.class);
+
+            if (method.isEmpty()) {
+                return forStatement;
+            }
+
+            int lineNumber = forStatement.getBegin()
+                    .orElseThrow(() -> new IllegalStateException("For statement has no source position"))
+                    .line;
+
+            Optional<CoverageGoal> trueGoal = findGoal(
+                    method.get().getNameAsString(),
+                    lineNumber,
+                    BranchKind.FOR,
+                    BranchType.TRUE
+            );
+
+            Optional<CoverageGoal> falseGoal = findGoal(
+                    method.get().getNameAsString(),
+                    lineNumber,
+                    BranchKind.FOR,
+                    BranchType.FALSE
+            );
+
+            if (trueGoal.isEmpty() || falseGoal.isEmpty()) {
+                return forStatement;
+            }
+
+            forStatement.setBody(withHitFirst(
+                    forStatement.getBody(),
+                    trueGoal.get().getBranchId().asString()
+            ));
+
+            return blockWithLoopAndFalseHit(
+                    forStatement,
+                    falseGoal.get().getBranchId().asString()
+            );
+        }
+
+        @Override
+        public Visitable visit(WhileStmt whileStatement, Void argument) {
+            super.visit(whileStatement, argument);
+
+            Optional<MethodDeclaration> method = whileStatement.findAncestor(MethodDeclaration.class);
+
+            if (method.isEmpty()) {
+                return whileStatement;
+            }
+
+            int lineNumber = whileStatement.getBegin()
+                    .orElseThrow(() -> new IllegalStateException("While statement has no source position"))
+                    .line;
+
+            Optional<CoverageGoal> trueGoal = findGoal(
+                    method.get().getNameAsString(),
+                    lineNumber,
+                    BranchKind.WHILE,
+                    BranchType.TRUE
+            );
+
+            Optional<CoverageGoal> falseGoal = findGoal(
+                    method.get().getNameAsString(),
+                    lineNumber,
+                    BranchKind.WHILE,
+                    BranchType.FALSE
+            );
+
+            if (trueGoal.isEmpty() || falseGoal.isEmpty()) {
+                return whileStatement;
+            }
+
+            whileStatement.setBody(withHitFirst(
+                    whileStatement.getBody(),
+                    trueGoal.get().getBranchId().asString()
+            ));
+
+            return blockWithLoopAndFalseHit(
+                    whileStatement,
+                    falseGoal.get().getBranchId().asString()
+            );
+        }
+
+        private Optional<CoverageGoal> findGoal(
+                String methodName,
+                int lineNumber,
+                BranchKind branchKind,
+                BranchType branchType
+        ) {
             return coverageGoals.stream()
-                    .filter(goal -> matchesGoal(goal.getBranchId(), methodName, lineNumber, branchType))
+                    .filter(goal -> matchesGoal(goal.getBranchId(), methodName, lineNumber, branchKind, branchType))
                     .findFirst();
         }
 
@@ -127,11 +222,12 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                 BranchId branchId,
                 String methodName,
                 int lineNumber,
+                BranchKind branchKind,
                 BranchType branchType
         ) {
             return branchId.getMethodName().equals(methodName)
                     && branchId.getLineNumber() == lineNumber
-                    && branchId.getBranchKind() == BranchKind.IF
+                    && branchId.getBranchKind() == branchKind
                     && branchId.getBranchType() == branchType;
         }
 
@@ -152,6 +248,13 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
         private BlockStmt blockWithHit(String branchId) {
             BlockStmt block = new BlockStmt();
             block.addStatement(hitStatement(branchId));
+            return block;
+        }
+
+        private Statement blockWithLoopAndFalseHit(Statement loopStatement, String falseBranchId) {
+            BlockStmt block = new BlockStmt();
+            block.addStatement(loopStatement.clone());
+            block.addStatement(hitStatement(falseBranchId));
             return block;
         }
 
