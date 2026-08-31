@@ -22,6 +22,7 @@ import com.mlisows.testgen.domain.BranchKind;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             collectWhileGoals(className, method, coverageGoals);
             collectSwitchGoals(className, method, coverageGoals);
             collectNumericStaticArgumentValueHints(className, method, staticArgumentValueHints);
+            collectStringStaticArgumentValueHints(className, method, staticArgumentValueHints);
         }
 
         return new ClassAnalysisResult(className, coverageGoals, staticArgumentValueHints);
@@ -181,7 +183,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
                     CoverageGoal defaultGoal = new CoverageGoal(defaultBranchId, selector);
                     coverageGoals.add(defaultGoal);
                 } else {
-                    String discriminator = entry.getLabels().get(0).toString();
+                    String discriminator = switchLabelDiscriminator(entry.getLabels().get(0));
 
                     BranchId caseBranchId = new BranchId(
                             className,
@@ -229,5 +231,232 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
         BinaryExpr binaryExpression = expression.asBinaryExpr();
 
+        addNumericHintsForParameterAndLiteral(
+                className,
+                method,
+                binaryExpression.getLeft(),
+                binaryExpression.getRight(),
+                binaryExpression.getOperator(),
+                hints
+        );
+        addNumericHintsForParameterAndLiteral(
+                className,
+                method,
+                binaryExpression.getRight(),
+                binaryExpression.getLeft(),
+                binaryExpression.getOperator(),
+                hints
+        );
+
+        collectNumericExpressionHints(className, method, binaryExpression.getLeft(), hints);
+        collectNumericExpressionHints(className, method, binaryExpression.getRight(), hints);
     }
+
+    private void addNumericHintsForParameterAndLiteral(
+            String className,
+            MethodDeclaration method,
+            Expression possibleParameter,
+            Expression possibleLiteral,
+            BinaryExpr.Operator operator,
+            List<StaticArgumentValueHint> hints
+    ) {
+        Optional<Parameter> parameter = directParameterReference(possibleParameter, method);
+
+        if (parameter.isEmpty() || !isIntegerLikeType(parameter.get().getType().asString())) {
+            return;
+        }
+
+        Optional<Long> literalValue = integerLiteralValue(possibleLiteral);
+
+        if (literalValue.isEmpty() || !isComparisonOperator(operator)) {
+            return;
+        }
+
+        for (String value : valuesForIntegerComparison(operator, literalValue.get())) {
+            addHintIfMissing(
+                    hints,
+                    new StaticArgumentValueHint(
+                            className + "." + method.getNameAsString(),
+                            parameter.get().getNameAsString(),
+                            parameter.get().getType().asString(),
+                            value,
+                            "direct-static-condition"
+                    )
+            );
+        }
+    }
+
+    private void collectStringStaticArgumentValueHints(
+            String className,
+            MethodDeclaration method,
+            List<StaticArgumentValueHint> hints
+    ) {
+        for (IfStmt ifStatement : method.findAll(IfStmt.class)) {
+            collectStringExpressionHints(className, method, ifStatement.getCondition(), hints);
+        }
+    }
+
+    private void collectStringExpressionHints(
+            String className,
+            MethodDeclaration method,
+            Expression expression,
+            List<StaticArgumentValueHint> hints
+    ) {
+        if (expression.isBinaryExpr()) {
+            BinaryExpr binaryExpression = expression.asBinaryExpr();
+            collectStringExpressionHints(className, method, binaryExpression.getLeft(), hints);
+            collectStringExpressionHints(className, method, binaryExpression.getRight(), hints);
+            return;
+        }
+
+        if (expression.isMethodCallExpr()) {
+            collectMethodCallStringHints(className, method, expression.asMethodCallExpr(), hints);
+        }
+    }
+
+    private void collectMethodCallStringHints(
+            String className,
+            MethodDeclaration method,
+            MethodCallExpr methodCall,
+            List<StaticArgumentValueHint> hints
+    ) {
+        if (!isStringValueHintMethod(methodCall.getNameAsString()) || methodCall.getScope().isEmpty()) {
+            return;
+        }
+
+        Expression scope = methodCall.getScope().get();
+        Optional<Parameter> scopedParameter = directParameterReference(scope, method);
+
+        if (scopedParameter.isPresent()) {
+            for (Expression argument : methodCall.getArguments()) {
+                if (isSupportedLiteral(argument)) {
+                    addHintIfMissing(
+                            hints,
+                            hint(className, method, scopedParameter.get(), argument.toString(), "direct-static-call")
+                    );
+                }
+            }
+            return;
+        }
+
+        if (isEqualsMethod(methodCall.getNameAsString()) && isSupportedLiteral(scope)) {
+            methodCall.getArguments().stream()
+                    .map(argument -> directParameterReference(argument, method))
+                    .flatMap(Optional::stream)
+                    .forEach(parameter -> addHintIfMissing(
+                            hints,
+                            hint(className, method, parameter, scope.toString(), "direct-static-call")
+                    ));
+        }
+    }
+
+    private Optional<Parameter> directParameterReference(Expression expression, MethodDeclaration method) {
+        if (!expression.isNameExpr()) {
+            return Optional.empty();
+        }
+
+        String name = expression.asNameExpr().getNameAsString();
+
+        return method.getParameters().stream()
+                .filter(parameter -> parameter.getNameAsString().equals(name))
+                .findFirst();
+    }
+
+    private Optional<Long> integerLiteralValue(Expression expression) {
+        if (!expression.isIntegerLiteralExpr() && !expression.isLongLiteralExpr()) {
+            return Optional.empty();
+        }
+
+        try {
+            String literal = expression.toString()
+                    .replace("_", "")
+                    .replaceAll("[lL]$", "");
+
+            return Optional.of(Long.parseLong(literal));
+        } catch (NumberFormatException exception) {
+            return Optional.empty();
+        }
+    }
+
+    private boolean isComparisonOperator(BinaryExpr.Operator operator) {
+        return operator == BinaryExpr.Operator.GREATER
+                || operator == BinaryExpr.Operator.GREATER_EQUALS
+                || operator == BinaryExpr.Operator.LESS
+                || operator == BinaryExpr.Operator.LESS_EQUALS
+                || operator == BinaryExpr.Operator.EQUALS
+                || operator == BinaryExpr.Operator.NOT_EQUALS;
+    }
+
+    private List<String> valuesForIntegerComparison(BinaryExpr.Operator operator, long value) {
+        if (isOrderedComparison(operator)) {
+            return List.of(
+                    Long.toString(value - 1),
+                    Long.toString(value),
+                    Long.toString(value + 1)
+            );
+        }
+
+        return List.of(Long.toString(value));
+    }
+
+    private boolean isOrderedComparison(BinaryExpr.Operator operator) {
+        return operator == BinaryExpr.Operator.GREATER
+                || operator == BinaryExpr.Operator.GREATER_EQUALS
+                || operator == BinaryExpr.Operator.LESS
+                || operator == BinaryExpr.Operator.LESS_EQUALS;
+    }
+
+    private boolean isIntegerLikeType(String type) {
+        return type.equals("int")
+                || type.equals("long")
+                || type.equals("Integer")
+                || type.equals("Long")
+                || type.equals("java.lang.Integer")
+                || type.equals("java.lang.Long");
+    }
+
+    private boolean isSupportedLiteral(Expression expression) {
+        return expression.isLiteralExpr() && !expression.isNullLiteralExpr();
+    }
+
+    private boolean isStringValueHintMethod(String methodName) {
+        return isEqualsMethod(methodName)
+                || methodName.equals("contains")
+                || methodName.equals("startsWith")
+                || methodName.equals("endsWith");
+    }
+
+    private boolean isEqualsMethod(String methodName) {
+        return methodName.equals("equals") || methodName.equals("equalsIgnoreCase");
+    }
+
+    private StaticArgumentValueHint hint(
+            String className,
+            MethodDeclaration method,
+            Parameter parameter,
+            String value,
+            String source
+    ) {
+        return new StaticArgumentValueHint(
+                className + "." + method.getNameAsString(),
+                parameter.getNameAsString(),
+                parameter.getType().asString(),
+                value,
+                source
+        );
+    }
+
+    private void addHintIfMissing(
+            List<StaticArgumentValueHint> hints,
+            StaticArgumentValueHint candidate
+    ) {
+        boolean alreadyExists = hints.stream()
+                .anyMatch(hint -> hint.slotId().equals(candidate.slotId())
+                        && hint.getType().equals(candidate.getType())
+                        && hint.getValue().equals(candidate.getValue()));
+
+        if (!alreadyExists) {
+            hints.add(candidate);
+        }
+  }
 }
