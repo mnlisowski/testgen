@@ -34,6 +34,36 @@ public final class CandidateSpace {
         SETUP_OBJECT_ARGUMENT
     }
 
+    public enum CandidateValueTier {
+        EXACT,
+        RELATED,
+        FALLBACK
+    }
+
+    public static final class CandidateValueOption {
+        private final GeneratedArgument argument;
+        private final CandidateValueTier tier;
+        private final String source;
+
+        public CandidateValueOption(GeneratedArgument argument, CandidateValueTier tier, String source) {
+            this.argument = Objects.requireNonNull(argument, "argument must not be null");
+            this.tier = Objects.requireNonNull(tier, "tier must not be null");
+            this.source = Objects.requireNonNull(source, "source must not be null");
+        }
+
+        public GeneratedArgument getArgument() {
+            return argument;
+        }
+
+        public CandidateValueTier getTier() {
+            return tier;
+        }
+
+        public String getSource() {
+            return source;
+        }
+    }
+
     public static final class CandidateValueSlot {
         private final CandidateValueSlotKind kind;
         private final String ownerId;
@@ -87,19 +117,25 @@ public final class CandidateSpace {
 
     public static final class CandidateValuePool {
         private final CandidateValueSlot slot;
-        private final List<GeneratedArgument> values;
+        private final List<CandidateValueOption> options;
 
-        public CandidateValuePool(CandidateValueSlot slot, List<GeneratedArgument> values) {
+        public CandidateValuePool(CandidateValueSlot slot, List<CandidateValueOption> options) {
             this.slot = Objects.requireNonNull(slot, "slot must not be null");
-            this.values = List.copyOf(Objects.requireNonNull(values, "values must not be null"));
+            this.options = List.copyOf(Objects.requireNonNull(options, "options must not be null"));
         }
 
         public CandidateValueSlot getSlot() {
             return slot;
         }
 
+        public List<CandidateValueOption> getOptions() {
+            return options;
+        }
+
         public List<GeneratedArgument> getValues() {
-            return values;
+            return options.stream()
+                    .map(CandidateValueOption::getArgument)
+                    .toList();
         }
     }
 }

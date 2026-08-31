@@ -1,9 +1,11 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedSetupObject;
@@ -88,7 +90,7 @@ public final class CandidateSpaceFactory {
                             parameter.getType(),
                             index
                     ),
-                    valuesFor(parameter.getType(), typeIndex, baseValue)
+                    optionsFor(parameter.getType(), typeIndex, baseValue)
             ));
         }
 
@@ -149,46 +151,59 @@ public final class CandidateSpaceFactory {
                             parameter.getType(),
                             index
                     ),
-                    valuesFor(parameter.getType(), typeIndex, baseValue)
+                    optionsFor(parameter.getType(), typeIndex, baseValue)
             ));
         }
 
         return pools;
     }
 
-    private List<GeneratedArgument> valuesFor(
+    private List<CandidateValueOption> optionsFor(
             String type,
             ProjectTypeIndex typeIndex,
             GeneratedArgument baseValue
     ) {
-        List<GeneratedArgument> values = new ArrayList<>();
-        addIfMissing(values, baseValue);
+        List<CandidateValueOption> options = new ArrayList<>();
+        addIfMissing(options, baseValue, CandidateValueTier.FALLBACK, "base-candidate");
 
         for (String seedValue : seedValueGenerator.seedValuesFor(type)) {
-            addIfMissing(values, new GeneratedArgument(type, seedValue));
+            addIfMissing(
+                    options,
+                    new GeneratedArgument(type, seedValue),
+                    CandidateValueTier.FALLBACK,
+                    "default-seed"
+            );
         }
 
         typeIndex.findByName(type)
                 .filter(typeInfo -> typeInfo.getKind() == TypeKind.ENUM)
                 .ifPresent(typeInfo -> typeInfo.getEnumConstants()
                         .forEach(enumConstant -> addIfMissing(
-                                values,
+                                options,
                                 new GeneratedArgument(
                                         type,
                                         typeInfo.getFullyQualifiedName() + "." + enumConstant
-                                )
+                                ),
+                                CandidateValueTier.FALLBACK,
+                                "enum-constant"
                         )));
 
-        return List.copyOf(values);
+        return List.copyOf(options);
     }
 
-    private void addIfMissing(List<GeneratedArgument> values, GeneratedArgument candidateValue) {
-        boolean alreadyExists = values.stream()
+    private void addIfMissing(
+            List<CandidateValueOption> options,
+            GeneratedArgument candidateValue,
+            CandidateValueTier tier,
+            String source
+    ) {
+        boolean alreadyExists = options.stream()
+                .map(CandidateValueOption::getArgument)
                 .anyMatch(value -> value.getType().equals(candidateValue.getType())
                         && value.getValue().equals(candidateValue.getValue()));
 
         if (!alreadyExists) {
-            values.add(candidateValue);
+            options.add(new CandidateValueOption(candidateValue, tier, source));
         }
     }
 }

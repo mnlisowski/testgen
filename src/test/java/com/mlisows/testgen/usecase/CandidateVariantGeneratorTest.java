@@ -1,9 +1,11 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedSetupObject;
 import com.mlisows.testgen.domain.ParameterModel;
@@ -40,7 +42,7 @@ class CandidateVariantGeneratorTest {
                                 "int",
                                 0
                         ),
-                        List.of(
+                        options(
                                 new GeneratedArgument("int", "-1"),
                                 new GeneratedArgument("int", "0"),
                                 new GeneratedArgument("int", "1")
@@ -69,7 +71,7 @@ class CandidateVariantGeneratorTest {
                                 "int",
                                 0
                         ),
-                        List.of(
+                        options(
                                 new GeneratedArgument("int", "-1"),
                                 new GeneratedArgument("int", "0"),
                                 new GeneratedArgument("int", "100")
@@ -99,7 +101,7 @@ class CandidateVariantGeneratorTest {
                                 "int",
                                 0
                         ),
-                        List.of(
+                        options(
                                 new GeneratedArgument("int", "-1"),
                                 new GeneratedArgument("int", "0"),
                                 new GeneratedArgument("int", "1"),
@@ -113,6 +115,12 @@ class CandidateVariantGeneratorTest {
         assertEquals(2, variants.size());
         assertEquals("-1", variants.get(0).getMethodArguments().get(0).getValue());
         assertEquals("0", variants.get(1).getMethodArguments().get(0).getValue());
+    }
+
+    private static List<CandidateValueOption> options(GeneratedArgument... arguments) {
+        return List.of(arguments).stream()
+                .map(argument -> new CandidateValueOption(argument, CandidateValueTier.FALLBACK, "test"))
+                .toList();
     }
 
     private static TestCandidate calculatorCandidate(GeneratedArgument amount) {

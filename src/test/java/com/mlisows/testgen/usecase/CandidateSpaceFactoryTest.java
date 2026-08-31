@@ -1,8 +1,10 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.ConstructorModel;
 import com.mlisows.testgen.domain.GeneratedArgument;
@@ -58,6 +60,13 @@ class CandidateSpaceFactoryTest {
         assertEquals(0, amountPool.getSlot().getArgumentIndex());
         assertEquals("int", amountPool.getSlot().getType());
         assertValues(amountPool, "-1", "0", "1", "10", "100");
+        assertTiers(amountPool,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK
+        );
     }
 
     @Test
@@ -203,5 +212,13 @@ class CandidateSpaceFactoryTest {
                 .toList();
 
         assertEquals(List.of(expectedValues), actualValues);
+    }
+
+    private static void assertTiers(CandidateValuePool pool, CandidateValueTier... expectedTiers) {
+        List<CandidateValueTier> actualTiers = pool.getOptions().stream()
+                .map(CandidateValueOption::getTier)
+                .toList();
+
+        assertEquals(List.of(expectedTiers), actualTiers);
     }
 }

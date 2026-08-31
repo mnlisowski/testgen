@@ -1,8 +1,10 @@
 package com.mlisows.testgen.domain;
 
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -66,7 +68,11 @@ class CandidateSpaceTest {
 
         return new CandidateValuePool(
                 slot,
-                List.of(new GeneratedArgument("int", "-1"))
+                List.of(new CandidateValueOption(
+                        new GeneratedArgument("int", "-1"),
+                        CandidateValueTier.FALLBACK,
+                        "test"
+                ))
         );
     }
 
