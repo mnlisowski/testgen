@@ -215,7 +215,7 @@ class CandidateSpaceFactoryTest {
                 .orElseThrow();
 
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, methodOrderPool.getSlot().getKind());
-        assertValues(methodOrderPool, "order");
+        assertValues(methodOrderPool, "order", "null");
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, orderTotalPool.getSlot().getKind());
         assertEquals(0, orderTotalPool.getSlot().getArgumentIndex());
@@ -223,10 +223,10 @@ class CandidateSpaceFactoryTest {
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, orderCustomerPool.getSlot().getKind());
         assertEquals(1, orderCustomerPool.getSlot().getArgumentIndex());
-        assertValues(orderCustomerPool, "customer");
+        assertValues(orderCustomerPool, "customer", "null");
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, customerTypePool.getSlot().getKind());
-        assertValues(customerTypePool, "\"\"", "\"test\"", "\"a\"");
+        assertValues(customerTypePool, "\"\"", "null", "\"test\"", "\"a\"");
     }
 
     @Test
