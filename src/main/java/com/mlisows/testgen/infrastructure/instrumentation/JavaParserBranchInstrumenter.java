@@ -230,9 +230,9 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                         entry
                 );
 
-                goal.ifPresent(coverageGoal -> entry.getStatements().add(
-                        0,
-                        hitStatement(coverageGoal.getBranchId().asString())
+                goal.ifPresent(coverageGoal -> addSwitchHit(
+                        entry,
+                        coverageGoal.getBranchId().asString()
                 ));
             }
 
@@ -259,6 +259,33 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             }
 
             return expression.toString();
+        }
+
+        private void addSwitchHit(SwitchEntry entry, String branchId) {
+            Statement hit = hitStatement(branchId);
+
+            if (entry.getType() == SwitchEntry.Type.STATEMENT_GROUP) {
+                entry.getStatements().add(0, hit);
+                return;
+            }
+
+            if (entry.getType() == SwitchEntry.Type.BLOCK
+                    && entry.getStatements().size() == 1
+                    && entry.getStatements().get(0).isBlockStmt()) {
+                entry.getStatements().get(0).asBlockStmt().addStatement(0, hit);
+                return;
+            }
+
+            BlockStmt block = new BlockStmt();
+            block.addStatement(hit);
+
+            for (Statement statement : entry.getStatements()) {
+                block.addStatement(statement.clone());
+            }
+
+            entry.getStatements().clear();
+            entry.getStatements().add(block);
+            entry.setType(SwitchEntry.Type.BLOCK);
         }
 
         private Optional<CoverageGoal> findGoal(
