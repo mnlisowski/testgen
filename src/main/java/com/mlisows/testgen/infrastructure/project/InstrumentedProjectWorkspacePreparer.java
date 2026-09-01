@@ -33,7 +33,7 @@ public final class InstrumentedProjectWorkspacePreparer {
         this(
                 new SourceDirectoryInstrumenter(new JavaParserBranchInstrumenter()),
                 new JavaSourceCompiler(),
-                System.getProperty("java.class.path")
+                JavaSourceCompiler.defaultClasspath()
         );
     }
 

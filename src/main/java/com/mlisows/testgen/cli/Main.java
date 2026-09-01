@@ -11,12 +11,16 @@ import com.mlisows.testgen.domain.StaticArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
 import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
+import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
+import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspace;
 import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspacePreparer;
+import com.mlisows.testgen.infrastructure.project.MavenDependencyClasspathResolver;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
 import com.mlisows.testgen.usecase.CandidateCoverageEvaluation;
@@ -82,12 +86,16 @@ public class Main {
         ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
         List<MethodGenerationPlan> methodPlans = methodPlans(classStructures, typeIndex);
 
-        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer()
-                .prepare(
-                        layout,
-                        workRoot,
-                        coverageGoalsBySourcePath(analysisResultsByPath)
-                );
+        String classpath = classpathFor(layout);
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserBranchInstrumenter()),
+                new JavaSourceCompiler(classpath),
+                classpath
+        ).prepare(
+                layout,
+                workRoot,
+                coverageGoalsBySourcePath(analysisResultsByPath)
+        );
 
         CandidateGenerationUseCase candidateGenerationUseCase = new CandidateGenerationUseCase(
                 new CandidateSpaceFactory(),
@@ -108,6 +116,13 @@ public class Main {
                 List.copyOf(analysisResultsByPath.values()),
                 methodPlans,
                 coverageEvaluation
+        );
+    }
+
+    private static String classpathFor(MavenProjectLayout layout) {
+        return JavaSourceCompiler.joinClasspaths(
+                JavaSourceCompiler.defaultClasspath(),
+                new MavenDependencyClasspathResolver().resolve(layout)
         );
     }
 

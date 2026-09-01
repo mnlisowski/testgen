@@ -101,19 +101,31 @@ public final class JavaSourceCompiler {
         }
     }
 
-    private static String defaultClasspath() {
-        String systemClasspath = System.getProperty("java.class.path", "");
-        String runtimeLocation = classpathLocation(BranchRecorder.class);
+    public static String defaultClasspath() {
+        return joinClasspaths(
+                System.getProperty("java.class.path", ""),
+                classpathLocation(BranchRecorder.class)
+        );
+    }
 
-        if (runtimeLocation.isBlank() || containsClasspathEntry(systemClasspath, runtimeLocation)) {
-            return systemClasspath;
+    public static String joinClasspaths(String firstClasspath, String secondClasspath) {
+        List<String> entries = new ArrayList<>();
+        addClasspathEntries(entries, firstClasspath);
+        addClasspathEntries(entries, secondClasspath);
+
+        return String.join(File.pathSeparator, entries);
+    }
+
+    private static void addClasspathEntries(List<String> entries, String classpath) {
+        if (classpath == null || classpath.isBlank()) {
+            return;
         }
 
-        if (systemClasspath.isBlank()) {
-            return runtimeLocation;
+        for (String entry : classpath.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+            if (!entry.isBlank() && !entries.contains(entry)) {
+                entries.add(entry);
+            }
         }
-
-        return systemClasspath + File.pathSeparator + runtimeLocation;
     }
 
     private static String classpathLocation(Class<?> type) {
@@ -124,13 +136,4 @@ public final class JavaSourceCompiler {
         }
     }
 
-    private static boolean containsClasspathEntry(String classpath, String expectedEntry) {
-        for (String entry : classpath.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
-            if (entry.equals(expectedEntry)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
