@@ -4,142 +4,213 @@ import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
+import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
-import com.mlisows.testgen.infrastructure.writer.GeneratedTestFileWriter;
+import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspace;
+import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspacePreparer;
+import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
+import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.usecase.CandidateCoverageEvaluation;
+import com.mlisows.testgen.usecase.CandidateCoverageEvaluator;
+import com.mlisows.testgen.usecase.CandidateGenerationUseCase;
+import com.mlisows.testgen.usecase.CandidateSpaceFactory;
+import com.mlisows.testgen.usecase.CandidateVariantGenerator;
 import com.mlisows.testgen.usecase.GeneratableCoverageGoalSelector;
-import com.mlisows.testgen.usecase.GenerateTestSuiteUseCase;
-import com.mlisows.testgen.usecase.GenerateTestsUseCase;
-import com.mlisows.testgen.usecase.GeneratedTestCaseFactory;
-import com.mlisows.testgen.usecase.GeneratedTestSuiteFactory;
-import com.mlisows.testgen.usecase.JUnitTestWriter;
+import com.mlisows.testgen.usecase.GenerationReport;
 import com.mlisows.testgen.usecase.MethodGenerationPlanner;
-import com.mlisows.testgen.usecase.SimpleArgumentGenerator;
-import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
-import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
-import com.mlisows.testgen.usecase.ports.TypeIndexAnalyzer;
-import com.mlisows.testgen.domain.ProjectClassStructureIndex;
-
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class Main {
+    private static final int MAX_VALUES_PER_SLOT = 10;
+    private static final int MAX_CANDIDATES_PER_METHOD = 50;
+
     public static void main(String[] args) {
         if (args.length < 1 || args.length > 2) {
-            System.out.println("Usage: testgen <source-file-or-directory> [output-test-root]");
+            System.out.println("Usage: testgen <maven-project-root> [work-root]");
             return;
         }
 
-        Path inputPath = Path.of(args[0]);
-        Path outputRoot = args.length == 2 ? Path.of(args[1]) : null;
-        List<Path> sourcePaths = sourcePaths(inputPath);
+        Path projectRoot = Path.of(args[0]);
+        Path workRoot = args.length == 2
+                ? Path.of(args[1])
+                : projectRoot.resolve("target/testgen-work");
 
-        CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
-        ClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
-        TypeIndexAnalyzer typeIndexAnalyzer = new JavaParserTypeIndexAnalyzer();
-
-        GenerateTestsUseCase useCase = new GenerateTestsUseCase(codeAnalyzer);
-        MethodGenerationPlanner planner = new MethodGenerationPlanner();
-        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
-        ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(sourcePaths);
-
-        List<ClassStructure> classStructures = sourcePaths.stream()
-                .filter(sourcePath -> {
-                    TypeInfo sourceType = typeIndex.findByName(sourceTypeName(sourcePath)).orElse(null);
-                    return sourceType != null && sourceType.getKind() == TypeKind.CLASS;
-                })
-                .map(classStructureAnalyzer::analyze)
-                .toList();
-
-
-        ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
-
-
-        for (Path sourcePath : sourcePaths) {
-            TypeInfo sourceType = typeIndex.findByName(sourceTypeName(sourcePath)).orElse(null);
-
-            if (sourceType == null || sourceType.getKind() != TypeKind.CLASS) {
-                String kind = sourceType == null ? "UNKNOWN" : sourceType.getKind().name();
-                System.out.println("Skipping source file: " + sourcePath + " kind=" + kind);
-                continue;
-            }
-
-            ClassAnalysisResult result = useCase.execute(sourcePath);
-            ClassStructure classStructure = classIndex.findByName(result.getClassName()).orElseThrow();
-            List<MethodGenerationPlan> methodPlans = planner.plan(classStructure, typeIndex);
-
-            System.out.println("Class: " + result.getClassName());
-            System.out.println();
-
-            System.out.println("Coverage goals:");
-            for (CoverageGoal goal : result.getCoverageGoals()) {
-                System.out.println("- "
-                        + goal.getBranchId().asString()
-                        + " condition="
-                        + goal.getCondition());
-            }
-
-            System.out.println();
-            System.out.println("Method generation plan:");
-            for (MethodGenerationPlan plan : methodPlans) {
-                String status = selector.isSupportedByCurrentGenerator(plan) ? "supported" : "skipped";
-
-                System.out.println("- "
-                        + plan.getClassName()
-                        + "."
-                        + plan.getMethodName()
-                        + " "
-                        + status
-                        + " requirements="
-                        + plan.getRequirements());
-            }
-
-            if (outputRoot != null) {
-                GenerateTestSuiteUseCase generateTestSuiteUseCase = new GenerateTestSuiteUseCase(
-                        new GeneratedTestSuiteFactory(
-                                new GeneratedTestCaseFactory(new SimpleArgumentGenerator()),
-                                selector
-                        ),
-                        new JUnitTestWriter(),
-                        new GeneratedTestFileWriter(outputRoot)
-                );
-
-                Path writtenPath = generateTestSuiteUseCase.execute(classStructure, methodPlans, typeIndex, classIndex);
-
-
-                System.out.println();
-                System.out.println("Generated test file: " + writtenPath);
-            }
-        }
+        GenerationReport report = generateReport(projectRoot, workRoot);
+        System.out.println(report.toText());
     }
 
-    private static List<Path> sourcePaths(Path inputPath) {
-        if (Files.isRegularFile(inputPath)) {
-            return List.of(inputPath);
+    static GenerationReport generateReport(Path projectRoot, Path workRoot) {
+        Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+        Objects.requireNonNull(workRoot, "workRoot must not be null");
+
+        MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
+        List<Path> sourcePaths = sourcePaths(layout.getMainSourceRoot());
+        ProjectTypeIndex typeIndex = new JavaParserTypeIndexAnalyzer().analyze(sourcePaths);
+        List<Path> classSourcePaths = classSourcePaths(sourcePaths, typeIndex);
+
+        JavaParserCodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
+        JavaParserClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
+
+        Map<Path, ClassAnalysisResult> analysisResultsByPath = new LinkedHashMap<>();
+        for (Path sourcePath : classSourcePaths) {
+            analysisResultsByPath.put(sourcePath, codeAnalyzer.analyze(sourcePath));
         }
 
-        if (!Files.isDirectory(inputPath)) {
-            throw new IllegalArgumentException("Input path is not a file or directory: " + inputPath);
+        List<ClassStructure> classStructures = classSourcePaths.stream()
+                .map(classStructureAnalyzer::analyze)
+                .toList();
+        ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
+        List<MethodGenerationPlan> methodPlans = methodPlans(classStructures, typeIndex);
+
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer()
+                .prepare(
+                        layout,
+                        workRoot,
+                        coverageGoalsBySourcePath(analysisResultsByPath)
+                );
+
+        CandidateGenerationUseCase candidateGenerationUseCase = new CandidateGenerationUseCase(
+                new CandidateSpaceFactory(),
+                new CandidateVariantGenerator(MAX_VALUES_PER_SLOT, MAX_CANDIDATES_PER_METHOD),
+                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+        );
+
+        CandidateCoverageEvaluation coverageEvaluation = evaluateCandidates(
+                classStructures,
+                methodPlans,
+                typeIndex,
+                classIndex,
+                staticHints(analysisResultsByPath),
+                candidateGenerationUseCase
+        );
+
+        return GenerationReport.from(
+                List.copyOf(analysisResultsByPath.values()),
+                methodPlans,
+                coverageEvaluation
+        );
+    }
+
+    private static CandidateCoverageEvaluation evaluateCandidates(
+            List<ClassStructure> classStructures,
+            List<MethodGenerationPlan> methodPlans,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
+            List<StaticArgumentValueHint> staticHints,
+            CandidateGenerationUseCase candidateGenerationUseCase
+    ) {
+        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+        List<TestCandidateExecutionResult> executedResults = new ArrayList<>();
+        List<TestCandidateExecutionResult> selectedResults = new ArrayList<>();
+
+        for (ClassStructure classStructure : classStructures) {
+            for (MethodModel method : classStructure.getMethods()) {
+                MethodGenerationPlan plan = methodPlan(methodPlans, classStructure.getClassName(), method.getName());
+
+                if (!selector.isSupportedByCurrentGenerator(plan)) {
+                    continue;
+                }
+
+                CandidateCoverageEvaluation evaluation = candidateGenerationUseCase.evaluate(
+                        classStructure,
+                        method,
+                        typeIndex,
+                        classIndex,
+                        staticHints
+                );
+
+                executedResults.addAll(evaluation.getExecutedResults());
+                selectedResults.addAll(evaluation.getSelectedResults());
+            }
         }
 
-        try (Stream<Path> paths = Files.walk(inputPath)) {
+        return new CandidateCoverageEvaluation(executedResults, selectedResults);
+    }
+
+    private static List<MethodGenerationPlan> methodPlans(
+            List<ClassStructure> classStructures,
+            ProjectTypeIndex typeIndex
+    ) {
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+        List<MethodGenerationPlan> methodPlans = new ArrayList<>();
+
+        for (ClassStructure classStructure : classStructures) {
+            methodPlans.addAll(planner.plan(classStructure, typeIndex));
+        }
+
+        return List.copyOf(methodPlans);
+    }
+
+    private static MethodGenerationPlan methodPlan(
+            List<MethodGenerationPlan> methodPlans,
+            String className,
+            String methodName
+    ) {
+        return methodPlans.stream()
+                .filter(plan -> plan.getClassName().equals(className))
+                .filter(plan -> plan.getMethodName().equals(methodName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No generation plan for method: " + className + "." + methodName
+                ));
+    }
+
+    private static List<StaticArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
+        return analysisResultsByPath.values().stream()
+                .flatMap(result -> result.getStaticArgumentValueHints().stream())
+                .toList();
+    }
+
+    private static Map<Path, List<CoverageGoal>> coverageGoalsBySourcePath(
+            Map<Path, ClassAnalysisResult> analysisResultsByPath
+    ) {
+        Map<Path, List<CoverageGoal>> coverageGoalsBySourcePath = new LinkedHashMap<>();
+
+        for (Map.Entry<Path, ClassAnalysisResult> entry : analysisResultsByPath.entrySet()) {
+            coverageGoalsBySourcePath.put(entry.getKey(), entry.getValue().getCoverageGoals());
+        }
+
+        return coverageGoalsBySourcePath;
+    }
+
+    private static List<Path> sourcePaths(Path sourceRoot) {
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
             return paths
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".java"))
                     .sorted(Comparator.comparing(Path::toString))
                     .toList();
         } catch (IOException exception) {
-            throw new IllegalStateException("Cannot read source directory: " + inputPath, exception);
+            throw new IllegalStateException("Cannot read source directory: " + sourceRoot, exception);
         }
+    }
+
+    private static List<Path> classSourcePaths(List<Path> sourcePaths, ProjectTypeIndex typeIndex) {
+        return sourcePaths.stream()
+                .filter(sourcePath -> typeIndex.findByName(sourceTypeName(sourcePath))
+                        .map(TypeInfo::getKind)
+                        .filter(kind -> kind == TypeKind.CLASS)
+                        .isPresent())
+                .toList();
     }
 
     private static String sourceTypeName(Path sourcePath) {
