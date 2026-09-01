@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class Main {
@@ -124,9 +125,13 @@ public class Main {
 
         for (ClassStructure classStructure : classStructures) {
             for (MethodModel method : classStructure.getMethods()) {
-                MethodGenerationPlan plan = methodPlan(methodPlans, classStructure.getClassName(), method.getName());
+                Optional<MethodGenerationPlan> plan = methodPlan(
+                        methodPlans,
+                        classStructure.getClassName(),
+                        method.getName()
+                );
 
-                if (!selector.isSupportedByCurrentGenerator(plan)) {
+                if (plan.isEmpty() || !selector.isSupportedByCurrentGenerator(plan.get())) {
                     continue;
                 }
 
@@ -160,7 +165,7 @@ public class Main {
         return List.copyOf(methodPlans);
     }
 
-    private static MethodGenerationPlan methodPlan(
+    private static Optional<MethodGenerationPlan> methodPlan(
             List<MethodGenerationPlan> methodPlans,
             String className,
             String methodName
@@ -168,10 +173,7 @@ public class Main {
         return methodPlans.stream()
                 .filter(plan -> plan.getClassName().equals(className))
                 .filter(plan -> plan.getMethodName().equals(methodName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No generation plan for method: " + className + "." + methodName
-                ));
+                .findFirst();
     }
 
     private static List<StaticArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {

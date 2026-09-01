@@ -52,4 +52,8 @@ public final class DiscountService {
 
         return 10;
     }
+
+    int localRate() {
+        return vipThreshold;
+    }
 }
