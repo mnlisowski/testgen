@@ -75,7 +75,14 @@ public final class CandidateSpaceFactory {
         }
 
         List<CandidateValuePool> valuePools = new ArrayList<>();
-        valuePools.addAll(methodArgumentPools(classStructure, method, baseCandidate.get(), typeIndex, staticHints));
+        valuePools.addAll(methodArgumentPools(
+                classStructure,
+                method,
+                baseCandidate.get(),
+                typeIndex,
+                classIndex,
+                staticHints
+        ));
         valuePools.addAll(setupObjectArgumentPools(baseCandidate.get(), classIndex, typeIndex, staticHints));
 
         return Optional.of(new CandidateSpace(baseCandidate.get(), valuePools));
@@ -86,6 +93,7 @@ public final class CandidateSpaceFactory {
             MethodModel method,
             TestCandidate baseCandidate,
             ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
             List<StaticArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
@@ -105,7 +113,7 @@ public final class CandidateSpaceFactory {
 
             pools.add(new CandidateValuePool(
                     slot,
-                    optionsFor(parameter.getType(), typeIndex, baseValue, staticHints, slot.id())
+                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, staticHints, slot.id())
             ));
         }
 
@@ -139,6 +147,7 @@ public final class CandidateSpaceFactory {
                     setupClassName,
                     constructorParameters,
                     setupObject.getArguments(),
+                    classIndex,
                     typeIndex,
                     staticHints
             ));
@@ -151,6 +160,7 @@ public final class CandidateSpaceFactory {
             String setupClassName,
             List<ParameterModel> constructorParameters,
             List<GeneratedArgument> arguments,
+            ProjectClassStructureIndex classIndex,
             ProjectTypeIndex typeIndex,
             List<StaticArgumentValueHint> staticHints
     ) {
@@ -171,7 +181,7 @@ public final class CandidateSpaceFactory {
 
             pools.add(new CandidateValuePool(
                     slot,
-                    optionsFor(parameter.getType(), typeIndex, baseValue, staticHints, slot.id())
+                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, staticHints, slot.id())
             ));
         }
 
@@ -181,6 +191,7 @@ public final class CandidateSpaceFactory {
     private List<CandidateValueOption> optionsFor(
             String type,
             ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
             GeneratedArgument baseValue,
             List<StaticArgumentValueHint> staticHints,
             String slotId
@@ -198,6 +209,15 @@ public final class CandidateSpaceFactory {
                 ));
 
         addIfMissing(options, baseValue, CandidateValueTier.FALLBACK, "base-candidate");
+
+        if (isNullableReferenceType(type, typeIndex, classIndex)) {
+            addIfMissing(
+                    options,
+                    new GeneratedArgument(type, "null"),
+                    CandidateValueTier.FALLBACK,
+                    "null-reference"
+            );
+        }
 
         for (String seedValue : seedValueGenerator.seedValuesFor(type)) {
             addIfMissing(
@@ -222,6 +242,40 @@ public final class CandidateSpaceFactory {
                         )));
 
         return List.copyOf(options);
+    }
+
+    private boolean isNullableReferenceType(
+            String type,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex
+    ) {
+        if (isPrimitiveType(type)) {
+            return false;
+        }
+
+        if (type.equals("String") || type.equals("java.lang.String")) {
+            return true;
+        }
+
+        if (classIndex.findByName(type).isPresent()) {
+            return true;
+        }
+
+        return typeIndex.findByName(type)
+                .map(typeInfo -> typeInfo.getKind() == TypeKind.CLASS
+                        || typeInfo.getKind() == TypeKind.INTERFACE)
+                .orElse(false);
+    }
+
+    private boolean isPrimitiveType(String type) {
+        return type.equals("boolean")
+                || type.equals("byte")
+                || type.equals("short")
+                || type.equals("int")
+                || type.equals("long")
+                || type.equals("float")
+                || type.equals("double")
+                || type.equals("char");
     }
 
     private void addIfMissing(
