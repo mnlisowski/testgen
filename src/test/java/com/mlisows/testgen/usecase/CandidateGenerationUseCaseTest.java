@@ -66,6 +66,45 @@ class CandidateGenerationUseCaseTest {
         assertTrue(coveredBranchIds.contains(branch(BranchType.FALSE).asString()));
     }
 
+
+    @Test
+    void shouldExposeFullCandidateEvaluation() {
+        MethodModel method = new MethodModel(
+                "calculate",
+                "int",
+                true,
+                List.of(new ParameterModel("amount", "int"))
+        );
+        ClassStructure calculator = new ClassStructure(
+                "sample.Calculator",
+                List.of(new ConstructorModel(true, List.of())),
+                List.of(method)
+        );
+
+        CandidateGenerationUseCase useCase = new CandidateGenerationUseCase(
+                new CandidateSpaceFactory(),
+                new CandidateVariantGenerator(3, 5),
+                new CandidateCoverageEvaluator(new BranchByAmountExecutor())
+        );
+
+        CandidateCoverageEvaluation evaluation = useCase.evaluate(
+                calculator,
+                method,
+                new ProjectTypeIndex(List.of()),
+                new ProjectClassStructureIndex(List.of(calculator)),
+                List.of(new StaticArgumentValueHint(
+                        "sample.Calculator.calculate",
+                        "amount",
+                        "int",
+                        "101",
+                        "direct-static-condition"
+                ))
+        );
+
+        assertEquals(4, evaluation.getExecutedCandidateCount());
+        assertEquals(2, evaluation.getSelectedCandidateCount());
+    }
+
     @Test
     void shouldReturnEmptyWhenCandidateSpaceCannotBeCreated() {
         MethodModel method = new MethodModel(

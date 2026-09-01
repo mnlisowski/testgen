@@ -44,6 +44,16 @@ public final class CandidateGenerationUseCase {
             ProjectClassStructureIndex classIndex,
             List<StaticArgumentValueHint> staticHints
     ) {
+        return evaluate(classStructure, method, typeIndex, classIndex, staticHints).getSelectedResults();
+    }
+
+    public CandidateCoverageEvaluation evaluate(
+            ClassStructure classStructure,
+            MethodModel method,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
+            List<StaticArgumentValueHint> staticHints
+    ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
@@ -59,11 +69,11 @@ public final class CandidateGenerationUseCase {
         );
 
         if (candidateSpace.isEmpty()) {
-            return List.of();
+            return CandidateCoverageEvaluation.empty();
         }
 
         List<TestCandidate> candidateVariants = candidateVariantGenerator.generateVariants(candidateSpace.get());
 
-        return candidateCoverageEvaluator.selectCoverageImprovingResults(candidateVariants);
+        return candidateCoverageEvaluator.evaluate(candidateVariants);
     }
 }
