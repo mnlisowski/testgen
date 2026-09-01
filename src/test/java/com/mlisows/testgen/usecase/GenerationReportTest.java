@@ -99,6 +99,19 @@ class GenerationReportTest {
                 GenerationRequirement.INTERFACE_MOCK,
                 GenerationRequirement.MAP_FIXTURE
         ), skippedMethod.getUnsupportedRequirements());
+
+        String reportText = report.toText();
+
+        assertTrue(reportText.contains("Test generation report"));
+        assertTrue(reportText.contains("Classes analyzed: 1"));
+        assertTrue(reportText.contains("Supported branch kinds: IF, FOR, WHILE, SWITCH"));
+        assertTrue(reportText.contains("Detected goals: 2"));
+        assertTrue(reportText.contains("Covered goals: 1"));
+        assertTrue(reportText.contains("Executed: 2"));
+        assertTrue(reportText.contains("Selected: 1"));
+        assertTrue(reportText.contains("Failed to execute: 1"));
+        assertTrue(reportText.contains("sample.ReportService.export: INTERFACE_MOCK, MAP_FIXTURE"));
+        assertTrue(reportText.contains("switch expressions"));
     }
 
     private static TestCandidate candidate(String amount) {

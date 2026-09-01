@@ -132,6 +132,56 @@ public final class GenerationReport {
         return UNSUPPORTED_JAVA_CONSTRUCTS;
     }
 
+    public String toText() {
+        StringBuilder report = new StringBuilder();
+
+        appendLine(report, "Test generation report");
+        appendLine(report, "");
+
+        appendLine(report, "Analysis");
+        appendLine(report, "Classes analyzed: " + getAnalyzedClassCount());
+        appendLine(report, "Methods analyzed: " + getAnalyzedMethodCount());
+        appendLine(report, "Supported methods: " + getSupportedMethodCount());
+        appendLine(report, "Skipped methods: " + getSkippedMethods().size());
+        appendLine(report, "");
+
+        appendLine(report, "Branch goals");
+        appendLine(report, "Supported branch kinds: " + formatEnums(getSupportedBranchKinds()));
+        appendLine(report, "Detected goals: " + getCoverageGoalCount());
+        appendLine(report, "Covered goals: " + getCoveredBranchCount());
+        appendLine(report, "");
+
+        appendLine(report, "Candidates");
+        appendLine(report, "Executed: " + getExecutedCandidateCount());
+        appendLine(report, "Selected: " + getSelectedCandidateCount());
+        appendLine(report, "Returned: " + countExecutedByOutcome(ExecutionOutcome.RETURNED));
+        appendLine(report, "Threw exception: " + countExecutedByOutcome(ExecutionOutcome.THREW_EXCEPTION));
+        appendLine(report, "Failed to execute: " + countExecutedByOutcome(ExecutionOutcome.FAILED_TO_EXECUTE));
+        appendLine(report, "Timed out: " + countExecutedByOutcome(ExecutionOutcome.TIMED_OUT));
+        appendLine(report, "");
+
+        appendLine(report, "Skipped methods");
+        if (getSkippedMethods().isEmpty()) {
+            appendLine(report, "None");
+        } else {
+            for (SkippedMethod skippedMethod : getSkippedMethods()) {
+                appendLine(report, skippedMethod.getClassName()
+                        + "."
+                        + skippedMethod.getMethodName()
+                        + ": "
+                        + formatEnums(skippedMethod.getUnsupportedRequirements()));
+            }
+        }
+        appendLine(report, "");
+
+        appendLine(report, "Unsupported Java constructs");
+        for (String unsupportedJavaConstruct : getUnsupportedJavaConstructs()) {
+            appendLine(report, unsupportedJavaConstruct);
+        }
+
+        return report.toString();
+    }
+
     private List<GenerationRequirement> unsupportedRequirements(MethodGenerationPlan plan) {
         Set<GenerationRequirement> unsupportedRequirements = new LinkedHashSet<>();
 
@@ -150,6 +200,16 @@ public final class GenerationReport {
                 || requirement == GenerationRequirement.STRING_ARGUMENT
                 || requirement == GenerationRequirement.ENUM_ARGUMENT
                 || requirement == GenerationRequirement.OBJECT_FIXTURE;
+    }
+
+    private void appendLine(StringBuilder builder, String line) {
+        builder.append(line).append(System.lineSeparator());
+    }
+
+    private String formatEnums(List<? extends Enum<?>> values) {
+        return String.join(", ", values.stream()
+                .map(Enum::name)
+                .toList());
     }
 
     public static final class SkippedMethod {
