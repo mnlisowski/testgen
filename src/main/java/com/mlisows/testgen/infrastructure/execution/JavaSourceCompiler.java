@@ -1,8 +1,11 @@
 package com.mlisows.testgen.infrastructure.execution;
 
+import com.mlisows.testgen.infrastructure.runtime.BranchRecorder;
+
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +19,7 @@ public final class JavaSourceCompiler {
     private final String classpath;
 
     public JavaSourceCompiler() {
-        this(System.getProperty("java.class.path"));
+        this(defaultClasspath());
     }
 
     public JavaSourceCompiler(String classpath) {
@@ -96,5 +99,38 @@ public final class JavaSourceCompiler {
                             + compilerOutput.toString(StandardCharsets.UTF_8)
             );
         }
+    }
+
+    private static String defaultClasspath() {
+        String systemClasspath = System.getProperty("java.class.path", "");
+        String runtimeLocation = classpathLocation(BranchRecorder.class);
+
+        if (runtimeLocation.isBlank() || containsClasspathEntry(systemClasspath, runtimeLocation)) {
+            return systemClasspath;
+        }
+
+        if (systemClasspath.isBlank()) {
+            return runtimeLocation;
+        }
+
+        return systemClasspath + File.pathSeparator + runtimeLocation;
+    }
+
+    private static String classpathLocation(Class<?> type) {
+        try {
+            return Path.of(type.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
+        } catch (Exception exception) {
+            return "";
+        }
+    }
+
+    private static boolean containsClasspathEntry(String classpath, String expectedEntry) {
+        for (String entry : classpath.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+            if (entry.equals(expectedEntry)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
