@@ -51,6 +51,7 @@ public final class JavaParserClassStructureAnalyzer implements ClassStructureAna
 
     private CompilationUnit parseSource(Path sourcePath) {
         try {
+            JavaParserLanguageLevel.configure();
             return StaticJavaParser.parse(sourcePath);
         } catch (IOException exception) {
             throw new IllegalArgumentException("Cannot parse source file: " + sourcePath, exception);

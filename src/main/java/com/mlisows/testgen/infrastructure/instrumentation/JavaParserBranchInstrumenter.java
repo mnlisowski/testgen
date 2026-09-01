@@ -20,6 +20,7 @@ import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.BranchKind;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.infrastructure.parser.JavaParserLanguageLevel;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
 
     private CompilationUnit parseSource(Path sourcePath) {
         try {
+            JavaParserLanguageLevel.configure();
             return StaticJavaParser.parse(sourcePath);
         } catch (IOException exception) {
             throw new IllegalArgumentException("Cannot parse source file: " + sourcePath, exception);
