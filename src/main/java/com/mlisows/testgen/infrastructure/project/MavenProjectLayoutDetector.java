@@ -3,6 +3,7 @@ package com.mlisows.testgen.infrastructure.project;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class MavenProjectLayoutDetector {
 
@@ -23,6 +24,11 @@ public final class MavenProjectLayoutDetector {
             throw new IllegalArgumentException("Main source root not found: " + mainSourceRoot);
         }
 
-        return new MavenProjectLayout(projectRoot, pomPath, mainSourceRoot);
+        Path mainResourceRoot = projectRoot.resolve("src/main/resources");
+        Optional<Path> detectedMainResourceRoot = Files.isDirectory(mainResourceRoot)
+                ? Optional.of(mainResourceRoot)
+                : Optional.empty();
+
+        return new MavenProjectLayout(projectRoot, pomPath, mainSourceRoot, detectedMainResourceRoot);
     }
 }

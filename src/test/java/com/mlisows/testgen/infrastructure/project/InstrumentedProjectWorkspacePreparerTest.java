@@ -43,6 +43,7 @@ class InstrumentedProjectWorkspacePreparerTest {
         assertEquals(workRoot.resolve("classes"), workspace.getClassesRoot());
         assertTrue(Files.exists(instrumentedDiscountService));
         assertTrue(Files.exists(workspace.getClassesRoot().resolve("sample/maven/DiscountService.class")));
+        assertTrue(Files.exists(workspace.getClassesRoot().resolve("sample/maven/messages.txt")));
         assertTrue(Files.readString(instrumentedDiscountService).contains("BranchRecorder.hit"));
     }
 }
