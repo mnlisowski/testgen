@@ -79,9 +79,10 @@ public final class SourceDirectoryInstrumenter {
                 List.of()
         );
 
-        if (isJavaSource(sourcePath) && !coverageGoals.isEmpty()) {
+        if (isJavaSource(sourcePath) && sourceInstrumenter.shouldInstrument(sourcePath, coverageGoals)) {
             return sourceInstrumenter.instrument(sourcePath, outputPath, coverageGoals);
         }
+
 
         copy(sourcePath, outputPath);
         return outputPath;
