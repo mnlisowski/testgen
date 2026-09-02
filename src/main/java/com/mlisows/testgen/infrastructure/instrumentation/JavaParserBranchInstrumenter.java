@@ -2,6 +2,7 @@ package com.mlisows.testgen.infrastructure.instrumentation;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -10,6 +11,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
@@ -162,6 +164,10 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     trueGoal.get().getBranchId().asString()
             ));
 
+            if (isDirectlyLabeled(forStatement)) {
+                return forStatement;
+            }
+
             return blockWithLoopAndFalseHit(
                     forStatement,
                     falseGoal.get().getBranchId().asString()
@@ -205,10 +211,48 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     trueGoal.get().getBranchId().asString()
             ));
 
+            if (isDirectlyLabeled(whileStatement)) {
+                return whileStatement;
+            }
+
             return blockWithLoopAndFalseHit(
                     whileStatement,
                     falseGoal.get().getBranchId().asString()
             );
+        }
+
+        @Override
+        public Visitable visit(LabeledStmt labeledStatement, Void argument) {
+            super.visit(labeledStatement, argument);
+
+            Statement statement = labeledStatement.getStatement();
+            if (!statement.isForStmt() && !statement.isWhileStmt()) {
+                return labeledStatement;
+            }
+
+            Optional<MethodDeclaration> method = labeledStatement.findAncestor(MethodDeclaration.class);
+            if (method.isEmpty()) {
+                return labeledStatement;
+            }
+
+            BranchKind branchKind = statement.isForStmt() ? BranchKind.FOR : BranchKind.WHILE;
+            int lineNumber = getLineNumber(statement);
+
+            Optional<CoverageGoal> falseGoal = findGoal(
+                    method.get().getNameAsString(),
+                    lineNumber,
+                    branchKind,
+                    BranchType.FALSE
+            );
+
+            if (falseGoal.isEmpty()) {
+                return labeledStatement;
+            }
+
+            BlockStmt block = new BlockStmt();
+            block.addStatement(labeledStatement.clone());
+            block.addStatement(hitStatement(falseGoal.get().getBranchId().asString()));
+            return block;
         }
 
         @Override
@@ -333,6 +377,12 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     && branchId.getDiscriminator().equals(discriminator);
         }
 
+        private int getLineNumber(Node node) {
+            return node.getBegin()
+                    .orElseThrow(() -> new IllegalStateException("Statement has no source position"))
+                    .line;
+        }
+
         private Statement withHitFirst(Statement statement, String branchId) {
             BlockStmt block;
 
@@ -358,6 +408,12 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             block.addStatement(loopStatement.clone());
             block.addStatement(hitStatement(falseBranchId));
             return block;
+        }
+
+        private boolean isDirectlyLabeled(Statement statement) {
+            return statement.getParentNode()
+                    .filter(parent -> parent instanceof LabeledStmt)
+                    .isPresent();
         }
 
         private Statement hitStatement(String branchId) {

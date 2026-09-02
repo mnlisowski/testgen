@@ -241,6 +241,50 @@ class JavaParserBranchInstrumenterTest {
     }
 
     @Test
+    void shouldPreserveLoopLabelWhenInstrumentingLabeledWhile() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int sum(int limit) {
+                          int index = 0;
+                          outer: while (index < limit) {
+                              if (index > 3) {
+                                  continue outer;
+                              }
+                              index++;
+                          }
+                          return index;
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.TRUE),
+                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.FALSE)
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains("outer: while"));
+        assertFalse(instrumentedSource.contains("outer: {"));
+        assertTrue(instrumentedSource.contains("continue outer;"));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|TRUE\")"
+        ));
+        assertTrue(instrumentedSource.contains(
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|FALSE\")"
+        ));
+    }
+
+    @Test
     void shouldInstrumentSwitchBranchesUsingCoverageGoals() throws Exception {
         Path sourcePath = tempDir.resolve("Calculator.java");
         Path outputPath = tempDir.resolve("instrumented/Calculator.java");
