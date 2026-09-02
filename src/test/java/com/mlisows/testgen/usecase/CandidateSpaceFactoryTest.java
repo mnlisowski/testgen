@@ -8,13 +8,11 @@ import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.ConstructorModel;
 import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
-import com.mlisows.testgen.domain.TestCandidate;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
 import org.junit.jupiter.api.Test;
@@ -91,7 +89,7 @@ class CandidateSpaceFactoryTest {
                 method,
                 new ProjectTypeIndex(List.of()),
                 new ProjectClassStructureIndex(List.of(calculator)),
-                List.of(new StaticArgumentValueHint(
+                List.of(new ArgumentValueHint(
                         "sample.Calculator.calculate",
                         "amount",
                         "int",

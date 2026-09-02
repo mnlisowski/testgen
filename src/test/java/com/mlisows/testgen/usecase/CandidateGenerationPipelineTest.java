@@ -7,7 +7,7 @@ import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
@@ -70,7 +70,7 @@ class CandidateGenerationPipelineTest {
                 method(discountService, "shippingFee"),
                 typeIndex,
                 classIndex,
-                analysisResult.getStaticArgumentValueHints()
+                analysisResult.getArgumentValueHints()
         );
 
         List<String> coveredBranchIds = results.stream()
@@ -124,8 +124,8 @@ class CandidateGenerationPipelineTest {
                 new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
         );
 
-        List<StaticArgumentValueHint> staticHints = analysisResultsByPath.values().stream()
-                .flatMap(result -> result.getStaticArgumentValueHints().stream())
+        List<ArgumentValueHint> staticHints = analysisResultsByPath.values().stream()
+                .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();
         List<TestCandidateExecutionResult> results = new ArrayList<>();
 

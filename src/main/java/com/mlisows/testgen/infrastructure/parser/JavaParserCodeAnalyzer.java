@@ -13,7 +13,7 @@ import com.github.javaparser.ast.stmt.WhileStmt;
 import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.github.javaparser.ast.stmt.SwitchEntry;
@@ -21,7 +21,6 @@ import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.mlisows.testgen.domain.BranchKind;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,7 +45,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
 
 
         List<CoverageGoal> coverageGoals = new ArrayList<>();
-        List<StaticArgumentValueHint> staticArgumentValueHints = new ArrayList<>();
+        List<ArgumentValueHint> staticArgumentValueHints = new ArrayList<>();
         List<MethodDeclaration> methods = classDeclaration.getMethods();
 
         for (MethodDeclaration method : methods) {
@@ -214,7 +213,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     private void collectNumericStaticArgumentValueHints(
             String className,
             MethodDeclaration method,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         for (IfStmt ifStatement : method.findAll(IfStmt.class)) {
             collectNumericExpressionHints(className, method, ifStatement.getCondition(), hints);
@@ -225,7 +224,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             String className,
             MethodDeclaration method,
             Expression expression,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         if (!expression.isBinaryExpr()) {
             return;
@@ -260,7 +259,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             Expression possibleParameter,
             Expression possibleLiteral,
             BinaryExpr.Operator operator,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         Optional<Parameter> parameter = directParameterReference(possibleParameter, method);
 
@@ -277,7 +276,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         for (String value : valuesForIntegerComparison(operator, literalValue.get())) {
             addHintIfMissing(
                     hints,
-                    new StaticArgumentValueHint(
+                    new ArgumentValueHint(
                             className + "." + method.getNameAsString(),
                             parameter.get().getNameAsString(),
                             parameter.get().getType().asString(),
@@ -291,7 +290,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     private void collectStringStaticArgumentValueHints(
             String className,
             MethodDeclaration method,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         for (IfStmt ifStatement : method.findAll(IfStmt.class)) {
             collectStringExpressionHints(className, method, ifStatement.getCondition(), hints);
@@ -302,7 +301,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             String className,
             MethodDeclaration method,
             Expression expression,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         if (expression.isBinaryExpr()) {
             BinaryExpr binaryExpression = expression.asBinaryExpr();
@@ -320,7 +319,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             String className,
             MethodDeclaration method,
             MethodCallExpr methodCall,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         if (!isStringValueHintMethod(methodCall.getNameAsString()) || methodCall.getScope().isEmpty()) {
             return;
@@ -355,7 +354,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     private void collectSwitchStaticArgumentValueHints(
             String className,
             MethodDeclaration method,
-            List<StaticArgumentValueHint> hints
+            List<ArgumentValueHint> hints
     ) {
         for (SwitchStmt switchStatement : method.findAll(SwitchStmt.class)) {
             Optional<Parameter> selectorParameter = directParameterReference(switchStatement.getSelector(), method);
@@ -463,14 +462,14 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
         return methodName.equals("equals") || methodName.equals("equalsIgnoreCase");
     }
 
-    private StaticArgumentValueHint hint(
+    private ArgumentValueHint hint(
             String className,
             MethodDeclaration method,
             Parameter parameter,
             String value,
             String source
     ) {
-        return new StaticArgumentValueHint(
+        return new ArgumentValueHint(
                 className + "." + method.getNameAsString(),
                 parameter.getNameAsString(),
                 parameter.getType().asString(),
@@ -480,8 +479,8 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private void addHintIfMissing(
-            List<StaticArgumentValueHint> hints,
-            StaticArgumentValueHint candidate
+            List<ArgumentValueHint> hints,
+            ArgumentValueHint candidate
     ) {
         boolean alreadyExists = hints.stream()
                 .anyMatch(hint -> hint.slotId().equals(candidate.slotId())

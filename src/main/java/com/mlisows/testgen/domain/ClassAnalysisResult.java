@@ -6,7 +6,7 @@ import java.util.Objects;
 public final class ClassAnalysisResult {
     private final String className;
     private final List<CoverageGoal> coverageGoals;
-    private final List<StaticArgumentValueHint> staticArgumentValueHints;
+    private final List<ArgumentValueHint> argumentValueHints;
 
     public ClassAnalysisResult(String className, List<CoverageGoal> coverageGoals) {
         this(className, coverageGoals, List.of());
@@ -15,13 +15,13 @@ public final class ClassAnalysisResult {
     public ClassAnalysisResult(
             String className,
             List<CoverageGoal> coverageGoals,
-            List<StaticArgumentValueHint> staticArgumentValueHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         this.className = Objects.requireNonNull(className, "className must not be null");
         this.coverageGoals = List.copyOf(Objects.requireNonNull(coverageGoals, "coverageGoals must not be null"));
-        this.staticArgumentValueHints = List.copyOf(Objects.requireNonNull(
-                staticArgumentValueHints,
-                "staticArgumentValueHints must not be null"
+        this.argumentValueHints = List.copyOf(Objects.requireNonNull(
+                argumentValueHints,
+                "argumentValueHints must not be null"
         ));
     }
 
@@ -33,7 +33,7 @@ public final class ClassAnalysisResult {
         return coverageGoals;
     }
 
-    public List<StaticArgumentValueHint> getStaticArgumentValueHints() {
-        return staticArgumentValueHints;
+    public List<ArgumentValueHint> getArgumentValueHints() {
+        return argumentValueHints;
     }
 }

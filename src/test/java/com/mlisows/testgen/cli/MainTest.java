@@ -1,12 +1,16 @@
 package com.mlisows.testgen.cli;
 
+import com.mlisows.testgen.domain.ArgumentValueHint;
+import com.mlisows.testgen.domain.ObservedProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,7 +20,7 @@ class MainTest {
     Path tempDir;
 
     @Test
-    void shouldPrintGenerationReportForMavenProject() {
+    void shouldPrintGenerationReportForMavenProject() throws Exception {
         PrintStream originalOut = System.out;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -41,5 +45,57 @@ class MainTest {
         assertTrue(report.contains("Covered goals: 12"));
         assertTrue(report.contains("Failed to execute: 0"));
         assertTrue(report.contains("Unsupported Java constructs"));
+        assertTrue(report.contains("Generation report written to: " + tempDir.resolve("work/report.txt")));
+
+        String writtenReport = Files.readString(tempDir.resolve("work/report.txt"));
+
+        assertTrue(writtenReport.contains("Test generation report"));
+        assertTrue(writtenReport.contains("Covered goals: 12"));
     }
+
+    @Test
+    void shouldUseObservedProfileHints() {
+        ObservedProfile observedProfile = new ObservedProfile(
+                List.of(new ArgumentValueHint(
+                        "sample.maven.Order.<init>",
+                        "status",
+                        "String",
+                        "\"PAID\"",
+                        "runtime-observed"
+                )),
+                List.of()
+        );
+
+        String report = Main.generateReport(
+                Path.of("src/test/resources/sample-maven-project"),
+                tempDir.resolve("work-with-profile"),
+                observedProfile
+        ).toText();
+
+        assertTrue(report.contains("Covered goals: 13"));
+    }
+
+    @Test
+    void shouldGenerateObservedProfileForMavenProject() throws Exception {
+        Path outputProfile = tempDir.resolve("observed-profile.txt");
+
+        Main.generateObservedProfile(
+                Path.of("src/test/resources/sample-maven-project"),
+                tempDir.resolve("profile-work"),
+                "sample.maven.DemoApplication",
+                new String[]{},
+                outputProfile
+        );
+
+        String profile = Files.readString(outputProfile);
+
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.<init>|vipThreshold|int|500|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Customer.<init>|segment|String|\"PREMIUM\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Customer.<init>|type|CustomerType|sample.maven.CustomerType.VIP|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Order.<init>|total|int|620|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Order.<init>|status|String|\"PAID\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.calculate|couponCode|String|\"BLACK_FRIDAY\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.shippingFee|amount|int|99|runtime-observed"));
+    }
+
 }

@@ -9,7 +9,7 @@ import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.usecase.ports.TestCandidateExecutor;
@@ -47,7 +47,7 @@ class CandidateGenerationUseCaseTest {
                 method,
                 new ProjectTypeIndex(List.of()),
                 new ProjectClassStructureIndex(List.of(calculator)),
-                List.of(new StaticArgumentValueHint(
+                List.of(new ArgumentValueHint(
                         "sample.Calculator.calculate",
                         "amount",
                         "int",
@@ -92,7 +92,7 @@ class CandidateGenerationUseCaseTest {
                 method,
                 new ProjectTypeIndex(List.of()),
                 new ProjectClassStructureIndex(List.of(calculator)),
-                List.of(new StaticArgumentValueHint(
+                List.of(new ArgumentValueHint(
                         "sample.Calculator.calculate",
                         "amount",
                         "int",

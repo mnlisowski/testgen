@@ -6,5 +6,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 public interface SourceInstrumenter {
+    default boolean shouldInstrument(Path sourcePath, List<CoverageGoal> coverageGoals) {
+        return !coverageGoals.isEmpty();
+    }
+
     Path instrument(Path sourcePath, Path outputPath, List<CoverageGoal> coverageGoals);
 }

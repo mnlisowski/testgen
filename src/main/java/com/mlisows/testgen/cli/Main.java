@@ -5,9 +5,10 @@ import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.ObservedProfile;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
@@ -16,6 +17,8 @@ import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecu
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
+import com.mlisows.testgen.infrastructure.instrumentation.JavaParserArgumentInstrumenter;
+import com.mlisows.testgen.infrastructure.runtime.ObservedProfileMainRunner;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspace;
@@ -23,6 +26,7 @@ import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspacePr
 import com.mlisows.testgen.infrastructure.project.MavenDependencyClasspathResolver;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 import com.mlisows.testgen.usecase.CandidateCoverageEvaluation;
 import com.mlisows.testgen.usecase.CandidateCoverageEvaluator;
 import com.mlisows.testgen.usecase.CandidateGenerationUseCase;
@@ -49,23 +53,61 @@ public class Main {
     private static final int MAX_CANDIDATES_PER_METHOD = 50;
 
     public static void main(String[] args) {
-        if (args.length < 1 || args.length > 2) {
-            System.out.println("Usage: testgen <maven-project-root> [work-root]");
+        if (args.length > 0 && args[0].equals("profile")) {
+            runProfileCommand(args);
+            return;
+        }
+
+        if (args.length < 1 || args.length > 3) {
+            System.out.println("Usage: testgen <maven-project-root> [work-root] [observed-profile]");
             return;
         }
 
         Path projectRoot = Path.of(args[0]);
-        Path workRoot = args.length == 2
+        Path workRoot = args.length >= 2
                 ? Path.of(args[1])
                 : projectRoot.resolve("target/testgen-work");
 
-        GenerationReport report = generateReport(projectRoot, workRoot);
-        System.out.println(report.toText());
+        ObservedProfile observedProfile = args.length == 3
+                ? new TextObservedProfileReader().read(Path.of(args[2]))
+                : new ObservedProfile(List.of(), List.of());
+
+        GenerationReport report = generateReport(projectRoot, workRoot, observedProfile);
+        String reportText = report.toText();
+        Path reportPath = workRoot.resolve("report.txt");
+
+        writeText(reportPath, reportText);
+
+        System.out.println(reportText);
+        System.out.println("Generation report written to: " + reportPath);
+    }
+
+    private static void writeText(Path path, String text) {
+        try {
+            Path parent = path.getParent();
+
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            Files.writeString(path, text);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot write file: " + path, exception);
+        }
     }
 
     static GenerationReport generateReport(Path projectRoot, Path workRoot) {
+        return generateReport(projectRoot, workRoot, new ObservedProfile(List.of(), List.of()));
+    }
+
+    static GenerationReport generateReport(
+            Path projectRoot,
+            Path workRoot,
+            ObservedProfile observedProfile
+    ) {
         Objects.requireNonNull(projectRoot, "projectRoot must not be null");
         Objects.requireNonNull(workRoot, "workRoot must not be null");
+        Objects.requireNonNull(observedProfile, "observedProfile must not be null");
 
         MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
         List<Path> sourcePaths = sourcePaths(layout.getMainSourceRoot());
@@ -108,7 +150,7 @@ public class Main {
                 methodPlans,
                 typeIndex,
                 classIndex,
-                staticHints(analysisResultsByPath),
+                argumentValueHints(analysisResultsByPath, observedProfile),
                 candidateGenerationUseCase
         );
 
@@ -131,7 +173,7 @@ public class Main {
             List<MethodGenerationPlan> methodPlans,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints,
+            List<ArgumentValueHint> argumentValueHints,
             CandidateGenerationUseCase candidateGenerationUseCase
     ) {
         GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
@@ -155,7 +197,7 @@ public class Main {
                         method,
                         typeIndex,
                         classIndex,
-                        staticHints
+                        argumentValueHints
                 );
 
                 executedResults.addAll(evaluation.getExecutedResults());
@@ -191,9 +233,22 @@ public class Main {
                 .findFirst();
     }
 
-    private static List<StaticArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
+    private static List<ArgumentValueHint> argumentValueHints(
+            Map<Path, ClassAnalysisResult> analysisResultsByPath,
+            ObservedProfile observedProfile
+    ) {
+        List<ArgumentValueHint> argumentValueHints = new ArrayList<>();
+        argumentValueHints.addAll(staticArgumentValueHints(analysisResultsByPath));
+        argumentValueHints.addAll(observedProfile.getArgumentValueHints());
+
+        return List.copyOf(argumentValueHints);
+    }
+
+    private static List<ArgumentValueHint> staticArgumentValueHints(
+            Map<Path, ClassAnalysisResult> analysisResultsByPath
+    ) {
         return analysisResultsByPath.values().stream()
-                .flatMap(result -> result.getStaticArgumentValueHints().stream())
+                .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();
     }
 
@@ -238,5 +293,61 @@ public class Main {
         }
 
         return fileName.substring(0, fileName.length() - ".java".length());
+    }
+
+    private static void runProfileCommand(String[] args) {
+        if (args.length < 3 || args.length > 5) {
+            System.out.println("Usage: testgen profile <maven-project-root> <main-class> [work-root] [output-profile]");
+            return;
+        }
+
+        Path projectRoot = Path.of(args[1]);
+        String mainClassName = args[2];
+        Path workRoot = args.length >= 4
+                ? Path.of(args[3])
+                : projectRoot.resolve("target/testgen-profile-work");
+        Path outputProfile = args.length == 5
+                ? Path.of(args[4])
+                : workRoot.resolve("observed-profile.txt");
+
+        generateObservedProfile(projectRoot, workRoot, mainClassName, new String[]{}, outputProfile);
+
+        System.out.println("Observed profile written to: " + outputProfile);
+    }
+
+    static Path generateObservedProfile(
+            Path projectRoot,
+            Path workRoot,
+            String mainClassName,
+            String[] applicationArgs,
+            Path outputProfile
+    ) {
+        Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+        Objects.requireNonNull(workRoot, "workRoot must not be null");
+        Objects.requireNonNull(mainClassName, "mainClassName must not be null");
+        Objects.requireNonNull(applicationArgs, "applicationArgs must not be null");
+        Objects.requireNonNull(outputProfile, "outputProfile must not be null");
+
+        MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
+        String classpath = classpathFor(layout);
+
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
+                new JavaSourceCompiler(classpath),
+                classpath
+        ).prepare(
+                layout,
+                workRoot,
+                Map.of()
+        );
+
+        new ObservedProfileMainRunner().run(
+                workspace,
+                mainClassName,
+                applicationArgs,
+                outputProfile
+        );
+
+        return outputProfile;
     }
 }
