@@ -11,14 +11,20 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class JUnitCandidateTestWriter {
+    private static final List<String> EQUALS_ASSERTION_RETURN_TYPES = List.of(
+            "byte", "short", "int", "long", "float", "double", "boolean", "char",
+            "Byte", "Short", "Integer", "Long", "Float", "Double", "Boolean", "Character", "String",
+            "java.lang.Byte", "java.lang.Short", "java.lang.Integer", "java.lang.Long",
+            "java.lang.Float", "java.lang.Double", "java.lang.Boolean", "java.lang.Character", "java.lang.String"
+    );
 
     public String write(String className, List<TestCandidateExecutionResult> selectedResults) {
         Objects.requireNonNull(className, "className must not be null");
         Objects.requireNonNull(selectedResults, "selectedResults must not be null");
 
-        List<TestCandidateExecutionResult> returnedResults = selectedResults.stream()
-                .filter(result -> result.getOutcome() == ExecutionOutcome.RETURNED)
+        List<TestCandidateExecutionResult> writableResults = selectedResults.stream()
                 .filter(result -> result.getCandidate().getClassName().equals(className))
+                .filter(this::isWritableResult)
                 .toList();
 
         StringBuilder builder = new StringBuilder();
@@ -28,12 +34,15 @@ public final class JUnitCandidateTestWriter {
             builder.append("package ").append(packageName).append(";\n\n");
         }
 
-        builder.append("import org.junit.jupiter.api.Test;\n\n");
+        builder.append("import org.junit.jupiter.api.Test;\n");
+        builder.append("\n");
+        builder.append("import static org.junit.jupiter.api.Assertions.assertEquals;\n");
+        builder.append("import static org.junit.jupiter.api.Assertions.assertThrows;\n\n");
         builder.append("class ").append(simpleName(className)).append("Test {\n\n");
 
         int index = 1;
-        for (TestCandidateExecutionResult result : returnedResults) {
-            appendTestMethod(builder, result.getCandidate(), index);
+        for (TestCandidateExecutionResult result : writableResults) {
+            appendTestMethod(builder, result, index);
             index++;
         }
 
@@ -41,7 +50,14 @@ public final class JUnitCandidateTestWriter {
         return builder.toString();
     }
 
-    private void appendTestMethod(StringBuilder builder, TestCandidate candidate, int index) {
+    private boolean isWritableResult(TestCandidateExecutionResult result) {
+        return result.getOutcome() == ExecutionOutcome.RETURNED
+                || result.getOutcome() == ExecutionOutcome.THREW_EXCEPTION;
+    }
+
+    private void appendTestMethod(StringBuilder builder, TestCandidateExecutionResult result, int index) {
+        TestCandidate candidate = result.getCandidate();
+
         builder.append("    @Test\n");
         builder.append("    void shouldCall")
                 .append(capitalize(candidate.getMethodName()))
@@ -53,8 +69,13 @@ public final class JUnitCandidateTestWriter {
         }
 
         builder.append("\n");
-        builder.append("        ");
-        appendMethodCall(builder, candidate);
+
+        if (result.getOutcome() == ExecutionOutcome.THREW_EXCEPTION) {
+            appendExceptionAssertion(builder, result);
+        } else {
+            appendReturnedCall(builder, result);
+        }
+
         builder.append("    }\n\n");
     }
 
@@ -70,23 +91,83 @@ public final class JUnitCandidateTestWriter {
                 .append(");\n");
     }
 
-    private void appendMethodCall(StringBuilder builder, TestCandidate candidate) {
+    private void appendReturnedCall(StringBuilder builder, TestCandidateExecutionResult result) {
+        TestCandidate candidate = result.getCandidate();
+
+        builder.append("        ");
+
         if (!candidate.getReturnType().equals("void")) {
             builder.append(candidate.getReturnType()).append(" result = ");
         }
 
+        appendMethodCall(builder, candidate);
+        builder.append(";\n");
+
+        if (canAssertEquals(candidate.getReturnType())) {
+            builder.append("\n");
+            builder.append("        assertEquals(")
+                    .append(expectedReturnValue(result))
+                    .append(", result);\n");
+        }
+    }
+
+    private void appendExceptionAssertion(StringBuilder builder, TestCandidateExecutionResult result) {
+        TestCandidate candidate = result.getCandidate();
+
+        builder.append("        assertThrows(")
+                .append(result.getExceptionType().orElseThrow())
+                .append(".class, () -> ");
+        appendMethodCall(builder, candidate);
+        builder.append(");\n");
+    }
+
+    private void appendMethodCall(StringBuilder builder, TestCandidate candidate) {
         builder.append(candidate.getTargetVariableName())
                 .append(".")
                 .append(candidate.getMethodName())
                 .append("(")
                 .append(argumentValues(candidate.getMethodArguments()))
-                .append(");\n");
+                .append(")");
     }
 
     private String argumentValues(List<GeneratedArgument> arguments) {
         return arguments.stream()
                 .map(GeneratedArgument::getValue)
                 .collect(Collectors.joining(", "));
+    }
+
+    private boolean canAssertEquals(String returnType) {
+        return EQUALS_ASSERTION_RETURN_TYPES.contains(returnType);
+    }
+
+    private String expectedReturnValue(TestCandidateExecutionResult result) {
+        String returnType = result.getCandidate().getReturnType();
+        String returnValue = result.getReturnValue().orElseThrow();
+
+        if (returnType.equals("String") || returnType.equals("java.lang.String")) {
+            return "\"" + escapeJavaString(returnValue) + "\"";
+        }
+
+        if (returnType.equals("char")
+                || returnType.equals("Character")
+                || returnType.equals("java.lang.Character")) {
+            return "'" + escapeJavaCharacter(returnValue) + "'";
+        }
+
+        return returnValue;
+    }
+
+    private String escapeJavaString(String value) {
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
+    private String escapeJavaCharacter(String value) {
+        return escapeJavaString(value)
+                .replace("'", "\\'");
     }
 
     private String simpleName(String className) {
