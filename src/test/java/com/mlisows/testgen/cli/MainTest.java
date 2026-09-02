@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -67,4 +68,28 @@ class MainTest {
 
         assertTrue(report.contains("Covered goals: 13"));
     }
+
+    @Test
+    void shouldGenerateObservedProfileForMavenProject() throws Exception {
+        Path outputProfile = tempDir.resolve("observed-profile.txt");
+
+        Main.generateObservedProfile(
+                Path.of("src/test/resources/sample-maven-project"),
+                tempDir.resolve("profile-work"),
+                "sample.maven.DemoApplication",
+                new String[]{},
+                outputProfile
+        );
+
+        String profile = Files.readString(outputProfile);
+
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.<init>|vipThreshold|int|500|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Customer.<init>|segment|String|\"PREMIUM\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Customer.<init>|type|CustomerType|sample.maven.CustomerType.VIP|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Order.<init>|total|int|620|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.Order.<init>|status|String|\"PAID\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.calculate|couponCode|String|\"BLACK_FRIDAY\"|runtime-observed"));
+        assertTrue(profile.contains("hint|sample.maven.DiscountService.shippingFee|amount|int|99|runtime-observed"));
+    }
+
 }

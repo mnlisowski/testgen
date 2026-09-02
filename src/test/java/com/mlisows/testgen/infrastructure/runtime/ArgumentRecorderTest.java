@@ -25,8 +25,7 @@ class ArgumentRecorderTest {
                 "sample.Order.<init>",
                 new String[]{"total", "status"},
                 new String[]{"int", "String"},
-                620,
-                "PAID"
+                new Object[]{620, "PAID"}
         );
 
         assertEquals(List.of(
@@ -44,8 +43,7 @@ class ArgumentRecorderTest {
                 "sample.Order.<init>",
                 new String[]{"total", "status"},
                 new String[]{"int", "String"},
-                620,
-                "PAID"
+                new Object[]{620, "PAID"}
         );
         ArgumentRecorder.writeTo(profilePath);
 
@@ -63,7 +61,7 @@ class ArgumentRecorderTest {
                 "sample.DiscountService.calculate",
                 new String[]{"order"},
                 new String[]{"Order"},
-                new Object()
+                new Object[]{new Object()}
         );
 
         assertEquals(List.of(), ArgumentRecorder.snapshotLines());
@@ -75,7 +73,7 @@ class ArgumentRecorderTest {
                 "sample.MessageService.normalize",
                 new String[]{"message"},
                 new String[]{"String"},
-                "A\"B\\C"
+                new Object[]{"A\"B\\C"}
         );
 
         assertEquals(List.of(

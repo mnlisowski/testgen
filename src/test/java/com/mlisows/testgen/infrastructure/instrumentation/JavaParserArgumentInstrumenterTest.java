@@ -38,11 +38,14 @@ class JavaParserArgumentInstrumenterTest {
         String instrumentedSource = withoutWhitespace(Files.readString(outputPath));
 
         assertTrue(instrumentedSource.contains(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{\"threshold\"}, new String[]{\"int\"}, threshold);"
+                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{\"threshold\"}, new String[]{\"int\"}, new Object[]{threshold});"
         )));
+
         assertTrue(instrumentedSource.contains(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.calculate\", new String[]{\"amount\", \"status\"}, new String[]{\"int\", \"String\"}, amount, status);"
+                "ArgumentRecorder.record(\"sample.OrderService.calculate\", new String[]{\"amount\", \"status\"}, new String[]{\"int\", \"String\"}, new Object[]{amount, status});"
         )));
+
+
     }
 
     @Test
@@ -69,8 +72,9 @@ class JavaParserArgumentInstrumenterTest {
 
         assertTrue(instrumentedSource.indexOf(withoutWhitespace("this(100);"))
                 < instrumentedSource.indexOf(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{}, new String[]{});"
+                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{}, new String[]{}, new Object[]{});"
         )));
+
     }
 
     private String withoutWhitespace(String value) {

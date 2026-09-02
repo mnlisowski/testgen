@@ -139,10 +139,16 @@ public final class JavaParserArgumentInstrumenter implements SourceInstrumenter 
                 + stringArray(parameterNames(executable))
                 + ", "
                 + stringArray(parameterTypes(executable))
-                + argumentValuesSuffix(executable)
+                + ", "
+                + objectArray(parameterNames(executable))
                 + ");";
 
         return StaticJavaParser.parseStatement(code);
+    }
+
+    private String objectArray(List<String> values) {
+        return values.stream()
+                .collect(Collectors.joining(", ", "new Object[]{", "}"));
     }
 
     private List<String> parameterNames(NodeWithParameters<?> executable) {
@@ -161,18 +167,6 @@ public final class JavaParserArgumentInstrumenter implements SourceInstrumenter 
         return values.stream()
                 .map(this::javaString)
                 .collect(Collectors.joining(", ", "new String[]{", "}"));
-    }
-
-    private String argumentValuesSuffix(NodeWithParameters<?> executable) {
-        if (executable.getParameters().isEmpty()) {
-            return "";
-        }
-
-        String argumentValues = executable.getParameters().stream()
-                .map(Parameter::getNameAsString)
-                .collect(Collectors.joining(", "));
-
-        return ", " + argumentValues;
     }
 
     private String javaString(String value) {

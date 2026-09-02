@@ -21,7 +21,7 @@ public final class ArgumentRecorder {
             String ownerId,
             String[] argumentNames,
             String[] argumentTypes,
-            Object... argumentValues
+            Object[] argumentValues
     ) {
         Objects.requireNonNull(ownerId, "ownerId must not be null");
         Objects.requireNonNull(argumentNames, "argumentNames must not be null");
