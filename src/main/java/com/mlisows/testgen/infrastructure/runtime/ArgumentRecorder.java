@@ -131,10 +131,24 @@ public final class ArgumentRecorder {
     }
 
     private static boolean isRecordable(Object value) {
-        return value == null
-                || value instanceof String
-                || value instanceof Character
-                || value instanceof Number
+        if (value == null) {
+            return true;
+        }
+
+        if (value instanceof String stringValue) {
+            return !stringValue.contains("|");
+        }
+
+        if (value instanceof Character characterValue) {
+            return characterValue != '|';
+        }
+
+        return value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long
+                || value instanceof Float
+                || value instanceof Double
                 || value instanceof Boolean
                 || value instanceof Enum<?>;
     }
@@ -154,6 +168,34 @@ public final class ArgumentRecorder {
 
         if (value instanceof Enum<?> enumValue) {
             return enumValue.getDeclaringClass().getCanonicalName() + "." + enumValue.name();
+        }
+
+        if (value instanceof Boolean booleanValue) {
+            return Boolean.toString(booleanValue);
+        }
+
+        if (value instanceof Byte byteValue) {
+            return Byte.toString(byteValue);
+        }
+
+        if (value instanceof Short shortValue) {
+            return Short.toString(shortValue);
+        }
+
+        if (value instanceof Integer integerValue) {
+            return Integer.toString(integerValue);
+        }
+
+        if (value instanceof Long longValue) {
+            return Long.toString(longValue);
+        }
+
+        if (value instanceof Float floatValue) {
+            return Float.toString(floatValue) + "f";
+        }
+
+        if (value instanceof Double doubleValue) {
+            return Double.toString(doubleValue);
         }
 
         return value.toString();
