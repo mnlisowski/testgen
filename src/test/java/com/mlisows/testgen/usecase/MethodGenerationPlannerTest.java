@@ -15,6 +15,7 @@ import com.mlisows.testgen.domain.TypeKind;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MethodGenerationPlannerTest {
@@ -185,4 +186,38 @@ class MethodGenerationPlannerTest {
     }
 
 
+    @Test
+    void shouldSupportCurrentGeneratorRequirements() {
+        MethodGenerationPlan plan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.PRIMITIVE_ARGUMENT,
+                        GenerationRequirement.STRING_ARGUMENT,
+                        GenerationRequirement.ENUM_ARGUMENT,
+                        GenerationRequirement.OBJECT_FIXTURE
+                )
+        );
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        assertTrue(planner.isSupported(plan));
+    }
+
+    @Test
+    void shouldRejectUnsupportedRequirements() {
+        MethodGenerationPlan plan = new MethodGenerationPlan(
+                "sample.OrderService",
+                "process",
+                List.of(
+                        GenerationRequirement.NO_ARG_CONSTRUCTOR,
+                        GenerationRequirement.COLLECTION_FIXTURE
+                )
+        );
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+
+        assertFalse(planner.isSupported(plan));
+    }
 }
