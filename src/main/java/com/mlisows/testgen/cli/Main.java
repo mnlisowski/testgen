@@ -7,7 +7,7 @@ import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
@@ -131,7 +131,7 @@ public class Main {
             List<MethodGenerationPlan> methodPlans,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints,
+            List<ArgumentValueHint> staticHints,
             CandidateGenerationUseCase candidateGenerationUseCase
     ) {
         GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
@@ -191,9 +191,9 @@ public class Main {
                 .findFirst();
     }
 
-    private static List<StaticArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
+    private static List<ArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
         return analysisResultsByPath.values().stream()
-                .flatMap(result -> result.getStaticArgumentValueHints().stream())
+                .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();
     }
 

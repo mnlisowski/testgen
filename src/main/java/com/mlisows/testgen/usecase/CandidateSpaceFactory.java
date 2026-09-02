@@ -13,7 +13,7 @@ import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ParameterModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TypeKind;
 
@@ -55,7 +55,7 @@ public final class CandidateSpaceFactory {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
@@ -94,7 +94,7 @@ public final class CandidateSpaceFactory {
             TestCandidate baseCandidate,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = classStructure.getClassName() + "." + method.getName();
@@ -124,7 +124,7 @@ public final class CandidateSpaceFactory {
             TestCandidate baseCandidate,
             ProjectClassStructureIndex classIndex,
             ProjectTypeIndex typeIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
 
@@ -162,7 +162,7 @@ public final class CandidateSpaceFactory {
             List<GeneratedArgument> arguments,
             ProjectClassStructureIndex classIndex,
             ProjectTypeIndex typeIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = setupClassName + ".<init>";
@@ -193,7 +193,7 @@ public final class CandidateSpaceFactory {
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
             GeneratedArgument baseValue,
-            List<StaticArgumentValueHint> staticHints,
+            List<ArgumentValueHint> staticHints,
             String slotId
     ) {
         List<CandidateValueOption> options = new ArrayList<>();

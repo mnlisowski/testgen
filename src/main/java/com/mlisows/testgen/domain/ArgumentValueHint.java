@@ -2,14 +2,14 @@ package com.mlisows.testgen.domain;
 
 import java.util.Objects;
 
-public final class StaticArgumentValueHint {
+public final class ArgumentValueHint {
     private final String ownerId;
     private final String argumentName;
     private final String type;
     private final String value;
     private final String source;
 
-    public StaticArgumentValueHint(
+    public ArgumentValueHint(
             String ownerId,
             String argumentName,
             String type,

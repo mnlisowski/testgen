@@ -4,7 +4,7 @@ import com.mlisows.testgen.domain.BranchKind;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.CoverageGoal;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -245,9 +245,9 @@ class JavaParserCodeAnalyzerTest {
     }
 
     private static List<String> valuesForSlot(ClassAnalysisResult result, String slotId) {
-        return result.getStaticArgumentValueHints().stream()
+        return result.getArgumentValueHints().stream()
                 .filter(hint -> hint.slotId().equals(slotId))
-                .map(StaticArgumentValueHint::getValue)
+                .map(ArgumentValueHint::getValue)
                 .toList();
     }
 

@@ -5,7 +5,7 @@ import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.StaticArgumentValueHint;
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 
@@ -42,7 +42,7 @@ public final class CandidateGenerationUseCase {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         return evaluate(classStructure, method, typeIndex, classIndex, staticHints).getSelectedResults();
     }
@@ -52,7 +52,7 @@ public final class CandidateGenerationUseCase {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<StaticArgumentValueHint> staticHints
+            List<ArgumentValueHint> staticHints
     ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
