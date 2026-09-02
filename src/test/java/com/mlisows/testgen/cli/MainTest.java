@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,11 +47,28 @@ class MainTest {
         assertTrue(report.contains("Failed to execute: 0"));
         assertTrue(report.contains("Unsupported Java constructs"));
         assertTrue(report.contains("Generation report written to: " + tempDir.resolve("work/report.txt")));
+        assertTrue(report.contains("Generated tests written to: " + tempDir.resolve("work/generated-tests")));
 
         String writtenReport = Files.readString(tempDir.resolve("work/report.txt"));
 
         assertTrue(writtenReport.contains("Test generation report"));
         assertTrue(writtenReport.contains("Covered goals: 12"));
+
+        Path generatedTestsRoot = tempDir.resolve("work/generated-tests");
+        List<Path> generatedTests;
+        try (Stream<Path> paths = Files.walk(generatedTestsRoot)) {
+            generatedTests = paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith("Test.java"))
+                    .toList();
+        }
+
+        assertTrue(!generatedTests.isEmpty());
+
+        String generatedCode = Files.readString(generatedTests.get(0));
+
+        assertTrue(generatedCode.contains("import org.junit.jupiter.api.Test;"));
+        assertTrue(generatedCode.contains("@Test"));
     }
 
     @Test

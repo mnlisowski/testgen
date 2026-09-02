@@ -3,6 +3,7 @@ package com.mlisows.testgen.cli;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.ExecutionOutcome;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ObservedProfile;
@@ -34,6 +35,7 @@ import com.mlisows.testgen.usecase.CandidateSpaceFactory;
 import com.mlisows.testgen.usecase.CandidateVariantGenerator;
 import com.mlisows.testgen.usecase.GeneratableCoverageGoalSelector;
 import com.mlisows.testgen.usecase.GenerationReport;
+import com.mlisows.testgen.usecase.JUnitCandidateTestWriter;
 import com.mlisows.testgen.usecase.MethodGenerationPlanner;
 
 import java.io.IOException;
@@ -51,6 +53,7 @@ import java.util.stream.Stream;
 public class Main {
     private static final int MAX_VALUES_PER_SLOT = 10;
     private static final int MAX_CANDIDATES_PER_METHOD = 50;
+    private static final String GENERATED_TESTS_DIRECTORY = "generated-tests";
 
     public static void main(String[] args) {
         if (args.length > 0 && args[0].equals("profile")) {
@@ -80,6 +83,7 @@ public class Main {
 
         System.out.println(reportText);
         System.out.println("Generation report written to: " + reportPath);
+        System.out.println("Generated tests written to: " + workRoot.resolve(GENERATED_TESTS_DIRECTORY));
     }
 
     private static void writeText(Path path, String text) {
@@ -152,6 +156,11 @@ public class Main {
                 classIndex,
                 argumentValueHints(analysisResultsByPath, observedProfile),
                 candidateGenerationUseCase
+        );
+
+        writeSelectedCandidateTests(
+                workRoot.resolve(GENERATED_TESTS_DIRECTORY),
+                coverageEvaluation.getSelectedResults()
         );
 
         return GenerationReport.from(
@@ -250,6 +259,36 @@ public class Main {
         return analysisResultsByPath.values().stream()
                 .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();
+    }
+
+    private static void writeSelectedCandidateTests(
+            Path outputRoot,
+            List<TestCandidateExecutionResult> selectedResults
+    ) {
+        JUnitCandidateTestWriter testWriter = new JUnitCandidateTestWriter();
+
+        for (String className : selectedResultClassNames(selectedResults)) {
+            String code = testWriter.write(className, selectedResults);
+            writeText(generatedTestPath(outputRoot, className), code);
+        }
+    }
+
+    private static List<String> selectedResultClassNames(List<TestCandidateExecutionResult> selectedResults) {
+        return selectedResults.stream()
+                .filter(Main::canWriteCandidateTest)
+                .map(result -> result.getCandidate().getClassName())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private static boolean canWriteCandidateTest(TestCandidateExecutionResult result) {
+        return result.getOutcome() == ExecutionOutcome.RETURNED
+                || result.getOutcome() == ExecutionOutcome.THREW_EXCEPTION;
+    }
+
+    private static Path generatedTestPath(Path outputRoot, String className) {
+        return outputRoot.resolve(className.replace('.', '/') + "Test.java");
     }
 
     private static Map<Path, List<CoverageGoal>> coverageGoalsBySourcePath(
