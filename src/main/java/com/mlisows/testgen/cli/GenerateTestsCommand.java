@@ -27,7 +27,10 @@ import java.util.Objects;
 final class GenerateTestsCommand {
     private static final int MAX_VALUES_PER_SLOT = 10;
     private static final int MAX_CANDIDATES_PER_METHOD = 50;
+    private static final String DEFAULT_WORK_DIRECTORY = "target/testgen-work";
     private static final String GENERATED_TESTS_DIRECTORY = "generated-tests";
+    private static final String REPORT_FILE = "report.txt";
+    private static final String USAGE = "Usage: testgen <maven-project-root> [work-root] [observed-profile]";
 
     private final ProjectAnalysisLoader analysisLoader;
     private final MavenProjectClasspath classpathResolver;
@@ -59,28 +62,55 @@ final class GenerateTestsCommand {
     }
 
     void run(String[] args) {
-        if (args.length < 1 || args.length > 3) {
-            System.out.println("Usage: testgen <maven-project-root> [work-root] [observed-profile]");
+        GenerationRequest request = parseRequest(args);
+
+        if (request == null) {
+            printUsage();
             return;
+        }
+
+        runGeneration(request);
+    }
+
+    private GenerationRequest parseRequest(String[] args) {
+        Objects.requireNonNull(args, "args must not be null");
+
+        if (args.length < 1 || args.length > 3) {
+            return null;
         }
 
         Path projectRoot = Path.of(args[0]);
         Path workRoot = args.length >= 2
                 ? Path.of(args[1])
-                : projectRoot.resolve("target/testgen-work");
+                : projectRoot.resolve(DEFAULT_WORK_DIRECTORY);
         ObservedProfile observedProfile = args.length == 3
                 ? observedProfileReader.read(Path.of(args[2]))
                 : emptyObservedProfile();
 
-        GenerationReport report = generateReport(projectRoot, workRoot, observedProfile);
+        return new GenerationRequest(projectRoot, workRoot, observedProfile);
+    }
+
+    private void printUsage() {
+        System.out.println(USAGE);
+    }
+
+    private void runGeneration(GenerationRequest request) {
+        GenerationReport report = generateReport(
+                request.projectRoot(),
+                request.workRoot(),
+                request.observedProfile()
+        );
         String reportText = report.toText();
-        Path reportPath = workRoot.resolve("report.txt");
+        Path reportPath = reportPath(request.workRoot());
 
         writeText(reportPath, reportText);
+        printGenerationResult(reportText, reportPath, generatedTestsRoot(request.workRoot()));
+    }
 
+    private void printGenerationResult(String reportText, Path reportPath, Path generatedTestsRoot) {
         System.out.println(reportText);
         System.out.println("Generation report written to: " + reportPath);
-        System.out.println("Generated tests written to: " + workRoot.resolve(GENERATED_TESTS_DIRECTORY));
+        System.out.println("Generated tests written to: " + generatedTestsRoot);
     }
 
     GenerationReport generateReport(Path projectRoot, Path workRoot) {
@@ -105,7 +135,7 @@ final class GenerateTestsCommand {
         );
 
         testFileWriter.write(
-                workRoot.resolve(GENERATED_TESTS_DIRECTORY),
+                generatedTestsRoot(workRoot),
                 coverageEvaluation.getSelectedResults()
         );
 
@@ -156,6 +186,14 @@ final class GenerateTestsCommand {
         return new ObservedProfile(List.of(), List.of());
     }
 
+    private Path generatedTestsRoot(Path workRoot) {
+        return workRoot.resolve(GENERATED_TESTS_DIRECTORY);
+    }
+
+    private Path reportPath(Path workRoot) {
+        return workRoot.resolve(REPORT_FILE);
+    }
+
     private void writeText(Path path, String text) {
         try {
             Path parent = path.getParent();
@@ -167,6 +205,18 @@ final class GenerateTestsCommand {
             Files.writeString(path, text);
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot write file: " + path, exception);
+        }
+    }
+
+    private record GenerationRequest(
+            Path projectRoot,
+            Path workRoot,
+            ObservedProfile observedProfile
+    ) {
+        private GenerationRequest {
+            Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+            Objects.requireNonNull(workRoot, "workRoot must not be null");
+            Objects.requireNonNull(observedProfile, "observedProfile must not be null");
         }
     }
 }
