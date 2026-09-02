@@ -198,6 +198,21 @@ public final class CandidateSpaceFactory {
     ) {
         List<CandidateValueOption> options = new ArrayList<>();
 
+        addExactHintOptions(options, type, argumentValueHints, slotId);
+        addBaseOption(options, baseValue);
+        addNullOption(options, type, typeIndex, classIndex);
+        addSeedOptions(options, type);
+        addEnumOptions(options, type, typeIndex);
+
+        return List.copyOf(options);
+    }
+
+    private void addExactHintOptions(
+            List<CandidateValueOption> options,
+            String type,
+            List<ArgumentValueHint> argumentValueHints,
+            String slotId
+    ) {
         argumentValueHints.stream()
                 .filter(hint -> hint.slotId().equals(slotId))
                 .filter(hint -> hint.getType().equals(type))
@@ -207,18 +222,31 @@ public final class CandidateSpaceFactory {
                         CandidateValueTier.EXACT,
                         hint.getSource()
                 ));
+    }
 
+    private void addBaseOption(List<CandidateValueOption> options, GeneratedArgument baseValue) {
         addIfMissing(options, baseValue, CandidateValueTier.FALLBACK, "base-candidate");
+    }
 
-        if (isNullableReferenceType(type, typeIndex, classIndex)) {
-            addIfMissing(
-                    options,
-                    new GeneratedArgument(type, "null"),
-                    CandidateValueTier.FALLBACK,
-                    "null-reference"
-            );
+    private void addNullOption(
+            List<CandidateValueOption> options,
+            String type,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex
+    ) {
+        if (!isNullableReferenceType(type, typeIndex, classIndex)) {
+            return;
         }
 
+        addIfMissing(
+                options,
+                new GeneratedArgument(type, "null"),
+                CandidateValueTier.FALLBACK,
+                "null-reference"
+        );
+    }
+
+    private void addSeedOptions(List<CandidateValueOption> options, String type) {
         for (String seedValue : seedValueGenerator.seedValuesFor(type)) {
             addIfMissing(
                     options,
@@ -227,7 +255,13 @@ public final class CandidateSpaceFactory {
                     "default-seed"
             );
         }
+    }
 
+    private void addEnumOptions(
+            List<CandidateValueOption> options,
+            String type,
+            ProjectTypeIndex typeIndex
+    ) {
         typeIndex.findByName(type)
                 .filter(typeInfo -> typeInfo.getKind() == TypeKind.ENUM)
                 .ifPresent(typeInfo -> typeInfo.getEnumConstants()
@@ -240,8 +274,6 @@ public final class CandidateSpaceFactory {
                                 CandidateValueTier.FALLBACK,
                                 "enum-constant"
                         )));
-
-        return List.copyOf(options);
     }
 
     private boolean isNullableReferenceType(
