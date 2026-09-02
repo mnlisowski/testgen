@@ -122,4 +122,29 @@ class JUnitCandidateTestWriterTest {
         assertTrue(code.contains("assertEquals(\"Hello \\\"Marcin\\\"\", result);"));
     }
 
+
+    @Test
+    void shouldAssertNotNullForObjectReturnValue() {
+        TestCandidate candidate = new TestCandidate(
+                "sample.Base32",
+                "builder",
+                "Builder",
+                List.of(new GeneratedSetupObject("Base32", "base32", List.of())),
+                "base32",
+                List.of()
+        );
+
+        TestCandidateExecutionResult result = TestCandidateExecutionResult.returned(
+                candidate,
+                List.of(),
+                "sample.Base32$Builder@1"
+        );
+
+        String code = new JUnitCandidateTestWriter().write("sample.Base32", List.of(result));
+
+        assertTrue(code.contains("import static org.junit.jupiter.api.Assertions.assertNotNull;"));
+        assertTrue(code.contains("Builder result = base32.builder();"));
+        assertTrue(code.contains("assertNotNull(result);"));
+    }
+
 }

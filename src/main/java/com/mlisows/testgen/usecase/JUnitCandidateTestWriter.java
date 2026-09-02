@@ -37,6 +37,7 @@ public final class JUnitCandidateTestWriter {
         builder.append("import org.junit.jupiter.api.Test;\n");
         builder.append("\n");
         builder.append("import static org.junit.jupiter.api.Assertions.assertEquals;\n");
+        builder.append("import static org.junit.jupiter.api.Assertions.assertNotNull;\n");
         builder.append("import static org.junit.jupiter.api.Assertions.assertThrows;\n\n");
         builder.append("class ").append(simpleName(className)).append("Test {\n\n");
 
@@ -108,6 +109,9 @@ public final class JUnitCandidateTestWriter {
             builder.append("        assertEquals(")
                     .append(expectedReturnValue(result))
                     .append(", result);\n");
+        } else if (canAssertNotNull(candidate.getReturnType())) {
+            builder.append("\n");
+            builder.append("        assertNotNull(result);\n");
         }
     }
 
@@ -138,6 +142,10 @@ public final class JUnitCandidateTestWriter {
 
     private boolean canAssertEquals(String returnType) {
         return EQUALS_ASSERTION_RETURN_TYPES.contains(returnType);
+    }
+
+    private boolean canAssertNotNull(String returnType) {
+        return !returnType.equals("void");
     }
 
     private String expectedReturnValue(TestCandidateExecutionResult result) {
