@@ -84,7 +84,7 @@ class MainTest {
                 List.of()
         );
 
-        String report = Main.generateReport(
+        String report = new GenerateTestsCommand().generateReport(
                 Path.of("src/test/resources/sample-maven-project"),
                 tempDir.resolve("work-with-profile"),
                 observedProfile
@@ -97,7 +97,7 @@ class MainTest {
     void shouldGenerateObservedProfileForMavenProject() throws Exception {
         Path outputProfile = tempDir.resolve("observed-profile.txt");
 
-        Main.generateObservedProfile(
+        new ObservedProfileCommand().generateObservedProfile(
                 Path.of("src/test/resources/sample-maven-project"),
                 tempDir.resolve("profile-work"),
                 "sample.maven.DemoApplication",
