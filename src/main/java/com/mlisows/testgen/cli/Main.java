@@ -61,6 +61,11 @@ public class Main {
             return;
         }
 
+        if (args.length > 0 && args[0].equals("prepare-profile")) {
+            runPrepareProfileCommand(args);
+            return;
+        }
+
         if (args.length < 1 || args.length > 3) {
             System.out.println("Usage: testgen <maven-project-root> [work-root] [observed-profile]");
             return;
@@ -354,6 +359,31 @@ public class Main {
         System.out.println("Observed profile written to: " + outputProfile);
     }
 
+    private static void runPrepareProfileCommand(String[] args) {
+        if (args.length < 2 || args.length > 3) {
+            System.out.println("Usage: testgen prepare-profile <maven-project-root> [work-root]");
+            return;
+        }
+
+        Path projectRoot = Path.of(args[1]);
+        Path workRoot = args.length == 3
+                ? Path.of(args[2])
+                : projectRoot.resolve("target/testgen-profile-work");
+
+        InstrumentedProjectWorkspace workspace = prepareObservedProfileWorkspace(projectRoot, workRoot);
+        Path profileOutputDir = workRoot.resolve("profile-output");
+        String runtimeClasspath = JavaSourceCompiler.joinClasspaths(
+                workspace.getClassesRoot().toString(),
+                workspace.getClasspath()
+        );
+
+        System.out.println("Instrumented sources written to: " + workspace.getSourceRoot());
+        System.out.println("Instrumented classes written to: " + workspace.getClassesRoot());
+        System.out.println("Runtime profile output directory: " + profileOutputDir);
+        System.out.println("Run instrumented application with:");
+        System.out.println("java -Dtestgen.profile.dir=" + profileOutputDir + " -cp \"" + runtimeClasspath + "\" <main-class>");
+    }
+
     static Path generateObservedProfile(
             Path projectRoot,
             Path workRoot,
@@ -367,18 +397,7 @@ public class Main {
         Objects.requireNonNull(applicationArgs, "applicationArgs must not be null");
         Objects.requireNonNull(outputProfile, "outputProfile must not be null");
 
-        MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
-        String classpath = classpathFor(layout);
-
-        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
-                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
-                new JavaSourceCompiler(classpath),
-                classpath
-        ).prepare(
-                layout,
-                workRoot,
-                Map.of()
-        );
+        InstrumentedProjectWorkspace workspace = prepareObservedProfileWorkspace(projectRoot, workRoot);
 
         new ObservedProfileMainRunner().run(
                 workspace,
@@ -388,5 +407,20 @@ public class Main {
         );
 
         return outputProfile;
+    }
+
+    private static InstrumentedProjectWorkspace prepareObservedProfileWorkspace(Path projectRoot, Path workRoot) {
+        MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
+        String classpath = classpathFor(layout);
+
+        return new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
+                new JavaSourceCompiler(classpath),
+                classpath
+        ).prepare(
+                layout,
+                workRoot,
+                Map.of()
+        );
     }
 }

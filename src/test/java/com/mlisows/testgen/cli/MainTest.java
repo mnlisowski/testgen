@@ -116,4 +116,31 @@ class MainTest {
         assertTrue(profile.contains("hint|sample.maven.DiscountService.shippingFee|amount|int|99|runtime-observed"));
     }
 
+    @Test
+    void shouldPrepareObservedProfileWorkspaceWithoutRunningMain() throws Exception {
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Path workRoot = tempDir.resolve("prepared-profile-work");
+
+        try {
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+
+            Main.main(new String[]{
+                    "prepare-profile",
+                    "src/test/resources/sample-maven-project",
+                    workRoot.toString()
+            });
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String text = output.toString(StandardCharsets.UTF_8);
+
+        assertTrue(Files.exists(workRoot.resolve("instrumented-src/sample/maven/DemoApplication.java")));
+        assertTrue(Files.exists(workRoot.resolve("classes/sample/maven/DemoApplication.class")));
+        assertTrue(text.contains("Instrumented sources written to: " + workRoot.resolve("instrumented-src")));
+        assertTrue(text.contains("Instrumented classes written to: " + workRoot.resolve("classes")));
+        assertTrue(text.contains("-Dtestgen.profile.dir=" + workRoot.resolve("profile-output")));
+    }
+
 }

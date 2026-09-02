@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public final class ArgumentRecorder {
     private static final String SOURCE = "runtime-observed";
+    private static final String PROFILE_DIR_PROPERTY = "testgen.profile.dir";
+    private static final String PROFILE_FILE_NAME = "observed-profile.txt";
     private static final Set<String> profileLines = new LinkedHashSet<>();
 
     private ArgumentRecorder() {
@@ -44,7 +48,7 @@ public final class ArgumentRecorder {
             if (isRecordable(argumentValue)) {
                 String literal = javaLiteral(argumentValue);
 
-                profileLines.add(String.join(
+                addProfileLine(String.join(
                         "|",
                         "hint",
                         ownerId,
@@ -62,7 +66,7 @@ public final class ArgumentRecorder {
         }
 
         if (invocationCanBeReplayed) {
-            profileLines.add(String.join("|", invocationFields));
+            addProfileLine(String.join("|", invocationFields));
         }
     }
 
@@ -88,6 +92,42 @@ public final class ArgumentRecorder {
 
     public static void reset() {
         profileLines.clear();
+    }
+
+    private static void addProfileLine(String line) {
+        if (profileLines.add(line)) {
+            liveProfilePath().ifPresent(path -> appendLine(path, line));
+        }
+    }
+
+    private static Optional<Path> liveProfilePath() {
+        String profileDir = System.getProperty(PROFILE_DIR_PROPERTY);
+
+        if (profileDir == null || profileDir.isBlank()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Path.of(profileDir).resolve(PROFILE_FILE_NAME));
+    }
+
+    private static void appendLine(Path profilePath, String line) {
+        try {
+            Path parent = profilePath.getParent();
+
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            Files.writeString(
+                    profilePath,
+                    line + System.lineSeparator(),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND
+            );
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot append observed profile line: " + profilePath, exception);
+        }
     }
 
     private static boolean isRecordable(Object value) {
