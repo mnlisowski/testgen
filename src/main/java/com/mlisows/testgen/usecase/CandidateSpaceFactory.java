@@ -55,13 +55,13 @@ public final class CandidateSpaceFactory {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
         Objects.requireNonNull(classIndex, "classIndex must not be null");
-        Objects.requireNonNull(staticHints, "staticHints must not be null");
+        Objects.requireNonNull(argumentValueHints, "argumentValueHints must not be null");
 
         Optional<TestCandidate> baseCandidate = initialCandidateFactory.create(
                 classStructure,
@@ -81,9 +81,9 @@ public final class CandidateSpaceFactory {
                 baseCandidate.get(),
                 typeIndex,
                 classIndex,
-                staticHints
+                argumentValueHints
         ));
-        valuePools.addAll(setupObjectArgumentPools(baseCandidate.get(), classIndex, typeIndex, staticHints));
+        valuePools.addAll(setupObjectArgumentPools(baseCandidate.get(), classIndex, typeIndex, argumentValueHints));
 
         return Optional.of(new CandidateSpace(baseCandidate.get(), valuePools));
     }
@@ -94,7 +94,7 @@ public final class CandidateSpaceFactory {
             TestCandidate baseCandidate,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = classStructure.getClassName() + "." + method.getName();
@@ -113,7 +113,7 @@ public final class CandidateSpaceFactory {
 
             pools.add(new CandidateValuePool(
                     slot,
-                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, staticHints, slot.id())
+                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, argumentValueHints, slot.id())
             ));
         }
 
@@ -124,7 +124,7 @@ public final class CandidateSpaceFactory {
             TestCandidate baseCandidate,
             ProjectClassStructureIndex classIndex,
             ProjectTypeIndex typeIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
 
@@ -149,7 +149,7 @@ public final class CandidateSpaceFactory {
                     setupObject.getArguments(),
                     classIndex,
                     typeIndex,
-                    staticHints
+                    argumentValueHints
             ));
         }
 
@@ -162,7 +162,7 @@ public final class CandidateSpaceFactory {
             List<GeneratedArgument> arguments,
             ProjectClassStructureIndex classIndex,
             ProjectTypeIndex typeIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
         String ownerId = setupClassName + ".<init>";
@@ -181,7 +181,7 @@ public final class CandidateSpaceFactory {
 
             pools.add(new CandidateValuePool(
                     slot,
-                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, staticHints, slot.id())
+                    optionsFor(parameter.getType(), typeIndex, classIndex, baseValue, argumentValueHints, slot.id())
             ));
         }
 
@@ -193,12 +193,12 @@ public final class CandidateSpaceFactory {
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
             GeneratedArgument baseValue,
-            List<ArgumentValueHint> staticHints,
+            List<ArgumentValueHint> argumentValueHints,
             String slotId
     ) {
         List<CandidateValueOption> options = new ArrayList<>();
 
-        staticHints.stream()
+        argumentValueHints.stream()
                 .filter(hint -> hint.slotId().equals(slotId))
                 .filter(hint -> hint.getType().equals(type))
                 .forEach(hint -> addIfMissing(

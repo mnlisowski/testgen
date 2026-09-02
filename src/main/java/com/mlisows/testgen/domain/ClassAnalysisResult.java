@@ -21,7 +21,7 @@ public final class ClassAnalysisResult {
         this.coverageGoals = List.copyOf(Objects.requireNonNull(coverageGoals, "coverageGoals must not be null"));
         this.argumentValueHints = List.copyOf(Objects.requireNonNull(
                 argumentValueHints,
-                "ArgumentValueHints must not be null"
+                "argumentValueHints must not be null"
         ));
     }
 

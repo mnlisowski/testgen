@@ -108,7 +108,7 @@ public class Main {
                 methodPlans,
                 typeIndex,
                 classIndex,
-                staticHints(analysisResultsByPath),
+                argumentValueHints(analysisResultsByPath),
                 candidateGenerationUseCase
         );
 
@@ -131,7 +131,7 @@ public class Main {
             List<MethodGenerationPlan> methodPlans,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<ArgumentValueHint> staticHints,
+            List<ArgumentValueHint> argumentValueHints,
             CandidateGenerationUseCase candidateGenerationUseCase
     ) {
         GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
@@ -155,7 +155,7 @@ public class Main {
                         method,
                         typeIndex,
                         classIndex,
-                        staticHints
+                        argumentValueHints
                 );
 
                 executedResults.addAll(evaluation.getExecutedResults());
@@ -191,7 +191,7 @@ public class Main {
                 .findFirst();
     }
 
-    private static List<ArgumentValueHint> staticHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
+    private static List<ArgumentValueHint> argumentValueHints(Map<Path, ClassAnalysisResult> analysisResultsByPath) {
         return analysisResultsByPath.values().stream()
                 .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();

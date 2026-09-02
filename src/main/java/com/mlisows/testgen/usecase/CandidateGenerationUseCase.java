@@ -42,9 +42,9 @@ public final class CandidateGenerationUseCase {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
-        return evaluate(classStructure, method, typeIndex, classIndex, staticHints).getSelectedResults();
+        return evaluate(classStructure, method, typeIndex, classIndex, argumentValueHints).getSelectedResults();
     }
 
     public CandidateCoverageEvaluation evaluate(
@@ -52,20 +52,20 @@ public final class CandidateGenerationUseCase {
             MethodModel method,
             ProjectTypeIndex typeIndex,
             ProjectClassStructureIndex classIndex,
-            List<ArgumentValueHint> staticHints
+            List<ArgumentValueHint> argumentValueHints
     ) {
         Objects.requireNonNull(classStructure, "classStructure must not be null");
         Objects.requireNonNull(method, "method must not be null");
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
         Objects.requireNonNull(classIndex, "classIndex must not be null");
-        Objects.requireNonNull(staticHints, "staticHints must not be null");
+        Objects.requireNonNull(argumentValueHints, "argumentValueHints must not be null");
 
         Optional<CandidateSpace> candidateSpace = candidateSpaceFactory.create(
                 classStructure,
                 method,
                 typeIndex,
                 classIndex,
-                staticHints
+                argumentValueHints
         );
 
         if (candidateSpace.isEmpty()) {
