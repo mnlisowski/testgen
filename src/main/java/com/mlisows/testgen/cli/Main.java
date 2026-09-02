@@ -17,6 +17,8 @@ import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecu
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
+import com.mlisows.testgen.infrastructure.instrumentation.JavaParserArgumentInstrumenter;
+import com.mlisows.testgen.infrastructure.runtime.ObservedProfileMainRunner;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspace;
@@ -51,6 +53,11 @@ public class Main {
     private static final int MAX_CANDIDATES_PER_METHOD = 50;
 
     public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("profile")) {
+            runProfileCommand(args);
+            return;
+        }
+
         if (args.length < 1 || args.length > 3) {
             System.out.println("Usage: testgen <maven-project-root> [work-root] [observed-profile]");
             return;
@@ -266,5 +273,61 @@ public class Main {
         }
 
         return fileName.substring(0, fileName.length() - ".java".length());
+    }
+
+    private static void runProfileCommand(String[] args) {
+        if (args.length < 3 || args.length > 5) {
+            System.out.println("Usage: testgen profile <maven-project-root> <main-class> [work-root] [output-profile]");
+            return;
+        }
+
+        Path projectRoot = Path.of(args[1]);
+        String mainClassName = args[2];
+        Path workRoot = args.length >= 4
+                ? Path.of(args[3])
+                : projectRoot.resolve("target/testgen-profile-work");
+        Path outputProfile = args.length == 5
+                ? Path.of(args[4])
+                : workRoot.resolve("observed-profile.txt");
+
+        generateObservedProfile(projectRoot, workRoot, mainClassName, new String[]{}, outputProfile);
+
+        System.out.println("Observed profile written to: " + outputProfile);
+    }
+
+    static Path generateObservedProfile(
+            Path projectRoot,
+            Path workRoot,
+            String mainClassName,
+            String[] applicationArgs,
+            Path outputProfile
+    ) {
+        Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+        Objects.requireNonNull(workRoot, "workRoot must not be null");
+        Objects.requireNonNull(mainClassName, "mainClassName must not be null");
+        Objects.requireNonNull(applicationArgs, "applicationArgs must not be null");
+        Objects.requireNonNull(outputProfile, "outputProfile must not be null");
+
+        MavenProjectLayout layout = new MavenProjectLayoutDetector().detect(projectRoot);
+        String classpath = classpathFor(layout);
+
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
+                new JavaSourceCompiler(classpath),
+                classpath
+        ).prepare(
+                layout,
+                workRoot,
+                Map.of()
+        );
+
+        new ObservedProfileMainRunner().run(
+                workspace,
+                mainClassName,
+                applicationArgs,
+                outputProfile
+        );
+
+        return outputProfile;
     }
 }
