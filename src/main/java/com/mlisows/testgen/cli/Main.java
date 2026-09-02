@@ -33,7 +33,7 @@ import com.mlisows.testgen.usecase.CandidateCoverageEvaluator;
 import com.mlisows.testgen.usecase.CandidateGenerationUseCase;
 import com.mlisows.testgen.usecase.CandidateSpaceFactory;
 import com.mlisows.testgen.usecase.CandidateVariantGenerator;
-import com.mlisows.testgen.usecase.GeneratableCoverageGoalSelector;
+import com.mlisows.testgen.usecase.MethodGenerationPlanSupport;
 import com.mlisows.testgen.usecase.GenerationReport;
 import com.mlisows.testgen.usecase.JUnitCandidateTestWriter;
 import com.mlisows.testgen.usecase.MethodGenerationPlanner;
@@ -190,7 +190,7 @@ public class Main {
             List<ArgumentValueHint> argumentValueHints,
             CandidateGenerationUseCase candidateGenerationUseCase
     ) {
-        GeneratableCoverageGoalSelector selector = new GeneratableCoverageGoalSelector();
+        MethodGenerationPlanSupport support = new MethodGenerationPlanSupport();
         List<TestCandidateExecutionResult> executedResults = new ArrayList<>();
         List<TestCandidateExecutionResult> selectedResults = new ArrayList<>();
 
@@ -202,7 +202,7 @@ public class Main {
                         method.getName()
                 );
 
-                if (plan.isEmpty() || !selector.isSupportedByCurrentGenerator(plan.get())) {
+                if (plan.isEmpty() || !support.isSupported(plan.get())) {
                     continue;
                 }
 
