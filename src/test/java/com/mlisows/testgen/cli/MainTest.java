@@ -20,7 +20,7 @@ class MainTest {
     Path tempDir;
 
     @Test
-    void shouldPrintGenerationReportForMavenProject() {
+    void shouldPrintGenerationReportForMavenProject() throws Exception {
         PrintStream originalOut = System.out;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -45,6 +45,12 @@ class MainTest {
         assertTrue(report.contains("Covered goals: 12"));
         assertTrue(report.contains("Failed to execute: 0"));
         assertTrue(report.contains("Unsupported Java constructs"));
+        assertTrue(report.contains("Generation report written to: " + tempDir.resolve("work/report.txt")));
+
+        String writtenReport = Files.readString(tempDir.resolve("work/report.txt"));
+
+        assertTrue(writtenReport.contains("Test generation report"));
+        assertTrue(writtenReport.contains("Covered goals: 12"));
     }
 
     @Test

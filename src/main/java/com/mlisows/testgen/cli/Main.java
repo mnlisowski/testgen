@@ -73,7 +73,27 @@ public class Main {
                 : new ObservedProfile(List.of(), List.of());
 
         GenerationReport report = generateReport(projectRoot, workRoot, observedProfile);
-        System.out.println(report.toText());
+        String reportText = report.toText();
+        Path reportPath = workRoot.resolve("report.txt");
+
+        writeText(reportPath, reportText);
+
+        System.out.println(reportText);
+        System.out.println("Generation report written to: " + reportPath);
+    }
+
+    private static void writeText(Path path, String text) {
+        try {
+            Path parent = path.getParent();
+
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            Files.writeString(path, text);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot write file: " + path, exception);
+        }
     }
 
     static GenerationReport generateReport(Path projectRoot, Path workRoot) {
