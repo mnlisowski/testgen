@@ -1,11 +1,6 @@
 package com.mlisows.testgen.cli;
 
-import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.MethodGenerationPlan;
-import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ObservedProfile;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
 import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
@@ -22,15 +17,12 @@ import com.mlisows.testgen.usecase.CandidateGenerationUseCase;
 import com.mlisows.testgen.usecase.CandidateSpaceFactory;
 import com.mlisows.testgen.usecase.CandidateVariantGenerator;
 import com.mlisows.testgen.usecase.GenerationReport;
-import com.mlisows.testgen.usecase.MethodGenerationPlanner;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 final class GenerateTestsCommand {
     private static final int MAX_VALUES_PER_SLOT = 10;
@@ -143,38 +135,13 @@ final class GenerateTestsCommand {
             InstrumentedProjectWorkspace workspace,
             ObservedProfile observedProfile
     ) {
-        CandidateGenerationUseCase candidateGenerationUseCase = candidateGenerationUseCase(workspace);
-        MethodGenerationPlanner planner = new MethodGenerationPlanner();
-        List<ArgumentValueHint> argumentValueHints = projectAnalysis.argumentValueHints(observedProfile);
-        List<TestCandidateExecutionResult> executedResults = new ArrayList<>();
-        List<TestCandidateExecutionResult> selectedResults = new ArrayList<>();
-
-        for (ClassStructure classStructure : projectAnalysis.getClassStructures()) {
-            for (MethodModel method : classStructure.getMethods()) {
-                Optional<MethodGenerationPlan> plan = methodPlan(
-                        projectAnalysis.getMethodPlans(),
-                        classStructure.getClassName(),
-                        method.getName()
-                );
-
-                if (plan.isEmpty() || !planner.isSupported(plan.get())) {
-                    continue;
-                }
-
-                CandidateCoverageEvaluation evaluation = candidateGenerationUseCase.evaluate(
-                        classStructure,
-                        method,
-                        projectAnalysis.getTypeIndex(),
-                        projectAnalysis.getClassIndex(),
-                        argumentValueHints
-                );
-
-                executedResults.addAll(evaluation.getExecutedResults());
-                selectedResults.addAll(evaluation.getSelectedResults());
-            }
-        }
-
-        return new CandidateCoverageEvaluation(executedResults, selectedResults);
+        return candidateGenerationUseCase(workspace).evaluateProject(
+                projectAnalysis.getClassStructures(),
+                projectAnalysis.getMethodPlans(),
+                projectAnalysis.getTypeIndex(),
+                projectAnalysis.getClassIndex(),
+                projectAnalysis.argumentValueHints(observedProfile)
+        );
     }
 
     private CandidateGenerationUseCase candidateGenerationUseCase(InstrumentedProjectWorkspace workspace) {
@@ -183,17 +150,6 @@ final class GenerateTestsCommand {
                 new CandidateVariantGenerator(MAX_VALUES_PER_SLOT, MAX_CANDIDATES_PER_METHOD),
                 new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
         );
-    }
-
-    private Optional<MethodGenerationPlan> methodPlan(
-            List<MethodGenerationPlan> methodPlans,
-            String className,
-            String methodName
-    ) {
-        return methodPlans.stream()
-                .filter(plan -> plan.getClassName().equals(className))
-                .filter(plan -> plan.getMethodName().equals(methodName))
-                .findFirst();
     }
 
     private ObservedProfile emptyObservedProfile() {

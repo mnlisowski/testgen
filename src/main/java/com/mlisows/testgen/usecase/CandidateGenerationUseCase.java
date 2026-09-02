@@ -2,6 +2,7 @@ package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.CandidateSpace;
 import com.mlisows.testgen.domain.ClassStructure;
+import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
@@ -9,6 +10,7 @@ import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,6 +49,51 @@ public final class CandidateGenerationUseCase {
         return evaluate(classStructure, method, typeIndex, classIndex, argumentValueHints).getSelectedResults();
     }
 
+    public CandidateCoverageEvaluation evaluateProject(
+            List<ClassStructure> classStructures,
+            List<MethodGenerationPlan> methodPlans,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
+            List<ArgumentValueHint> argumentValueHints
+    ) {
+        Objects.requireNonNull(classStructures, "classStructures must not be null");
+        Objects.requireNonNull(methodPlans, "methodPlans must not be null");
+        Objects.requireNonNull(typeIndex, "typeIndex must not be null");
+        Objects.requireNonNull(classIndex, "classIndex must not be null");
+        Objects.requireNonNull(argumentValueHints, "argumentValueHints must not be null");
+
+        MethodGenerationPlanner planner = new MethodGenerationPlanner();
+        List<TestCandidateExecutionResult> executedResults = new ArrayList<>();
+        List<TestCandidateExecutionResult> selectedResults = new ArrayList<>();
+
+        for (ClassStructure classStructure : classStructures) {
+            for (MethodModel method : classStructure.getMethods()) {
+                Optional<MethodGenerationPlan> plan = methodPlan(
+                        methodPlans,
+                        classStructure.getClassName(),
+                        method.getName()
+                );
+
+                if (plan.isEmpty() || !planner.isSupported(plan.get())) {
+                    continue;
+                }
+
+                CandidateCoverageEvaluation evaluation = evaluate(
+                        classStructure,
+                        method,
+                        typeIndex,
+                        classIndex,
+                        argumentValueHints
+                );
+
+                executedResults.addAll(evaluation.getExecutedResults());
+                selectedResults.addAll(evaluation.getSelectedResults());
+            }
+        }
+
+        return new CandidateCoverageEvaluation(executedResults, selectedResults);
+    }
+
     public CandidateCoverageEvaluation evaluate(
             ClassStructure classStructure,
             MethodModel method,
@@ -75,5 +122,16 @@ public final class CandidateGenerationUseCase {
         List<TestCandidate> candidateVariants = candidateVariantGenerator.generateVariants(candidateSpace.get());
 
         return candidateCoverageEvaluator.evaluate(candidateVariants);
+    }
+
+    private Optional<MethodGenerationPlan> methodPlan(
+            List<MethodGenerationPlan> methodPlans,
+            String className,
+            String methodName
+    ) {
+        return methodPlans.stream()
+                .filter(plan -> plan.getClassName().equals(className))
+                .filter(plan -> plan.getMethodName().equals(methodName))
+                .findFirst();
     }
 }
