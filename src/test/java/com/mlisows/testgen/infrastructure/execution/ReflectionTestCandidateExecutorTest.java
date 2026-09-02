@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReflectionTestCandidateExecutorTest {
 
@@ -66,6 +67,40 @@ class ReflectionTestCandidateExecutorTest {
         assertEquals(List.of(branchId("sample.Calculator", "calculate", BranchType.TRUE)), result.getCoveredBranches().stream()
                 .map(BranchId::asString)
                 .toList());
+    }
+
+    @Test
+    void shouldCaptureNullReturnValue() throws Exception {
+        Path sourceRoot = tempDir.resolve("src");
+        Path classesRoot = tempDir.resolve("classes");
+        writeSource(sourceRoot, "sample/NullableService.java", """
+                  package sample;
+
+                  public class NullableService {
+                      public String findName() {
+                          return null;
+                      }
+                  }
+                  """);
+
+        new JavaSourceCompiler().compile(sourceRoot, classesRoot);
+
+        TestCandidate candidate = new TestCandidate(
+                "sample.NullableService",
+                "findName",
+                "String",
+                List.of(new GeneratedSetupObject("NullableService", "nullableService", List.of())),
+                "nullableService",
+                List.of()
+        );
+
+        TestCandidateExecutionResult result = new ReflectionTestCandidateExecutor(
+                classesRoot,
+                System.getProperty("java.class.path")
+        ).execute(candidate);
+
+        assertEquals(ExecutionOutcome.RETURNED, result.getOutcome());
+        assertTrue(result.getReturnValue().isEmpty());
     }
 
     @Test

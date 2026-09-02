@@ -77,7 +77,7 @@ public final class ReflectionTestCandidateExecutor implements TestCandidateExecu
                 return TestCandidateExecutionResult.returned(
                         candidate,
                         coveredBranches(),
-                        String.valueOf(returnValue)
+                        returnValue == null ? null : String.valueOf(returnValue)
                 );
             } catch (InvocationTargetException exception) {
                 Throwable targetException = exception.getTargetException();

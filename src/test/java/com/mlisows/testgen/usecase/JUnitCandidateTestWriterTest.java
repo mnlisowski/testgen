@@ -64,7 +64,7 @@ class JUnitCandidateTestWriterTest {
         assertTrue(code.contains("import org.junit.jupiter.api.Test;"));
         assertTrue(code.contains("import static org.junit.jupiter.api.Assertions.assertEquals;"));
         assertTrue(code.contains("class DiscountServiceTest"));
-        assertTrue(code.contains("void shouldCallCalculate1()"));
+        assertTrue(code.contains("void shouldCallCalculate1() throws Exception"));
         assertTrue(code.contains("Customer customer = new Customer(\"PREMIUM\", CustomerType.VIP);"));
         assertTrue(code.contains("Order order = new Order(620, customer, \"PAID\");"));
         assertTrue(code.contains("DiscountService discountService = new DiscountService(500);"));
@@ -94,7 +94,7 @@ class JUnitCandidateTestWriterTest {
 
         assertTrue(code.contains("class CalculatorTest"));
         assertTrue(code.contains("import static org.junit.jupiter.api.Assertions.assertThrows;"));
-        assertTrue(code.contains("void shouldCallCalculate1()"));
+        assertTrue(code.contains("void shouldCallCalculate1() throws Exception"));
         assertTrue(code.contains("Calculator calculator = new Calculator();"));
         assertTrue(code.contains("assertThrows(java.lang.IllegalArgumentException.class, () -> calculator.calculate(-1));"));
     }
@@ -124,6 +124,52 @@ class JUnitCandidateTestWriterTest {
 
 
     @Test
+    void shouldCastNullArgumentToDeclaredType() {
+        TestCandidate candidate = new TestCandidate(
+                "sample.Codec",
+                "decode",
+                "String",
+                List.of(new GeneratedSetupObject("Codec", "codec", List.of())),
+                "codec",
+                List.of(new GeneratedArgument("String", "null"))
+        );
+
+        TestCandidateExecutionResult result = TestCandidateExecutionResult.returned(
+                candidate,
+                List.of(),
+                "decoded"
+        );
+
+        String code = new JUnitCandidateTestWriter().write("sample.Codec", List.of(result));
+
+        assertTrue(code.contains("String result = codec.decode((String) null);"));
+    }
+
+    @Test
+    void shouldAssertNullWhenMethodReturnsNull() {
+        TestCandidate candidate = new TestCandidate(
+                "sample.Greeter",
+                "greet",
+                "String",
+                List.of(new GeneratedSetupObject("Greeter", "greeter", List.of())),
+                "greeter",
+                List.of(new GeneratedArgument("String", "null"))
+        );
+
+        TestCandidateExecutionResult result = TestCandidateExecutionResult.returned(
+                candidate,
+                List.of(),
+                null
+        );
+
+        String code = new JUnitCandidateTestWriter().write("sample.Greeter", List.of(result));
+
+        assertTrue(code.contains("import static org.junit.jupiter.api.Assertions.assertNull;"));
+        assertTrue(code.contains("String result = greeter.greet((String) null);"));
+        assertTrue(code.contains("assertNull(result);"));
+    }
+
+    @Test
     void shouldAssertNotNullForObjectReturnValue() {
         TestCandidate candidate = new TestCandidate(
                 "sample.Base32",
@@ -143,7 +189,7 @@ class JUnitCandidateTestWriterTest {
         String code = new JUnitCandidateTestWriter().write("sample.Base32", List.of(result));
 
         assertTrue(code.contains("import static org.junit.jupiter.api.Assertions.assertNotNull;"));
-        assertTrue(code.contains("Builder result = base32.builder();"));
+        assertTrue(code.contains("Object result = base32.builder();"));
         assertTrue(code.contains("assertNotNull(result);"));
     }
 

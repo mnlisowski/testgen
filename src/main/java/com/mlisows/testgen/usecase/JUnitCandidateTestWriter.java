@@ -38,6 +38,7 @@ public final class JUnitCandidateTestWriter {
         builder.append("\n");
         builder.append("import static org.junit.jupiter.api.Assertions.assertEquals;\n");
         builder.append("import static org.junit.jupiter.api.Assertions.assertNotNull;\n");
+        builder.append("import static org.junit.jupiter.api.Assertions.assertNull;\n");
         builder.append("import static org.junit.jupiter.api.Assertions.assertThrows;\n\n");
         builder.append("class ").append(simpleName(className)).append("Test {\n\n");
 
@@ -63,7 +64,7 @@ public final class JUnitCandidateTestWriter {
         builder.append("    void shouldCall")
                 .append(capitalize(candidate.getMethodName()))
                 .append(index)
-                .append("() {\n");
+                .append("() throws Exception {\n");
 
         for (GeneratedSetupObject setupObject : candidate.getSetupObjects()) {
             appendObjectCreation(builder, setupObject);
@@ -98,13 +99,16 @@ public final class JUnitCandidateTestWriter {
         builder.append("        ");
 
         if (!candidate.getReturnType().equals("void")) {
-            builder.append(candidate.getReturnType()).append(" result = ");
+            builder.append(resultVariableType(candidate.getReturnType())).append(" result = ");
         }
 
         appendMethodCall(builder, candidate);
         builder.append(";\n");
 
-        if (canAssertEquals(candidate.getReturnType())) {
+        if (!candidate.getReturnType().equals("void") && isNullReturn(result)) {
+            builder.append("\n");
+            builder.append("        assertNull(result);\n");
+        } else if (canAssertEquals(candidate.getReturnType())) {
             builder.append("\n");
             builder.append("        assertEquals(")
                     .append(expectedReturnValue(result))
@@ -136,8 +140,24 @@ public final class JUnitCandidateTestWriter {
 
     private String argumentValues(List<GeneratedArgument> arguments) {
         return arguments.stream()
-                .map(GeneratedArgument::getValue)
+                .map(this::argumentValue)
                 .collect(Collectors.joining(", "));
+    }
+
+    private String argumentValue(GeneratedArgument argument) {
+        if (argument.getValue().equals("null")) {
+            return "(" + argument.getType() + ") null";
+        }
+
+        return argument.getValue();
+    }
+
+    private String resultVariableType(String returnType) {
+        if (canAssertEquals(returnType)) {
+            return returnType;
+        }
+
+        return "Object";
     }
 
     private boolean canAssertEquals(String returnType) {
@@ -146,6 +166,10 @@ public final class JUnitCandidateTestWriter {
 
     private boolean canAssertNotNull(String returnType) {
         return !returnType.equals("void");
+    }
+
+    private boolean isNullReturn(TestCandidateExecutionResult result) {
+        return result.getReturnValue().isEmpty();
     }
 
     private String expectedReturnValue(TestCandidateExecutionResult result) {
