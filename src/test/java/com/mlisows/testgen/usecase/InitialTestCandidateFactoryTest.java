@@ -195,7 +195,7 @@ class InitialTestCandidateFactoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenTargetClassHasNoUsableConstructor() {
+    void shouldCreateInitialCandidateWithTargetConstructorArgument() {
         MethodModel method = new MethodModel(
                 "calculate",
                 "int",
@@ -218,6 +218,12 @@ class InitialTestCandidateFactoryTest {
                 new ProjectClassStructureIndex(List.of(calculator))
         );
 
-        assertTrue(candidate.isEmpty());
+        assertTrue(candidate.isPresent());
+        assertEquals("calculator", candidate.get().getTargetVariableName());
+        assertEquals(1, candidate.get().getSetupObjects().size());
+        assertEquals("Calculator", candidate.get().getSetupObjects().get(0).getType());
+        assertEquals("calculator", candidate.get().getSetupObjects().get(0).getVariableName());
+        assertEquals("-1", candidate.get().getSetupObjects().get(0).getArguments().get(0).getValue());
+        assertEquals("-1", candidate.get().getMethodArguments().get(0).getValue());
     }
 }

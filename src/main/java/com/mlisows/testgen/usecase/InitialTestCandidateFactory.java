@@ -1,7 +1,6 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.ConstructorModel;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedSetupObject;
 import com.mlisows.testgen.domain.MethodModel;
@@ -45,10 +44,6 @@ public final class InitialTestCandidateFactory {
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
         Objects.requireNonNull(classIndex, "classIndex must not be null");
 
-        if (!hasPublicNoArgConstructor(classStructure)) {
-            return Optional.empty();
-        }
-
         Optional<MethodArguments> methodArguments = generateMethodArguments(
                 method.getParameters(),
                 classIndex,
@@ -59,22 +54,38 @@ public final class InitialTestCandidateFactory {
             return Optional.empty();
         }
 
-        String targetVariableName = decapitalize(simpleName(classStructure.getClassName()));
+        Optional<SetupObjectResolution> targetSetup = generateTargetSetup(
+                classStructure,
+                classIndex,
+                typeIndex
+        );
+
+        if (targetSetup.isEmpty()) {
+            return Optional.empty();
+        }
+
         List<GeneratedSetupObject> setupObjects = new ArrayList<>(methodArguments.get().setupObjects());
-        setupObjects.add(new GeneratedSetupObject(
-                simpleName(classStructure.getClassName()),
-                targetVariableName,
-                List.of()
-        ));
+        setupObjects.addAll(targetSetup.get().getSetupObjects());
 
         return Optional.of(new TestCandidate(
                 classStructure.getClassName(),
                 method.getName(),
                 method.getReturnType(),
                 setupObjects,
-                targetVariableName,
+                targetSetup.get().getReferenceArgument().getValue(),
                 methodArguments.get().methodArguments()
         ));
+    }
+
+    private Optional<SetupObjectResolution> generateTargetSetup(
+            ClassStructure classStructure,
+            ProjectClassStructureIndex classIndex,
+            ProjectTypeIndex typeIndex
+    ) {
+        String targetVariableName = decapitalize(simpleName(classStructure.getClassName()));
+        ParameterModel targetParameter = new ParameterModel(targetVariableName, classStructure.getClassName());
+
+        return setupObjectGenerator.generateSetup(targetParameter, classIndex, typeIndex);
     }
 
     private Optional<MethodArguments> generateMethodArguments(
@@ -121,20 +132,6 @@ public final class InitialTestCandidateFactory {
         }
 
         return Optional.of(argumentSets.get(0).get(0));
-    }
-
-    private boolean hasPublicNoArgConstructor(ClassStructure classStructure) {
-        if (classStructure.getConstructors().isEmpty()) {
-            return true;
-        }
-
-        for (ConstructorModel constructor : classStructure.getConstructors()) {
-            if (constructor.isPublicConstructor() && constructor.getParameters().isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private String simpleName(String className) {

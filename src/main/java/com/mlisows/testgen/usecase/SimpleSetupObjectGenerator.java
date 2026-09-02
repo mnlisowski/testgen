@@ -72,6 +72,10 @@ public final class SimpleSetupObjectGenerator {
         Set<String> nextResolvingClasses = new HashSet<>(resolvingClasses);
         nextResolvingClasses.add(className);
 
+        if (classStructure.get().getConstructors().isEmpty()) {
+            return Optional.of(noArgConstructorResolution(parameter, className));
+        }
+
         for (ConstructorModel constructor : classStructure.get().getConstructors()) {
             if (!constructor.isPublicConstructor()) {
                 continue;
@@ -106,6 +110,20 @@ public final class SimpleSetupObjectGenerator {
         }
 
         return Optional.empty();
+    }
+
+    private SetupObjectResolution noArgConstructorResolution(ParameterModel parameter, String className) {
+        String variableName = variableNameFor(parameter);
+        GeneratedSetupObject setupObject = new GeneratedSetupObject(
+                simpleName(className),
+                variableName,
+                List.of()
+        );
+
+        return new SetupObjectResolution(
+                List.of(setupObject),
+                new GeneratedArgument(parameter.getType(), variableName)
+        );
     }
 
     private Optional<ConstructorResolution> generateConstructorArguments(

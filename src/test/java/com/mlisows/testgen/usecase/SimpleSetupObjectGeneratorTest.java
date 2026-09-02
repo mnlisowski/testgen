@@ -49,6 +49,28 @@ class SimpleSetupObjectGeneratorTest {
     }
 
     @Test
+    void shouldGenerateSetupObjectForImplicitNoArgConstructor() {
+        ClassStructure order = new ClassStructure(
+                "sample.Order",
+                List.of(),
+                List.of()
+        );
+
+        SimpleSetupObjectGenerator generator = new SimpleSetupObjectGenerator(new SeedValueGenerator());
+
+        Optional<GeneratedSetupObject> setupObject = generator.generate(
+                new ParameterModel("order", "Order"),
+                new ProjectClassStructureIndex(List.of(order)),
+                new ProjectTypeIndex(List.of())
+        );
+
+        assertTrue(setupObject.isPresent());
+        assertEquals("Order", setupObject.get().getType());
+        assertEquals("order", setupObject.get().getVariableName());
+        assertTrue(setupObject.get().getArguments().isEmpty());
+    }
+
+    @Test
     void shouldGenerateSetupObjectForPublicConstructorWithEnumArgument() {
         ClassStructure customer = new ClassStructure(
                 "sample.Customer",
