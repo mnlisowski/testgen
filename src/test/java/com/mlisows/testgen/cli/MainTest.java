@@ -1,5 +1,7 @@
 package com.mlisows.testgen.cli;
 
+import com.mlisows.testgen.domain.ArgumentValueHint;
+import com.mlisows.testgen.domain.ObservedProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -7,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,5 +44,27 @@ class MainTest {
         assertTrue(report.contains("Covered goals: 12"));
         assertTrue(report.contains("Failed to execute: 0"));
         assertTrue(report.contains("Unsupported Java constructs"));
+    }
+
+    @Test
+    void shouldUseObservedProfileHints() {
+        ObservedProfile observedProfile = new ObservedProfile(
+                List.of(new ArgumentValueHint(
+                        "sample.maven.Order.<init>",
+                        "status",
+                        "String",
+                        "\"PAID\"",
+                        "runtime-observed"
+                )),
+                List.of()
+        );
+
+        String report = Main.generateReport(
+                Path.of("src/test/resources/sample-maven-project"),
+                tempDir.resolve("work-with-profile"),
+                observedProfile
+        ).toText();
+
+        assertTrue(report.contains("Covered goals: 13"));
     }
 }
