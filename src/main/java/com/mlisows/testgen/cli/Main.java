@@ -16,6 +16,7 @@ import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.*;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
+import com.mlisows.testgen.infrastructure.writer.GeneratedCandidateTestFileWriter;
 import com.mlisows.testgen.usecase.*;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
@@ -160,12 +161,16 @@ public final class Main {
                 argumentValueHints
         );
 
-
+        List<TestCandidateExecutionResult> selectedResults = coverageEvaluation.getSelectedResults();
         System.out.println("Executed candidates: " + coverageEvaluation.getExecutedResults().size());
         System.out.println("Selected candidates: " + coverageEvaluation.getSelectedResults().size());
 
-        writeGeneratedTests(workRoot);
-        writeReport(workRoot);
+        Path outputRoot = workRoot.resolve("generated-tests");
+
+        new GeneratedCandidateTestFileWriter().write(outputRoot, selectedResults);
+
+        System.out.println("Generated tests: " + outputRoot);
+
     }
 
     private static void prepareProfile(String[] args) {
