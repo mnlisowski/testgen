@@ -4,15 +4,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 
 public final class Main {
     private static final String GENERATE_TESTS_USAGE =
@@ -56,15 +61,18 @@ public final class Main {
         Path mainSourceRoot = projectLayout.getMainSourceRoot();
         List<Path> javaSources = findJavaSources(mainSourceRoot);
         ProjectTypeIndex typeIndex = new JavaParserTypeIndexAnalyzer().analyze(javaSources);
+        List<Path> classSources = findOnlyClassSources(javaSources, typeIndex);
 
-        List<Path> classSources = javaSources.stream()
-                .filter(sourcePath -> typeIndex.findByName(sourceTypeName(sourcePath))
-                        .map(TypeInfo::getKind)
-                        .filter(kind -> kind == TypeKind.CLASS)
-                        .isPresent())
-                .toList();
+        Map<Path, ClassAnalysisResult> analysisResultsByPath = new LinkedHashMap<>();
+        CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
 
-        List<Path> classSources = findOnlyClassSources(javaSources);
+        for (Path classSource : classSources) {
+            ClassAnalysisResult analysisResult = codeAnalyzer.analyze(classSource);
+            analysisResultsByPath.put(classSource, analysisResult);
+        }
+
+        System.out.println("Classes analyzed: " + analysisResultsByPath.size());
+
         analyzeBranchesAndStaticArgumentHints();
         analyzeClassStructures();
         planSupportedMethods();
