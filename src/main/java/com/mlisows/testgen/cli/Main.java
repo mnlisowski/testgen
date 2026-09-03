@@ -3,20 +3,16 @@ package com.mlisows.testgen.cli;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
-import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TypeInfo;
-import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.*;
+import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 
 public final class Main {
@@ -73,8 +69,19 @@ public final class Main {
 
         System.out.println("Classes analyzed: " + analysisResultsByPath.size());
 
-        analyzeBranchesAndStaticArgumentHints();
-        analyzeClassStructures();
+        System.out.println("Classes analyzed: " + analysisResultsByPath.size());
+
+        List<ClassStructure> classStructures = new ArrayList<>();
+        ClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
+
+        for (Path classSource : classSources) {
+            ClassStructure classStructure = classStructureAnalyzer.analyze(classSource);
+            classStructures.add(classStructure);
+        }
+
+        System.out.println("Class structures analyzed: " + classStructures.size());
+
+
         planSupportedMethods();
         readObservedProfile(observedProfilePath);
         prepareBranchCoverageWorkspace(workRoot);
