@@ -46,22 +46,11 @@ public final class Main {
             return;
         }
 
-
         Path projectRoot = Path.of(args[0]);
-        Path workRoot = args.length >= 2
-                ? Path.of(args[1])
-                : projectRoot.resolve(DEFAULT_TEST_WORK_DIRECTORY);
-        Path observedProfilePath = args.length == 3
-                ? Path.of(args[2])
-                : null;
+        Path workRoot = getWorkRoot(projectRoot, args);
+        Path observedProfilePath = observedProfilePath(args);
 
-        System.out.println("Generating tests");
-        System.out.println("Project root: " + projectRoot);
-        System.out.println("Work root: " + workRoot);
 
-        if (observedProfilePath != null) {
-            System.out.println("Observed profile: " + observedProfilePath);
-        }
         MavenProjectLayout projectLayout = new MavenProjectLayoutDetector().detect(projectRoot);
         Path mainSourceRoot = projectLayout.getMainSourceRoot();
         List<Path> javaSources = findJavaSources(mainSourceRoot);
@@ -218,6 +207,37 @@ public final class Main {
                 + runClasspath
                 + "\" <main-class>");
     }
+
+    private static Path getWorkRoot(Path projectRoot, String[] args) {
+        if (args.length >= 2) {
+            return Path.of(args[1]);
+        }
+
+        return projectRoot.resolve(DEFAULT_TEST_WORK_DIRECTORY);
+    }
+
+    private static Path observedProfilePath(String[] args) {
+        if (args.length == 3) {
+            return Path.of(args[2]);
+        }
+
+        return null;
+    }
+
+    private static void printGenerationStart(
+            Path projectRoot,
+            Path workRoot,
+            Path observedProfilePath
+    ) {
+        System.out.println("Generating tests");
+        System.out.println("Project root: " + projectRoot);
+        System.out.println("Work root: " + workRoot);
+
+        if (observedProfilePath != null) {
+            System.out.println("Observed profile: " + observedProfilePath);
+        }
+    }
+
 
     private static List<Path> findJavaSources(Path sourceRoot) {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
