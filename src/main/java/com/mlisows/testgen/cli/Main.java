@@ -136,6 +136,46 @@ public final class Main {
         writeReport(workRoot, analysisResultsByPath, methodPlans, coverageEvaluation);
     }
 
+    private static void prepareProfile(String[] args) {
+        if (args.length < 2 || args.length > 3) {
+            System.out.println(PREPARE_PROFILE_USAGE);
+            return;
+        }
+
+        Path projectRoot = Path.of(args[1]);
+        Path workRoot = args.length == 3
+                ? Path.of(args[2])
+                : projectRoot.resolve(DEFAULT_PROFILE_WORK_DIRECTORY);
+
+        System.out.println("Preparing profile workspace");
+        System.out.println("Project root: " + projectRoot);
+        System.out.println("Work root: " + workRoot);
+
+        MavenProjectLayoutDetector layoutDetector = new MavenProjectLayoutDetector();
+        MavenProjectLayout projectLayout = layoutDetector.detect(projectRoot);
+
+        MavenProjectClasspath projectClasspathResolver = new MavenProjectClasspath();
+        String projectClasspath = projectClasspathResolver.resolve(projectLayout);
+
+        JavaParserArgumentInstrumenter argumentInstrumenter = new JavaParserArgumentInstrumenter();
+        SourceDirectoryInstrumenter sourceDirectoryInstrumenter = new SourceDirectoryInstrumenter(argumentInstrumenter);
+        JavaSourceCompiler sourceCompiler = new JavaSourceCompiler(projectClasspath);
+
+        InstrumentedProjectWorkspacePreparer workspacePreparer = new InstrumentedProjectWorkspacePreparer(
+                sourceDirectoryInstrumenter,
+                sourceCompiler,
+                projectClasspath
+        );
+
+        InstrumentedProjectWorkspace workspace = workspacePreparer.prepare(
+                projectLayout,
+                workRoot,
+                Map.of()
+        );
+
+        printProfileRunInstructions(workRoot, workspace);
+    }
+
     private static Map<Path, ClassAnalysisResult> analyzeClasses(List<Path> classSources) {
         Map<Path, ClassAnalysisResult> analysisResultsByPath = new LinkedHashMap<>();
         CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
@@ -172,30 +212,13 @@ public final class Main {
         return coverageGoalsByPath;
     }
 
-    private static void prepareProfile(String[] args) {
-        if (args.length < 2 || args.length > 3) {
-            System.out.println(PREPARE_PROFILE_USAGE);
-            return;
-        }
 
-        Path projectRoot = Path.of(args[1]);
-        Path workRoot = args.length == 3
-                ? Path.of(args[2])
-                : projectRoot.resolve(DEFAULT_PROFILE_WORK_DIRECTORY);
 
-        System.out.println("Preparing profile workspace");
-        System.out.println("Project root: " + projectRoot);
-        System.out.println("Work root: " + workRoot);
 
-        MavenProjectLayout projectLayout = new MavenProjectLayoutDetector().detect(projectRoot);
-        String projectClasspath = new MavenProjectClasspath().resolve(projectLayout);
-
-        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
-                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
-                new JavaSourceCompiler(projectClasspath),
-                projectClasspath
-        ).prepare(projectLayout, workRoot, Map.of());
-
+    private static void printProfileRunInstructions(
+            Path workRoot,
+            InstrumentedProjectWorkspace workspace
+    ) {
         Path profilePath = workRoot.resolve("observed-profile.txt");
         String runClasspath = JavaSourceCompiler.joinClasspaths(
                 workspace.getClassesRoot().toString(),
@@ -212,6 +235,7 @@ public final class Main {
                 + runClasspath
                 + "\" <main-class>");
     }
+
 
     private static ObservedProfile readObservedProfile(Path observedProfilePath) {
         if (observedProfilePath == null) {
