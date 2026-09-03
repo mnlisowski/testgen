@@ -58,11 +58,8 @@ public final class Main {
         List<Path> classSources = findOnlyClassSources(javaSources, typeIndex);
 
         Map<Path, ClassAnalysisResult> analysisResultsByPath = analyzeClasses(classSources);
-        System.out.println("Classes analyzed: " + analysisResultsByPath.size());
 
         List<ClassStructure> classStructures = analyzeClassStructures(classSources);
-        System.out.println("Class structures analyzed: " + classStructures.size());
-
 
         ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
 
@@ -77,31 +74,10 @@ public final class Main {
                 .filter(methodGenerationPlanner::isSupported)
                 .count();
 
-        System.out.println("Methods analyzed: " + methodPlans.size());
-        System.out.println("Supported methods: " + supportedMethods);
+        ObservedProfile observedProfile = readObservedProfile(observedProfilePath);
 
-        ObservedProfile observedProfile;
+        Map<Path, List<CoverageGoal>> coverageGoalsByPath = coverageGoalsByPath(analysisResultsByPath);
 
-        if (observedProfilePath == null) {
-            observedProfile = new ObservedProfile(List.of(), List.of());
-            System.out.println("Observed profile: skipped");
-        } else {
-            ObservedProfileReader observedProfileReader = new TextObservedProfileReader();
-            observedProfile = observedProfileReader.read(observedProfilePath);
-            System.out.println("Observed profile hints: " + observedProfile.getArgumentValueHints().size());
-            System.out.println("Observed invocations: " + observedProfile.getObservedInvocations().size());
-        }
-
-        Map<Path, List<CoverageGoal>> coverageGoalsByPath = new LinkedHashMap<>();
-
-        for (Map.Entry<Path, ClassAnalysisResult> entry : analysisResultsByPath.entrySet()) {
-            coverageGoalsByPath.put(entry.getKey(), entry.getValue().getCoverageGoals());
-        }
-
-        int coverageGoalCount = 0;
-        for (List<CoverageGoal> coverageGoals : coverageGoalsByPath.values()) {
-            coverageGoalCount += coverageGoals.size();
-        }
 
         String projectClasspath = new MavenProjectClasspath().resolve(projectLayout);
 
@@ -176,6 +152,17 @@ public final class Main {
         return classStructures;
     }
 
+    private static Map<Path, List<CoverageGoal>> coverageGoalsByPath(
+            Map<Path, ClassAnalysisResult> analysisResultsByPath
+    ) {
+        Map<Path, List<CoverageGoal>> coverageGoalsByPath = new LinkedHashMap<>();
+
+        for (Map.Entry<Path, ClassAnalysisResult> entry : analysisResultsByPath.entrySet()) {
+            coverageGoalsByPath.put(entry.getKey(), entry.getValue().getCoverageGoals());
+        }
+
+        return coverageGoalsByPath;
+    }
 
     private static void prepareProfile(String[] args) {
         if (args.length < 2 || args.length > 3) {
@@ -217,6 +204,22 @@ public final class Main {
                 + runClasspath
                 + "\" <main-class>");
     }
+
+    private static ObservedProfile readObservedProfile(Path observedProfilePath) {
+        if (observedProfilePath == null) {
+            System.out.println("Observed profile: skipped");
+            return new ObservedProfile(List.of(), List.of());
+        }
+
+        ObservedProfileReader observedProfileReader = new TextObservedProfileReader();
+        ObservedProfile observedProfile = observedProfileReader.read(observedProfilePath);
+
+        System.out.println("Observed profile hints: " + observedProfile.getArgumentValueHints().size());
+        System.out.println("Observed invocations: " + observedProfile.getObservedInvocations().size());
+
+        return observedProfile;
+    }
+
 
     private static Path getWorkRoot(Path projectRoot, String[] args) {
         if (args.length >= 2) {
