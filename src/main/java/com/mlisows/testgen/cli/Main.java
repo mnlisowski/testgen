@@ -70,11 +70,11 @@ public final class Main {
         ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
 
         MethodGenerationPlanner methodGenerationPlanner = new MethodGenerationPlanner();
-        List<MethodGenerationPlan> methodPlans = new ArrayList<>();
-
-        for (ClassStructure classStructure : classStructures) {
-            methodPlans.addAll(methodGenerationPlanner.plan(classStructure, typeIndex));
-        }
+        List<MethodGenerationPlan> methodPlans = planMethods(
+                classStructures,
+                typeIndex,
+                methodGenerationPlanner
+        );
 
         ObservedProfile observedProfile = readObservedProfile(observedProfilePath);
 
@@ -103,11 +103,16 @@ public final class Main {
         argumentValueHints.addAll(observedProfile.getArgumentValueHints());
 
 
+        CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
+        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(10, 50);
+        ReflectionTestCandidateExecutor candidateExecutor = new ReflectionTestCandidateExecutor(workspace);
+        CandidateCoverageEvaluator candidateCoverageEvaluator = new CandidateCoverageEvaluator(candidateExecutor);
+
         EvaluateProjectCandidatesUseCase evaluateProjectCandidatesUseCase = new EvaluateProjectCandidatesUseCase(
                 methodGenerationPlanner,
-                new CandidateSpaceFactory(),
-                new CandidateVariantGenerator(10, 50),
-                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+                candidateSpaceFactory,
+                candidateVariantGenerator,
+                candidateCoverageEvaluator
         );
 
         CandidateCoverageEvaluation coverageEvaluation = evaluateProjectCandidatesUseCase.evaluate(
@@ -118,19 +123,17 @@ public final class Main {
                 argumentValueHints
         );
 
+
         List<TestCandidateExecutionResult> selectedResults = coverageEvaluation.getSelectedResults();
-        System.out.println("Executed candidates: " + coverageEvaluation.getExecutedResults().size());
-        System.out.println("Selected candidates: " + coverageEvaluation.getSelectedResults().size());
 
         Path outputRoot = workRoot.resolve("generated-tests");
 
-        new GeneratedCandidateTestFileWriter().write(outputRoot, selectedResults);
+        GeneratedCandidateTestFileWriter testFileWriter = new GeneratedCandidateTestFileWriter();
+        testFileWriter.write(outputRoot, selectedResults);
 
         System.out.println("Generated tests: " + outputRoot);
 
         writeReport(workRoot, analysisResultsByPath, methodPlans, coverageEvaluation);
-
-
     }
 
     private static Map<Path, ClassAnalysisResult> analyzeClasses(List<Path> classSources) {
@@ -311,6 +314,21 @@ public final class Main {
 
         System.out.println("Report: " + reportPath);
     }
+
+    private static List<MethodGenerationPlan> planMethods(
+            List<ClassStructure> classStructures,
+            ProjectTypeIndex typeIndex,
+            MethodGenerationPlanner methodGenerationPlanner
+    ) {
+        List<MethodGenerationPlan> methodPlans = new ArrayList<>();
+
+        for (ClassStructure classStructure : classStructures) {
+            methodPlans.addAll(methodGenerationPlanner.plan(classStructure, typeIndex));
+        }
+
+        return methodPlans;
+    }
+
 
 
 }
