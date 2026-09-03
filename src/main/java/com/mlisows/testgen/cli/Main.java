@@ -1,6 +1,18 @@
 package com.mlisows.testgen.cli;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+
+import com.mlisows.testgen.domain.ProjectTypeIndex;
+import com.mlisows.testgen.domain.TypeInfo;
+import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
+import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
+import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
 
 public final class Main {
     private static final String GENERATE_TESTS_USAGE =
@@ -40,9 +52,19 @@ public final class Main {
         if (observedProfilePath != null) {
             System.out.println("Observed profile: " + observedProfilePath);
         }
-        detectMavenProject(projectRoot);
-        findJavaSources(projectRoot);
-        analyzeProjectTypes();
+        MavenProjectLayout projectLayout = new MavenProjectLayoutDetector().detect(projectRoot);
+        Path mainSourceRoot = projectLayout.getMainSourceRoot();
+        List<Path> javaSources = findJavaSources(mainSourceRoot);
+        ProjectTypeIndex typeIndex = new JavaParserTypeIndexAnalyzer().analyze(javaSources);
+
+        List<Path> classSources = javaSources.stream()
+                .filter(sourcePath -> typeIndex.findByName(sourceTypeName(sourcePath))
+                        .map(TypeInfo::getKind)
+                        .filter(kind -> kind == TypeKind.CLASS)
+                        .isPresent())
+                .toList();
+
+        List<Path> classSources = findOnlyClassSources(javaSources);
         analyzeBranchesAndStaticArgumentHints();
         analyzeClassStructures();
         planSupportedMethods();
@@ -55,7 +77,7 @@ public final class Main {
         writeReport(workRoot);
     }
 
-    private static void prepareProfileWorkspace(String[] args) {
+    private static void prepareProfile(String[] args) {
         if (args.length < 2 || args.length > 3) {
             System.out.println(PREPARE_PROFILE_USAGE);
             return;
@@ -82,9 +104,37 @@ public final class Main {
         printStep("Detect Maven project: " + projectRoot);
     }
 
-    private static void findJavaSources(Path projectRoot) {
-        printStep("Find Java source files: " + projectRoot);
+    private static List<Path> findJavaSources(Path sourceRoot) {
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".java"))
+                    .sorted(Comparator.comparing(Path::toString))
+                    .toList();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot read source directory: " + sourceRoot, exception);
+        }
     }
+
+    private static List<Path> findOnlyClassSources(List<Path> javaSources, ProjectTypeIndex typeIndex) {
+        return javaSources.stream()
+                .filter(sourcePath -> typeIndex.findByName(sourceTypeName(sourcePath))
+                        .map(TypeInfo::getKind)
+                        .filter(kind -> kind == TypeKind.CLASS)
+                        .isPresent())
+                .toList();
+    }
+
+    private static String sourceTypeName(Path sourcePath) {
+        String fileName = sourcePath.getFileName().toString();
+
+        if (!fileName.endsWith(".java")) {
+            return fileName;
+        }
+
+        return fileName.substring(0, fileName.length() - ".java".length());
+    }
+
 
     private static void analyzeProjectTypes() {
         printStep("Analyze project types");
