@@ -212,9 +212,6 @@ public final class Main {
         return coverageGoalsByPath;
     }
 
-
-
-
     private static void printProfileRunInstructions(
             Path workRoot,
             InstrumentedProjectWorkspace workspace
@@ -236,7 +233,6 @@ public final class Main {
                 + "\" <main-class>");
     }
 
-
     private static ObservedProfile readObservedProfile(Path observedProfilePath) {
         if (observedProfilePath == null) {
             System.out.println("Observed profile: skipped");
@@ -251,7 +247,6 @@ public final class Main {
 
         return observedProfile;
     }
-
 
     private static Path getWorkRoot(Path projectRoot, String[] args) {
         if (args.length >= 2) {
@@ -282,7 +277,6 @@ public final class Main {
             System.out.println("Observed profile: " + observedProfilePath);
         }
     }
-
 
     private static List<Path> findJavaSources(Path sourceRoot) {
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
@@ -352,8 +346,6 @@ public final class Main {
 
         return methodPlans;
     }
-
-
 
 }
 
