@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.mlisows.testgen.domain.*;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
+import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
@@ -15,7 +16,7 @@ import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.*;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
-import com.mlisows.testgen.usecase.MethodGenerationPlanner;
+import com.mlisows.testgen.usecase.*;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
@@ -86,6 +87,8 @@ public final class Main {
 
         System.out.println("Class structures analyzed: " + classStructures.size());
 
+        ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
+
         MethodGenerationPlanner methodGenerationPlanner = new MethodGenerationPlanner();
         List<MethodGenerationPlan> methodPlans = new ArrayList<>();
 
@@ -134,9 +137,33 @@ public final class Main {
         System.out.println("Instrumented sources: " + workspace.getSourceRoot());
         System.out.println("Instrumented classes: " + workspace.getClassesRoot());
 
-        generateCandidateSpaces();
-        generateCandidateVariants();
-        executeCandidatesAndMeasureCoverage();
+        List<ArgumentValueHint> argumentValueHints = new ArrayList<>();
+
+        for (ClassAnalysisResult analysisResult : analysisResultsByPath.values()) {
+            argumentValueHints.addAll(analysisResult.getArgumentValueHints());
+        }
+        argumentValueHints.addAll(observedProfile.getArgumentValueHints());
+
+
+        EvaluateProjectCandidatesUseCase evaluateProjectCandidatesUseCase = new EvaluateProjectCandidatesUseCase(
+                methodGenerationPlanner,
+                new CandidateSpaceFactory(),
+                new CandidateVariantGenerator(10, 50),
+                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+        );
+
+        CandidateCoverageEvaluation coverageEvaluation = evaluateProjectCandidatesUseCase.evaluate(
+                classStructures,
+                methodPlans,
+                typeIndex,
+                classIndex,
+                argumentValueHints
+        );
+
+
+        System.out.println("Executed candidates: " + coverageEvaluation.getExecutedResults().size());
+        System.out.println("Selected candidates: " + coverageEvaluation.getSelectedResults().size());
+
         writeGeneratedTests(workRoot);
         writeReport(workRoot);
     }
