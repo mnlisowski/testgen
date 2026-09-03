@@ -50,11 +50,17 @@ public final class Main {
         Path workRoot = getWorkRoot(projectRoot, args);
         Path observedProfilePath = observedProfilePath(args);
 
+        printGenerationStart(projectRoot, workRoot, observedProfilePath);
 
-        MavenProjectLayout projectLayout = new MavenProjectLayoutDetector().detect(projectRoot);
+        MavenProjectLayoutDetector layoutDetector = new MavenProjectLayoutDetector();
+        MavenProjectLayout projectLayout = layoutDetector.detect(projectRoot);
+
         Path mainSourceRoot = projectLayout.getMainSourceRoot();
         List<Path> javaSources = findJavaSources(mainSourceRoot);
-        ProjectTypeIndex typeIndex = new JavaParserTypeIndexAnalyzer().analyze(javaSources);
+
+        JavaParserTypeIndexAnalyzer typeIndexAnalyzer = new JavaParserTypeIndexAnalyzer();
+        ProjectTypeIndex typeIndex = typeIndexAnalyzer.analyze(javaSources);
+
         List<Path> classSources = findOnlyClassSources(javaSources, typeIndex);
 
         Map<Path, ClassAnalysisResult> analysisResultsByPath = analyzeClasses(classSources);
@@ -70,10 +76,6 @@ public final class Main {
             methodPlans.addAll(methodGenerationPlanner.plan(classStructure, typeIndex));
         }
 
-        long supportedMethods = methodPlans.stream()
-                .filter(methodGenerationPlanner::isSupported)
-                .count();
-
         ObservedProfile observedProfile = readObservedProfile(observedProfilePath);
 
         Map<Path, List<CoverageGoal>> coverageGoalsByPath = coverageGoalsByPath(analysisResultsByPath);
@@ -81,14 +83,17 @@ public final class Main {
 
         String projectClasspath = new MavenProjectClasspath().resolve(projectLayout);
 
-        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+        InstrumentedProjectWorkspacePreparer workspacePreparer = new InstrumentedProjectWorkspacePreparer(
                 new SourceDirectoryInstrumenter(new JavaParserBranchInstrumenter()),
                 new JavaSourceCompiler(projectClasspath),
                 projectClasspath
-        ).prepare(projectLayout, workRoot, coverageGoalsByPath);
+        );
 
-        System.out.println("Instrumented sources: " + workspace.getSourceRoot());
-        System.out.println("Instrumented classes: " + workspace.getClassesRoot());
+        InstrumentedProjectWorkspace workspace = workspacePreparer.prepare(
+                projectLayout,
+                workRoot,
+                coverageGoalsByPath
+        );
 
         List<ArgumentValueHint> argumentValueHints = new ArrayList<>();
 
