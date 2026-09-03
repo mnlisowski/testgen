@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.mlisows.testgen.domain.*;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
 import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
+import com.mlisows.testgen.infrastructure.instrumentation.JavaParserArgumentInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
@@ -30,8 +31,8 @@ public final class Main {
     private static final String DEFAULT_TEST_WORK_DIRECTORY = "target/testgen-work";
     private static final String DEFAULT_PROFILE_WORK_DIRECTORY = "target/testgen-profile-work";
 
-    private static void Main(String[] args) {
-        if (args.length > 0 && args[0].equals("prepare-profile") {
+    public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("prepare-profile")) {
             prepareProfile(args);
             return;
         }
@@ -44,6 +45,7 @@ public final class Main {
             System.out.println(GENERATE_TESTS_USAGE);
             return;
         }
+
 
         Path projectRoot = Path.of(args[0]);
         Path workRoot = args.length >= 2
@@ -171,6 +173,9 @@ public final class Main {
 
         System.out.println("Generated tests: " + outputRoot);
 
+        writeReport(workRoot, analysisResultsByPath, methodPlans, coverageEvaluation);
+
+
     }
 
     private static void prepareProfile(String[] args) {
@@ -188,16 +193,30 @@ public final class Main {
         System.out.println("Project root: " + projectRoot);
         System.out.println("Work root: " + workRoot);
 
-        detectMavenProject(projectRoot);
-        findJavaSources(projectRoot);
-        resolveProjectClasspath();
-        instrumentSourcesForArgumentProfiling(workRoot);
-        compileInstrumentedSources(workRoot);
-        printProfileRunInstructions(workRoot);
-    }
+        MavenProjectLayout projectLayout = new MavenProjectLayoutDetector().detect(projectRoot);
+        String projectClasspath = new MavenProjectClasspath().resolve(projectLayout);
 
-    private static void detectMavenProject(Path projectRoot) {
-        printStep("Detect Maven project: " + projectRoot);
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserArgumentInstrumenter()),
+                new JavaSourceCompiler(projectClasspath),
+                projectClasspath
+        ).prepare(projectLayout, workRoot, Map.of());
+
+        Path profilePath = workRoot.resolve("observed-profile.txt");
+        String runClasspath = JavaSourceCompiler.joinClasspaths(
+                workspace.getClassesRoot().toString(),
+                workspace.getClasspath()
+        );
+
+        System.out.println("Instrumented sources: " + workspace.getSourceRoot());
+        System.out.println("Instrumented classes: " + workspace.getClassesRoot());
+        System.out.println("Observed profile output: " + profilePath);
+        System.out.println("Run instrumented application with:");
+        System.out.println("java -Dtestgen.profile.dir="
+                + workRoot
+                + " -cp \""
+                + runClasspath
+                + "\" <main-class>");
     }
 
     private static List<Path> findJavaSources(Path sourceRoot) {
@@ -231,74 +250,30 @@ public final class Main {
         return fileName.substring(0, fileName.length() - ".java".length());
     }
 
+    private static void writeReport(
+            Path workRoot,
+            Map<Path, ClassAnalysisResult> analysisResultsByPath,
+            List<MethodGenerationPlan> methodPlans,
+            CandidateCoverageEvaluation coverageEvaluation
+    ) {
+        GenerationReport report = GenerationReport.from(
+                List.copyOf(analysisResultsByPath.values()),
+                methodPlans,
+                coverageEvaluation
+        );
 
-    private static void analyzeProjectTypes() {
-        printStep("Analyze project types");
-    }
+        Path reportPath = workRoot.resolve("report.txt");
 
-    private static void analyzeBranchesAndStaticArgumentHints() {
-        printStep("Analyze branch goals and static argument hints");
-    }
-
-    private static void analyzeClassStructures() {
-        printStep("Analyze constructors, methods, and parameters");
-    }
-
-    private static void planSupportedMethods() {
-        printStep("Plan methods that can be generated");
-    }
-
-    private static void readObservedProfile(Path observedProfilePath) {
-        if (observedProfilePath == null) {
-            printStep("Skip observed runtime profile");
-            return;
+        try {
+            Files.createDirectories(workRoot);
+            Files.writeString(reportPath, report.toText());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot write report: " + reportPath, exception);
         }
 
-        printStep("Read observed runtime profile: " + observedProfilePath);
+        System.out.println("Report: " + reportPath);
     }
 
-    private static void prepareBranchCoverageWorkspace(Path workRoot) {
-        printStep("Prepare instrumented workspace for branch coverage: " + workRoot);
-    }
 
-    private static void generateCandidateSpaces() {
-        printStep("Create candidate value spaces");
-    }
-
-    private static void generateCandidateVariants() {
-        printStep("Generate candidate variants");
-    }
-
-    private static void executeCandidatesAndMeasureCoverage() {
-        printStep("Execute candidates and measure branch coverage");
-    }
-
-    private static void writeGeneratedTests(Path workRoot) {
-        printStep("Write generated tests: " + workRoot);
-    }
-
-    private static void writeReport(Path workRoot) {
-        printStep("Write generation report: " + workRoot);
-    }
-
-    private static void resolveProjectClasspath() {
-        printStep("Resolve project classpath");
-    }
-
-    private static void instrumentSourcesForArgumentProfiling(Path workRoot) {
-        printStep("Instrument sources for runtime argument profiling: " + workRoot);
-    }
-
-    private static void compileInstrumentedSources(Path workRoot) {
-        printStep("Compile instrumented sources: " + workRoot);
-    }
-
-    private static void printProfileRunInstructions(Path workRoot) {
-        printStep("Print command for running the instrumented application: " + workRoot);
-    }
-
-    private static void printStep(String text) {
-        System.out.println("- " + text);
-    }
 }
 
