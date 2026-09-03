@@ -5,6 +5,7 @@ import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ClassStructure;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
@@ -123,26 +124,30 @@ class CandidateGenerationPipelineTest {
                         coverageGoalsBySourcePath(analysisResultsByPath)
                 );
 
-        CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
-        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(10, 50);
-        CandidateCoverageEvaluator coverageEvaluator = new CandidateCoverageEvaluator(
-                new ReflectionTestCandidateExecutor(workspace)
-        );
-
         List<ArgumentValueHint> staticHints = analysisResultsByPath.values().stream()
                 .flatMap(result -> result.getArgumentValueHints().stream())
                 .toList();
-        List<TestCandidateExecutionResult> results = new ArrayList<>();
 
+        MethodGenerationPlanner methodGenerationPlanner = new MethodGenerationPlanner();
+        List<MethodGenerationPlan> methodPlans = new ArrayList<>();
         for (ClassStructure classStructure : classStructures) {
-            for (MethodModel method : classStructure.getMethods()) {
-                candidateSpaceFactory.create(classStructure, method, typeIndex, classIndex, staticHints)
-                        .map(candidateVariantGenerator::generateVariants)
-                        .map(coverageEvaluator::evaluate)
-                        .map(CandidateCoverageEvaluation::getSelectedResults)
-                        .ifPresent(results::addAll);
-            }
+            methodPlans.addAll(methodGenerationPlanner.plan(classStructure, typeIndex));
         }
+
+        CandidateCoverageEvaluation evaluation = new EvaluateProjectCandidatesUseCase(
+                methodGenerationPlanner,
+                new CandidateSpaceFactory(),
+                new CandidateVariantGenerator(10, 50),
+                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+        ).evaluate(
+                classStructures,
+                methodPlans,
+                typeIndex,
+                classIndex,
+                staticHints
+        );
+
+        List<TestCandidateExecutionResult> results = evaluation.getSelectedResults();
 
         List<String> allBranchIds = analysisResultsByPath.values().stream()
                 .flatMap(result -> result.getCoverageGoals().stream())
