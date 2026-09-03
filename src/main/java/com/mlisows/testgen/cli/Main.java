@@ -7,11 +7,13 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import com.mlisows.testgen.domain.*;
+import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
+import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
+import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
-import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
-import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.infrastructure.project.*;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 import com.mlisows.testgen.usecase.MethodGenerationPlanner;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
@@ -110,10 +112,28 @@ public final class Main {
             System.out.println("Observed invocations: " + observedProfile.getObservedInvocations().size());
         }
 
+        Map<Path, List<CoverageGoal>> coverageGoalsByPath = new LinkedHashMap<>();
 
-        planSupportedMethods();
-        readObservedProfile(observedProfilePath);
-        prepareBranchCoverageWorkspace(workRoot);
+        for (Map.Entry<Path, ClassAnalysisResult> entry : analysisResultsByPath.entrySet()) {
+            coverageGoalsByPath.put(entry.getKey(), entry.getValue().getCoverageGoals());
+        }
+
+        int coverageGoalCount = 0;
+        for (List<CoverageGoal> coverageGoals : coverageGoalsByPath.values()) {
+            coverageGoalCount += coverageGoals.size();
+        }
+
+        String projectClasspath = new MavenProjectClasspath().resolve(projectLayout);
+
+        InstrumentedProjectWorkspace workspace = new InstrumentedProjectWorkspacePreparer(
+                new SourceDirectoryInstrumenter(new JavaParserBranchInstrumenter()),
+                new JavaSourceCompiler(projectClasspath),
+                projectClasspath
+        ).prepare(projectLayout, workRoot, coverageGoalsByPath);
+
+        System.out.println("Instrumented sources: " + workspace.getSourceRoot());
+        System.out.println("Instrumented classes: " + workspace.getClassesRoot());
+
         generateCandidateSpaces();
         generateCandidateVariants();
         executeCandidatesAndMeasureCoverage();
