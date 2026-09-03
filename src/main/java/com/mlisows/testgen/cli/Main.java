@@ -57,27 +57,12 @@ public final class Main {
         ProjectTypeIndex typeIndex = new JavaParserTypeIndexAnalyzer().analyze(javaSources);
         List<Path> classSources = findOnlyClassSources(javaSources, typeIndex);
 
-        Map<Path, ClassAnalysisResult> analysisResultsByPath = new LinkedHashMap<>();
-        CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
-
-        for (Path classSource : classSources) {
-            ClassAnalysisResult analysisResult = codeAnalyzer.analyze(classSource);
-            analysisResultsByPath.put(classSource, analysisResult);
-        }
-
+        Map<Path, ClassAnalysisResult> analysisResultsByPath = analyzeClasses(classSources);
         System.out.println("Classes analyzed: " + analysisResultsByPath.size());
 
-        System.out.println("Classes analyzed: " + analysisResultsByPath.size());
-
-        List<ClassStructure> classStructures = new ArrayList<>();
-        ClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
-
-        for (Path classSource : classSources) {
-            ClassStructure classStructure = classStructureAnalyzer.analyze(classSource);
-            classStructures.add(classStructure);
-        }
-
+        List<ClassStructure> classStructures = analyzeClassStructures(classSources);
         System.out.println("Class structures analyzed: " + classStructures.size());
+
 
         ProjectClassStructureIndex classIndex = new ProjectClassStructureIndex(classStructures);
 
@@ -166,6 +151,31 @@ public final class Main {
 
 
     }
+
+    private static Map<Path, ClassAnalysisResult> analyzeClasses(List<Path> classSources) {
+        Map<Path, ClassAnalysisResult> analysisResultsByPath = new LinkedHashMap<>();
+        CodeAnalyzer codeAnalyzer = new JavaParserCodeAnalyzer();
+
+        for (Path classSource : classSources) {
+            ClassAnalysisResult analysisResult = codeAnalyzer.analyze(classSource);
+            analysisResultsByPath.put(classSource, analysisResult);
+        }
+
+        return analysisResultsByPath;
+    }
+
+    private static List<ClassStructure> analyzeClassStructures(List<Path> classSources) {
+        List<ClassStructure> classStructures = new ArrayList<>();
+        ClassStructureAnalyzer classStructureAnalyzer = new JavaParserClassStructureAnalyzer();
+
+        for (Path classSource : classSources) {
+            ClassStructure classStructure = classStructureAnalyzer.analyze(classSource);
+            classStructures.add(classStructure);
+        }
+
+        return classStructures;
+    }
+
 
     private static void prepareProfile(String[] args) {
         if (args.length < 2 || args.length > 3) {
