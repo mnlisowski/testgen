@@ -1,5 +1,6 @@
 package com.mlisows.testgen.usecase;
 
+import com.mlisows.testgen.domain.ArgumentValueHint;
 import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ClassStructure;
@@ -7,7 +8,8 @@ import com.mlisows.testgen.domain.CoverageGoal;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;
 import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.ArgumentValueHint;
+import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.TestCandidate;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import com.mlisows.testgen.domain.TypeInfo;
 import com.mlisows.testgen.domain.TypeKind;
@@ -59,20 +61,23 @@ class CandidateGenerationPipelineTest {
                         Map.of(discountServicePath, analysisResult.getCoverageGoals())
                 );
 
-        CandidateGenerationUseCase useCase = new CandidateGenerationUseCase(
-                new CandidateSpaceFactory(),
-                new CandidateVariantGenerator(10, 20),
-                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+        CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
+        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(10, 20);
+        CandidateCoverageEvaluator coverageEvaluator = new CandidateCoverageEvaluator(
+                new ReflectionTestCandidateExecutor(workspace)
         );
 
-        List<TestCandidateExecutionResult> results = useCase.execute(
+        CandidateSpace candidateSpace = candidateSpaceFactory.create(
                 discountService,
                 method(discountService, "shippingFee"),
                 typeIndex,
                 classIndex,
                 analysisResult.getArgumentValueHints()
-        );
+        ).orElseThrow();
+        List<TestCandidate> candidates = candidateVariantGenerator.generateVariants(candidateSpace);
+        CandidateCoverageEvaluation evaluation = coverageEvaluator.evaluate(candidates);
 
+        List<TestCandidateExecutionResult> results = evaluation.getSelectedResults();
         List<String> coveredBranchIds = results.stream()
                 .flatMap(result -> result.getCoveredBranches().stream())
                 .map(BranchId::asString)
@@ -118,10 +123,10 @@ class CandidateGenerationPipelineTest {
                         coverageGoalsBySourcePath(analysisResultsByPath)
                 );
 
-        CandidateGenerationUseCase useCase = new CandidateGenerationUseCase(
-                new CandidateSpaceFactory(),
-                new CandidateVariantGenerator(10, 50),
-                new CandidateCoverageEvaluator(new ReflectionTestCandidateExecutor(workspace))
+        CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
+        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(10, 50);
+        CandidateCoverageEvaluator coverageEvaluator = new CandidateCoverageEvaluator(
+                new ReflectionTestCandidateExecutor(workspace)
         );
 
         List<ArgumentValueHint> staticHints = analysisResultsByPath.values().stream()
@@ -131,13 +136,11 @@ class CandidateGenerationPipelineTest {
 
         for (ClassStructure classStructure : classStructures) {
             for (MethodModel method : classStructure.getMethods()) {
-                results.addAll(useCase.execute(
-                        classStructure,
-                        method,
-                        typeIndex,
-                        classIndex,
-                        staticHints
-                ));
+                candidateSpaceFactory.create(classStructure, method, typeIndex, classIndex, staticHints)
+                        .map(candidateVariantGenerator::generateVariants)
+                        .map(coverageEvaluator::evaluate)
+                        .map(CandidateCoverageEvaluation::getSelectedResults)
+                        .ifPresent(results::addAll);
             }
         }
 
