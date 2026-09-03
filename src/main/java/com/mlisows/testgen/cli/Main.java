@@ -12,8 +12,11 @@ import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayout;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
+import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
+import com.mlisows.testgen.usecase.MethodGenerationPlanner;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
+import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
 
 public final class Main {
     private static final String GENERATE_TESTS_USAGE =
@@ -80,6 +83,32 @@ public final class Main {
         }
 
         System.out.println("Class structures analyzed: " + classStructures.size());
+
+        MethodGenerationPlanner methodGenerationPlanner = new MethodGenerationPlanner();
+        List<MethodGenerationPlan> methodPlans = new ArrayList<>();
+
+        for (ClassStructure classStructure : classStructures) {
+            methodPlans.addAll(methodGenerationPlanner.plan(classStructure, typeIndex));
+        }
+
+        long supportedMethods = methodPlans.stream()
+                .filter(methodGenerationPlanner::isSupported)
+                .count();
+
+        System.out.println("Methods analyzed: " + methodPlans.size());
+        System.out.println("Supported methods: " + supportedMethods);
+
+        ObservedProfile observedProfile;
+
+        if (observedProfilePath == null) {
+            observedProfile = new ObservedProfile(List.of(), List.of());
+            System.out.println("Observed profile: skipped");
+        } else {
+            ObservedProfileReader observedProfileReader = new TextObservedProfileReader();
+            observedProfile = observedProfileReader.read(observedProfilePath);
+            System.out.println("Observed profile hints: " + observedProfile.getArgumentValueHints().size());
+            System.out.println("Observed invocations: " + observedProfile.getObservedInvocations().size());
+        }
 
 
         planSupportedMethods();
