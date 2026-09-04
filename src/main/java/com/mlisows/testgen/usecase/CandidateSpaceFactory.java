@@ -241,7 +241,7 @@ public final class CandidateSpaceFactory {
         addIfMissing(
                 options,
                 new GeneratedArgument(type, "null"),
-                CandidateValueTier.FALLBACK,
+                CandidateValueTier.NULL,
                 "null-reference"
         );
     }

@@ -37,7 +37,8 @@ public final class CandidateSpace {
     public enum CandidateValueTier {
         EXACT,
         RELATED,
-        FALLBACK
+        FALLBACK,
+        NULL
     }
 
     public static final class CandidateValueOption {
