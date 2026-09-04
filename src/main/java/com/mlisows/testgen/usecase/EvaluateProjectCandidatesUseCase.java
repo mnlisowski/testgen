@@ -1,13 +1,6 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.CandidateSpace;
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.MethodGenerationPlan;
-import com.mlisows.testgen.domain.MethodModel;
-import com.mlisows.testgen.domain.ProjectClassStructureIndex;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TestCandidate;
+import com.mlisows.testgen.domain.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -100,10 +93,12 @@ public final class EvaluateProjectCandidatesUseCase {
     }
 
     private String methodId(ClassStructure classStructure, MethodModel method) {
-        return classStructure.getClassName() + "." + method.getName();
+        return ExecutableSignature.method(classStructure.getClassName(), method);
     }
 
+
     private String methodId(MethodGenerationPlan methodPlan) {
-        return methodPlan.getClassName() + "." + methodPlan.getMethodName();
+        return methodPlan.signature();
+
     }
 }
