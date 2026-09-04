@@ -12,7 +12,11 @@ public final class ExecutableSignature {
     }
 
     public static String method(String className, String methodName, List<String> parameterTypes) {
-        return className + "." + methodName + "(" + join(parameterTypes) + ")";
+        return className + "." + methodName(methodName, parameterTypes);
+    }
+
+    public static String methodName(String methodName, List<String> parameterTypes) {
+        return methodName + "(" + join(parameterTypes) + ")";
     }
 
     public static String constructor(String className, ConstructorModel constructor) {
