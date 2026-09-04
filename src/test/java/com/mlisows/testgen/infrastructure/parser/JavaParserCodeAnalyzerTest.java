@@ -54,11 +54,11 @@ class JavaParserCodeAnalyzerTest {
         assertEquals(6, result.getCoverageGoals().size());
 
         long calculateGoalsCount = result.getCoverageGoals().stream()
-                .filter(goal -> goal.getBranchId().getMethodName().equals("calculate"))
+                .filter(goal -> goal.getBranchId().getMethodName().equals("calculate(double)"))
                 .count();
 
         long isPositiveGoalsCount = result.getCoverageGoals().stream()
-                .filter(goal -> goal.getBranchId().getMethodName().equals("isPositive"))
+                .filter(goal -> goal.getBranchId().getMethodName().equals("isPositive(int)"))
                 .count();
 
         assertEquals(4, calculateGoalsCount);
@@ -85,7 +85,7 @@ class JavaParserCodeAnalyzerTest {
 
         for (CoverageGoal goal : result.getCoverageGoals()) {
             assertEquals("amount > 100", goal.getCondition());
-            assertEquals("calculate", goal.getBranchId().getMethodName());
+            assertEquals("calculate(double)", goal.getBranchId().getMethodName());
         }
     }
 
@@ -159,7 +159,7 @@ class JavaParserCodeAnalyzerTest {
                 .distinct()
                 .toList();
 
-        assertEquals(List.of("calculate"), methodNames);
+        assertEquals(List.of("calculate(int)"), methodNames);
     }
 
     @Test

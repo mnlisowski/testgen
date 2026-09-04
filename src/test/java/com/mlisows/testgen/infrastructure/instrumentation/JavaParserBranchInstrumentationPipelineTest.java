@@ -45,10 +45,10 @@ class JavaParserBranchInstrumentationPipelineTest {
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|FALSE\")"
         ));
     }
 }

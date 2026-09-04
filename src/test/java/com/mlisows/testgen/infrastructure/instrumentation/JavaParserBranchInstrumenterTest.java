@@ -42,18 +42,18 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "calculate", 5, BranchType.TRUE),
-                        goal("sample.Calculator", "calculate", 5, BranchType.FALSE)
+                        goal("sample.Calculator", "calculate(int)", 5, BranchType.TRUE),
+                        goal("sample.Calculator", "calculate(int)", 5, BranchType.FALSE)
                 )
         );
 
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|FALSE\")"
         ));
     }
 
@@ -80,18 +80,18 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "calculate", 6, BranchType.TRUE),
-                        goal("sample.Calculator", "calculate", 6, BranchType.FALSE)
+                        goal("sample.Calculator", "calculate(int)", 6, BranchType.TRUE),
+                        goal("sample.Calculator", "calculate(int)", 6, BranchType.FALSE)
                 )
         );
 
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|6|IF|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|6|IF|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|6|IF|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|6|IF|FALSE\")"
         ));
         assertTrue(instrumentedSource.contains("else"));
     }
@@ -118,8 +118,8 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "calculate", 5, BranchType.TRUE),
-                        goal("sample.Calculator", "calculate", 5, BranchType.FALSE)
+                        goal("sample.Calculator", "calculate(int)", 5, BranchType.TRUE),
+                        goal("sample.Calculator", "calculate(int)", 5, BranchType.FALSE)
                 )
         );
 
@@ -128,10 +128,10 @@ class JavaParserBranchInstrumenterTest {
         assertTrue(instrumentedSource.contains("if (amount > 100) {"));
         assertTrue(instrumentedSource.contains("} else {"));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|IF|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|IF|FALSE\")"
         ));
     }
 
@@ -187,18 +187,18 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "sum", 6, BranchKind.FOR, BranchType.TRUE),
-                        goal("sample.Calculator", "sum", 6, BranchKind.FOR, BranchType.FALSE)
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.FOR, BranchType.TRUE),
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.FOR, BranchType.FALSE)
                 )
         );
 
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|FOR|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|FOR|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|FOR|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|FOR|FALSE\")"
         ));
     }
 
@@ -225,18 +225,18 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.TRUE),
-                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.FALSE)
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.WHILE, BranchType.TRUE),
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.WHILE, BranchType.FALSE)
                 )
         );
 
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|WHILE|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|WHILE|FALSE\")"
         ));
     }
 
@@ -266,8 +266,8 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.TRUE),
-                        goal("sample.Calculator", "sum", 6, BranchKind.WHILE, BranchType.FALSE)
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.WHILE, BranchType.TRUE),
+                        goal("sample.Calculator", "sum(int)", 6, BranchKind.WHILE, BranchType.FALSE)
                 )
         );
 
@@ -277,10 +277,10 @@ class JavaParserBranchInstrumenterTest {
         assertFalse(instrumentedSource.contains("outer: {"));
         assertTrue(instrumentedSource.contains("continue outer;"));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|TRUE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|WHILE|TRUE\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum|6|WHILE|FALSE\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|sum(int)|6|WHILE|FALSE\")"
         ));
     }
 
@@ -310,22 +310,22 @@ class JavaParserBranchInstrumenterTest {
                 sourcePath,
                 outputPath,
                 List.of(
-                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.CASE, "1"),
-                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.CASE, "2"),
-                        goal("sample.Calculator", "calculate", 5, BranchKind.SWITCH, BranchType.DEFAULT, "")
+                        goal("sample.Calculator", "calculate(int)", 5, BranchKind.SWITCH, BranchType.CASE, "1"),
+                        goal("sample.Calculator", "calculate(int)", 5, BranchKind.SWITCH, BranchType.CASE, "2"),
+                        goal("sample.Calculator", "calculate(int)", 5, BranchKind.SWITCH, BranchType.DEFAULT, "")
                 )
         );
 
         String instrumentedSource = Files.readString(outputPath);
 
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|SWITCH|CASE|1\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|SWITCH|CASE|1\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|SWITCH|CASE|2\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|SWITCH|CASE|2\")"
         ));
         assertTrue(instrumentedSource.contains(
-                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate|5|SWITCH|DEFAULT\")"
+                "com.mlisows.testgen.infrastructure.runtime.BranchRecorder.hit(\"sample.Calculator|calculate(int)|5|SWITCH|DEFAULT\")"
         ));
     }
 

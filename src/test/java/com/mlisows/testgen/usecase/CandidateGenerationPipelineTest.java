@@ -87,7 +87,7 @@ class CandidateGenerationPipelineTest {
                 .toList();
         List<String> expectedShippingFeeBranchIds = analysisResult.getCoverageGoals().stream()
                 .map(CoverageGoal::getBranchId)
-                .filter(branchId -> branchId.getMethodName().equals("shippingFee"))
+                .filter(branchId -> branchId.getMethodName().equals("shippingFee(int)"))
                 .map(BranchId::asString)
                 .sorted()
                 .toList();
