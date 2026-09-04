@@ -195,8 +195,8 @@ Warstwy:
 - `usecase/ports` - porty które implementujemy w warstwie infrastruktury,
 - `infrastructure` - implementacje, np. analizy przez JavaParser, kompilacji plików, wykonywania kandydatów, czy runtime recorderów zbierających rzeczywiste wartości parametrów metod i konstruktorów które pojawiły się w trakcie działania zewnętrznego projektu,
 - `cli` - punkt wejscia programu.
-- 
-![img_1.png](img_1.png)
+
+![Struktura plików projektu](docs/images/files.png)
 
 
 
@@ -233,7 +233,8 @@ Zakres projektu:
 
 Raport generowania pokazuje te ograniczenia: ile metod przeszlo podstawowe reguly, dla ilu faktycznie udalo sie przygotowac kandydatow i ile celow pokrycia znajduje sie w metodach, ktore generator byl w stanie wywolac.
 
-![img.png](img.png)
+![Przykładowy raport generatora](docs/images/report.png)
+
 ## Dokumenty pomocnicze
 
 W repozytorium znajduje się dokładniejsza dokumentacja:
@@ -243,5 +244,7 @@ W repozytorium znajduje się dokładniejsza dokumentacja:
 Wyniki eksperymentów i wykresy znajdują się w katalogu:
 
   ```text
-  local/experiment-results
+  docs/experiment-results
   ```
+
+Opis zawartości katalogu znajduje się w [docs/experiment-results/README.md](docs/experiment-results/README.md).
