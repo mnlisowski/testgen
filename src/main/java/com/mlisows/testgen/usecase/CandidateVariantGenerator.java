@@ -1,30 +1,46 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
 import com.mlisows.testgen.domain.GeneratedArgument;
 import com.mlisows.testgen.domain.GeneratedSetupObject;
 import com.mlisows.testgen.domain.TestCandidate;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
 public final class CandidateVariantGenerator {
+    private static final int DEFAULT_INITIAL_CANDIDATE_COUNT = 10;
     private static final int DEFAULT_MAX_VALUES_PER_SLOT = 3;
     private static final int DEFAULT_MAX_CANDIDATES = 25;
 
+    private final int initialCandidateCount;
     private final int maxValuesPerSlot;
     private final int maxCandidates;
+    private final Random random;
 
     public CandidateVariantGenerator() {
-        this(DEFAULT_MAX_VALUES_PER_SLOT, DEFAULT_MAX_CANDIDATES);
+        this(DEFAULT_INITIAL_CANDIDATE_COUNT, DEFAULT_MAX_VALUES_PER_SLOT, DEFAULT_MAX_CANDIDATES);
     }
 
     public CandidateVariantGenerator(int maxValuesPerSlot, int maxCandidates) {
+        this(DEFAULT_INITIAL_CANDIDATE_COUNT, maxValuesPerSlot, maxCandidates);
+    }
+
+    public CandidateVariantGenerator(int initialCandidateCount, int maxValuesPerSlot, int maxCandidates) {
+        if (initialCandidateCount < 0) {
+            throw new IllegalArgumentException("initialCandidateCount must not be negative");
+        }
+
         if (maxValuesPerSlot < 1) {
             throw new IllegalArgumentException("maxValuesPerSlot must be positive");
         }
@@ -33,91 +49,165 @@ public final class CandidateVariantGenerator {
             throw new IllegalArgumentException("maxCandidates must be positive");
         }
 
+        this.initialCandidateCount = initialCandidateCount;
         this.maxValuesPerSlot = maxValuesPerSlot;
         this.maxCandidates = maxCandidates;
+        this.random = new Random(0);
     }
 
-    public List<TestCandidate> generateVariants(CandidateSpace candidateSpace) {
-        Objects.requireNonNull(candidateSpace, "candidateSpace must not be null");
+    public List<TestCandidate> generateVariants(CandidateSpace space) {
+        Objects.requireNonNull(space, "space must not be null");
 
-        TestCandidate baseCandidate = candidateSpace.getBaseCandidate();
-        List<TestCandidate> candidates = new ArrayList<>();
-        candidates.add(baseCandidate);
+        UniqueCandidateList candidates = new UniqueCandidateList(maxCandidates);
 
-        for (CandidateValuePool pool : candidateSpace.getValuePools()) {
-            int generatedValuesForSlot = 0;
+        candidates.add(space.getBaseCandidate());
+        addRandomInitialCandidates(space, candidates);
+        addSingleSlotMutations(space, candidates);
+
+        return candidates.toList();
+    }
+
+    private void addRandomInitialCandidates(CandidateSpace space, UniqueCandidateList candidates) {
+        for (int index = 0; index < initialCandidateCount; index++) {
+            if (candidates.isFull()) {
+                return;
+            }
+
+            candidates.add(buildRandomInitialCandidate(space));
+        }
+    }
+
+    private TestCandidate buildRandomInitialCandidate(CandidateSpace space) {
+        TestCandidate candidate = space.getBaseCandidate();
+
+        for (CandidateValuePool pool : space.getValuePools()) {
+            Optional<GeneratedArgument> value = bestRandomValue(pool);
+
+            if (value.isEmpty()) {
+                continue;
+            }
+
+            candidate = replaceSlotValue(candidate, pool.getSlot(), value.get())
+                    .orElse(candidate);
+        }
+
+        return candidate;
+    }
+
+    private Optional<GeneratedArgument> bestRandomValue(CandidateValuePool pool) {
+        Optional<GeneratedArgument> exact = randomValue(pool, CandidateValueTier.EXACT, false);
+        if (exact.isPresent()) {
+            return exact;
+        }
+
+        Optional<GeneratedArgument> related = randomValue(pool, CandidateValueTier.RELATED, false);
+        if (related.isPresent()) {
+            return related;
+        }
+
+        Optional<GeneratedArgument> fallback = randomValue(pool, CandidateValueTier.FALLBACK, false);
+        if (fallback.isPresent()) {
+            return fallback;
+        }
+
+        return randomValue(pool, CandidateValueTier.NULL, true);
+    }
+
+    private Optional<GeneratedArgument> randomValue(
+            CandidateValuePool pool,
+            CandidateValueTier tier,
+            boolean includeNull
+    ) {
+        List<CandidateValueOption> options = optionsForTier(pool, tier, includeNull);
+
+        if (options.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(options.get(random.nextInt(options.size())).getArgument());
+    }
+
+    private List<CandidateValueOption> optionsForTier(
+            CandidateValuePool pool,
+            CandidateValueTier tier,
+            boolean includeNull
+    ) {
+        return pool.getOptions().stream()
+                .filter(option -> option.getTier() == tier)
+                .filter(option -> includeNull || !isNullValue(option))
+                .toList();
+    }
+
+    private void addSingleSlotMutations(CandidateSpace space, UniqueCandidateList candidates) {
+        TestCandidate baseCandidate = space.getBaseCandidate();
+
+        for (CandidateValuePool pool : space.getValuePools()) {
+            int addedForSlot = 0;
 
             for (GeneratedArgument value : pool.getValues()) {
-                if (candidates.size() >= maxCandidates) {
-                    return List.copyOf(candidates);
-                }
-
-                if (generatedValuesForSlot >= maxValuesPerSlot) {
+                if (candidates.isFull() || addedForSlot >= maxValuesPerSlot) {
                     break;
                 }
 
-                if (isBaseValue(baseCandidate, pool.getSlot(), value)) {
+                if (candidateAlreadyHasValue(baseCandidate, pool.getSlot(), value)) {
                     continue;
                 }
 
-                Optional<TestCandidate> variant = variantFor(baseCandidate, pool.getSlot(), value);
+                Optional<TestCandidate> mutation = replaceSlotValue(baseCandidate, pool.getSlot(), value);
 
-                if (variant.isPresent()) {
-                    candidates.add(variant.get());
-                    generatedValuesForSlot++;
+                if (mutation.isPresent() && candidates.add(mutation.get())) {
+                    addedForSlot++;
                 }
             }
-        }
 
-        return List.copyOf(candidates);
+            if (candidates.isFull()) {
+                return;
+            }
+        }
     }
 
-    private Optional<TestCandidate> variantFor(
-            TestCandidate baseCandidate,
+    private Optional<TestCandidate> replaceSlotValue(
+            TestCandidate candidate,
             CandidateValueSlot slot,
             GeneratedArgument value
     ) {
         if (slot.getKind() == CandidateValueSlotKind.METHOD_ARGUMENT) {
-            return withMethodArgument(baseCandidate, slot.getArgumentIndex(), value);
+            return replaceMethodArgument(candidate, slot.getArgumentIndex(), value);
         }
 
         if (slot.getKind() == CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT) {
-            return withSetupObjectArgument(baseCandidate, slot, value);
+            return replaceSetupObjectArgument(candidate, slot, value);
         }
 
         return Optional.empty();
     }
 
-    private Optional<TestCandidate> withMethodArgument(
-            TestCandidate baseCandidate,
+    private Optional<TestCandidate> replaceMethodArgument(
+            TestCandidate candidate,
             int argumentIndex,
             GeneratedArgument value
     ) {
-        if (argumentIndex >= baseCandidate.getMethodArguments().size()) {
+        if (argumentIndex >= candidate.getMethodArguments().size()) {
             return Optional.empty();
         }
 
-        List<GeneratedArgument> methodArguments = new ArrayList<>(baseCandidate.getMethodArguments());
+        List<GeneratedArgument> methodArguments = new ArrayList<>(candidate.getMethodArguments());
         methodArguments.set(argumentIndex, value);
 
-        return Optional.of(copyCandidate(
-                baseCandidate,
-                baseCandidate.getSetupObjects(),
-                methodArguments
-        ));
+        return Optional.of(copyCandidate(candidate, candidate.getSetupObjects(), methodArguments));
     }
 
-    private Optional<TestCandidate> withSetupObjectArgument(
-            TestCandidate baseCandidate,
+    private Optional<TestCandidate> replaceSetupObjectArgument(
+            TestCandidate candidate,
             CandidateValueSlot slot,
             GeneratedArgument value
     ) {
-        List<GeneratedSetupObject> setupObjects = new ArrayList<>(baseCandidate.getSetupObjects());
+        List<GeneratedSetupObject> setupObjects = new ArrayList<>(candidate.getSetupObjects());
 
         for (int index = 0; index < setupObjects.size(); index++) {
             GeneratedSetupObject setupObject = setupObjects.get(index);
 
-            if (!matchesSetupObject(setupObject, slot.getOwnerId())) {
+            if (!slotMatchesSetupObject(slot, setupObject)) {
                 continue;
             }
 
@@ -125,50 +215,58 @@ public final class CandidateVariantGenerator {
                 return Optional.empty();
             }
 
-            List<GeneratedArgument> arguments = new ArrayList<>(setupObject.getArguments());
-            arguments.set(slot.getArgumentIndex(), value);
-
-            setupObjects.set(index, new GeneratedSetupObject(
-                    setupObject.getType(),
-                    setupObject.getVariableName(),
-                    arguments,
-                    setupObject.getConstructorParameters()
-            ));
-
-            return Optional.of(copyCandidate(
-                    baseCandidate,
-                    setupObjects,
-                    baseCandidate.getMethodArguments()
-            ));
+            setupObjects.set(index, setupObjectWithArgument(setupObject, slot.getArgumentIndex(), value));
+            return Optional.of(copyCandidate(candidate, setupObjects, candidate.getMethodArguments()));
         }
 
         return Optional.empty();
     }
 
-    private boolean isBaseValue(
-            TestCandidate baseCandidate,
+    private GeneratedSetupObject setupObjectWithArgument(
+            GeneratedSetupObject setupObject,
+            int argumentIndex,
+            GeneratedArgument value
+    ) {
+        List<GeneratedArgument> arguments = new ArrayList<>(setupObject.getArguments());
+        arguments.set(argumentIndex, value);
+
+        return new GeneratedSetupObject(
+                setupObject.getType(),
+                setupObject.getVariableName(),
+                arguments,
+                setupObject.getConstructorParameters()
+        );
+    }
+
+    private boolean candidateAlreadyHasValue(
+            TestCandidate candidate,
             CandidateValueSlot slot,
             GeneratedArgument value
     ) {
-        Optional<GeneratedArgument> baseValue = baseValueFor(baseCandidate, slot);
-
-        return baseValue
-                .map(argument -> argument.getType().equals(value.getType())
-                        && argument.getValue().equals(value.getValue()))
+        return currentSlotValue(candidate, slot)
+                .map(currentValue -> sameArgument(currentValue, value))
                 .orElse(false);
     }
 
-    private Optional<GeneratedArgument> baseValueFor(TestCandidate baseCandidate, CandidateValueSlot slot) {
+    private Optional<GeneratedArgument> currentSlotValue(TestCandidate candidate, CandidateValueSlot slot) {
         if (slot.getKind() == CandidateValueSlotKind.METHOD_ARGUMENT) {
-            if (slot.getArgumentIndex() >= baseCandidate.getMethodArguments().size()) {
-                return Optional.empty();
-            }
-
-            return Optional.of(baseCandidate.getMethodArguments().get(slot.getArgumentIndex()));
+            return methodArgument(candidate, slot.getArgumentIndex());
         }
 
-        for (GeneratedSetupObject setupObject : baseCandidate.getSetupObjects()) {
-            if (!matchesSetupObject(setupObject, slot.getOwnerId())) {
+        return setupObjectArgument(candidate, slot);
+    }
+
+    private Optional<GeneratedArgument> methodArgument(TestCandidate candidate, int argumentIndex) {
+        if (argumentIndex >= candidate.getMethodArguments().size()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(candidate.getMethodArguments().get(argumentIndex));
+    }
+
+    private Optional<GeneratedArgument> setupObjectArgument(TestCandidate candidate, CandidateValueSlot slot) {
+        for (GeneratedSetupObject setupObject : candidate.getSetupObjects()) {
+            if (!slotMatchesSetupObject(slot, setupObject)) {
                 continue;
             }
 
@@ -182,24 +280,33 @@ public final class CandidateVariantGenerator {
         return Optional.empty();
     }
 
-    private boolean matchesSetupObject(GeneratedSetupObject setupObject, String ownerId) {
-        String ownerType = ownerId.replace(".<init>", "");
+    private boolean slotMatchesSetupObject(CandidateValueSlot slot, GeneratedSetupObject setupObject) {
+        String ownerType = slot.getOwnerId().replace(".<init>", "");
 
         return setupObject.getType().equals(ownerType)
                 || setupObject.getType().equals(simpleName(ownerType));
     }
 
+    private boolean sameArgument(GeneratedArgument first, GeneratedArgument second) {
+        return first.getType().equals(second.getType())
+                && first.getValue().equals(second.getValue());
+    }
+
+    private boolean isNullValue(CandidateValueOption option) {
+        return option.getArgument().getValue().equals("null");
+    }
+
     private TestCandidate copyCandidate(
-            TestCandidate baseCandidate,
+            TestCandidate candidate,
             List<GeneratedSetupObject> setupObjects,
             List<GeneratedArgument> methodArguments
     ) {
         return new TestCandidate(
-                baseCandidate.getClassName(),
-                baseCandidate.getMethodName(),
-                baseCandidate.getReturnType(),
+                candidate.getClassName(),
+                candidate.getMethodName(),
+                candidate.getReturnType(),
                 setupObjects,
-                baseCandidate.getTargetVariableName(),
+                candidate.getTargetVariableName(),
                 methodArguments
         );
     }
@@ -212,5 +319,68 @@ public final class CandidateVariantGenerator {
         }
 
         return className.substring(lastDotIndex + 1);
+    }
+
+    private static final class UniqueCandidateList {
+        private final int maxSize;
+        private final List<TestCandidate> candidates = new ArrayList<>();
+        private final Set<String> seenCandidateKeys = new LinkedHashSet<>();
+
+        private UniqueCandidateList(int maxSize) {
+            this.maxSize = maxSize;
+        }
+
+        private boolean add(TestCandidate candidate) {
+            if (isFull()) {
+                return false;
+            }
+
+            if (!seenCandidateKeys.add(candidateKey(candidate))) {
+                return false;
+            }
+
+            candidates.add(candidate);
+            return true;
+        }
+
+        private boolean isFull() {
+            return candidates.size() >= maxSize;
+        }
+
+        private List<TestCandidate> toList() {
+            return List.copyOf(candidates);
+        }
+
+        private static String candidateKey(TestCandidate candidate) {
+            StringBuilder key = new StringBuilder();
+            key.append(candidate.getClassName())
+                    .append('#')
+                    .append(candidate.getMethodName())
+                    .append('#')
+                    .append(candidate.getTargetVariableName());
+
+            for (GeneratedSetupObject setupObject : candidate.getSetupObjects()) {
+                key.append("|setup:")
+                        .append(setupObject.getType())
+                        .append(':')
+                        .append(setupObject.getVariableName());
+
+                appendArguments(key, setupObject.getArguments());
+            }
+
+            key.append("|method");
+            appendArguments(key, candidate.getMethodArguments());
+
+            return key.toString();
+        }
+
+        private static void appendArguments(StringBuilder key, List<GeneratedArgument> arguments) {
+            for (GeneratedArgument argument : arguments) {
+                key.append(':')
+                        .append(argument.getType())
+                        .append('=')
+                        .append(argument.getValue());
+            }
+        }
     }
 }

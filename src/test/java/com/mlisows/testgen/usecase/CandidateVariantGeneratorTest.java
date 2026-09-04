@@ -30,6 +30,53 @@ class CandidateVariantGeneratorTest {
     }
 
     @Test
+    void shouldGenerateInitialCandidatesFromBestAvailableTiers() {
+        TestCandidate baseCandidate = statusCandidate(
+                new GeneratedArgument("String", "\"\""),
+                new GeneratedArgument("int", "0")
+        );
+        CandidateSpace candidateSpace = new CandidateSpace(
+                baseCandidate,
+                List.of(
+                        new CandidateValuePool(
+                                new CandidateValueSlot(
+                                        CandidateValueSlotKind.METHOD_ARGUMENT,
+                                        "sample.Calculator.calculate",
+                                        "status",
+                                        "String",
+                                        0
+                                ),
+                                List.of(
+                                        option(new GeneratedArgument("String", "\"PAID\""), CandidateValueTier.EXACT),
+                                        option(new GeneratedArgument("String", "\"\""), CandidateValueTier.FALLBACK),
+                                        option(new GeneratedArgument("String", "null"), CandidateValueTier.NULL)
+                                )
+                        ),
+                        new CandidateValuePool(
+                                new CandidateValueSlot(
+                                        CandidateValueSlotKind.METHOD_ARGUMENT,
+                                        "sample.Calculator.calculate",
+                                        "amount",
+                                        "int",
+                                        1
+                                ),
+                                List.of(
+                                        option(new GeneratedArgument("int", "101"), CandidateValueTier.EXACT),
+                                        option(new GeneratedArgument("int", "0"), CandidateValueTier.FALLBACK)
+                                )
+                        )
+                )
+        );
+
+        List<TestCandidate> variants = new CandidateVariantGenerator(1, 5, 25).generateVariants(candidateSpace);
+
+        assertEquals("\"\"", variants.get(0).getMethodArguments().get(0).getValue());
+        assertEquals("0", variants.get(0).getMethodArguments().get(1).getValue());
+        assertEquals("\"PAID\"", variants.get(1).getMethodArguments().get(0).getValue());
+        assertEquals("101", variants.get(1).getMethodArguments().get(1).getValue());
+    }
+
+    @Test
     void shouldGenerateOneSlotMethodArgumentVariants() {
         TestCandidate baseCandidate = calculatorCandidate(new GeneratedArgument("int", "-1"));
         CandidateSpace candidateSpace = new CandidateSpace(
@@ -50,7 +97,7 @@ class CandidateVariantGeneratorTest {
                 ))
         );
 
-        List<TestCandidate> variants = new CandidateVariantGenerator().generateVariants(candidateSpace);
+        List<TestCandidate> variants = new CandidateVariantGenerator(0, 5, 25).generateVariants(candidateSpace);
 
         assertEquals(3, variants.size());
         assertEquals("-1", variants.get(0).getMethodArguments().get(0).getValue());
@@ -79,7 +126,7 @@ class CandidateVariantGeneratorTest {
                 ))
         );
 
-        List<TestCandidate> variants = new CandidateVariantGenerator().generateVariants(candidateSpace);
+        List<TestCandidate> variants = new CandidateVariantGenerator(0, 5, 25).generateVariants(candidateSpace);
 
         assertEquals(3, variants.size());
         assertEquals("-1", orderSetup(variants.get(0)).getArguments().get(0).getValue());
@@ -110,7 +157,7 @@ class CandidateVariantGeneratorTest {
                 ))
         );
 
-        List<TestCandidate> variants = new CandidateVariantGenerator(5, 2).generateVariants(candidateSpace);
+        List<TestCandidate> variants = new CandidateVariantGenerator(0, 5, 2).generateVariants(candidateSpace);
 
         assertEquals(2, variants.size());
         assertEquals("-1", variants.get(0).getMethodArguments().get(0).getValue());
@@ -119,8 +166,12 @@ class CandidateVariantGeneratorTest {
 
     private static List<CandidateValueOption> options(GeneratedArgument... arguments) {
         return List.of(arguments).stream()
-                .map(argument -> new CandidateValueOption(argument, CandidateValueTier.FALLBACK, "test"))
+                .map(argument -> option(argument, CandidateValueTier.FALLBACK))
                 .toList();
+    }
+
+    private static CandidateValueOption option(GeneratedArgument argument, CandidateValueTier tier) {
+        return new CandidateValueOption(argument, tier, "test");
     }
 
     private static TestCandidate calculatorCandidate(GeneratedArgument amount) {
@@ -131,6 +182,17 @@ class CandidateVariantGeneratorTest {
                 List.of(new GeneratedSetupObject("Calculator", "calculator", List.of())),
                 "calculator",
                 List.of(amount)
+        );
+    }
+
+    private static TestCandidate statusCandidate(GeneratedArgument status, GeneratedArgument amount) {
+        return new TestCandidate(
+                "sample.Calculator",
+                "calculate",
+                "int",
+                List.of(new GeneratedSetupObject("Calculator", "calculator", List.of())),
+                "calculator",
+                List.of(status, amount)
         );
     }
 
