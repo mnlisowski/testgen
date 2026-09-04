@@ -20,13 +20,13 @@ public final class GenerationReport {
             BranchKind.WHILE,
             BranchKind.SWITCH
     );
-    private static final List<String> UNSUPPORTED_JAVA_CONSTRUCTS = List.of(
-            "gałęzie do-while",
-            "wyrażenia switch",
-            "gałęzie try/catch/finally",
-            "gałęzie w lambdach i predykatach strumieni",
-            "skracane warunki logiczne, na przykład && albo ||",
-            "operator trójargumentowy"
+    private static final List<String> SUPPORTED_GENERATION_FEATURES = List.of(
+            "publiczne klasy, konstruktory i metody",
+            "argumenty typów prostych, String, typy wyliczeniowe oraz null dla typów referencyjnych",
+            "złożone obiekty tworzone rekurencyjnie przez publiczne konstruktory, jeśli ich zależności też są obsługiwane",
+            "wartości początkowe z generatora wartości domyślnych, wskazówek statycznych i profilu wykonania",
+            "wybór kandydatów na podstawie nowych celów pokrycia gałęzi",
+            "testy JUnit z prostymi asercjami wyniku lub oczekiwanego wyjątku"
     );
 
     private final List<ClassAnalysisResult> analysisResults;
@@ -150,6 +150,10 @@ public final class GenerationReport {
         return coverageEvaluation.getFailedCandidateSpaceMethodCount();
     }
 
+    public int getMethodWithoutCandidateCount() {
+        return getAnalyzedMethodCount() - getCandidateSpaceMethodCount();
+    }
+
     public long countExecutedByOutcome(ExecutionOutcome outcome) {
         return coverageEvaluation.countExecutedByOutcome(outcome);
     }
@@ -158,8 +162,8 @@ public final class GenerationReport {
         return SUPPORTED_BRANCH_KINDS;
     }
 
-    public List<String> getUnsupportedJavaConstructs() {
-        return UNSUPPORTED_JAVA_CONSTRUCTS;
+    public List<String> getSupportedGenerationFeatures() {
+        return SUPPORTED_GENERATION_FEATURES;
     }
 
     public String toText() {
@@ -170,15 +174,12 @@ public final class GenerationReport {
 
         appendLine(report, "Analiza projektu");
         appendLine(report, "Przeanalizowane klasy: " + getAnalyzedClassCount());
-        appendLine(report, "Przeanalizowane metody: " + getAnalyzedMethodCount());
-        appendLine(report, "Metody spełniające podstawowe ograniczenia generatora: " + getSupportedMethodCount());
-        appendLine(report, "Metody odrzucone przez podstawowe ograniczenia generatora: " + getSkippedMethods().size());
-        appendLine(report, "Metody, dla których przygotowano kandydatów: " + getCandidateSpaceMethodCount());
-        appendLine(report, "Metody, dla których nie udało się przygotować kandydatów: " + getFailedCandidateSpaceMethodCount());
+        appendLine(report, "Wykryte metody: " + getAnalyzedMethodCount());
+        appendLine(report, "Metody, dla których udało się przygotować kandydatów: " + getCandidateSpaceMethodCount());
+        appendLine(report, "Metody, których nie udało się wywołać ze względu na ograniczenia projektu: " + getMethodWithoutCandidateCount());
         appendLine(report, "");
 
         appendLine(report, "Cele pokrycia gałęzi");
-        appendLine(report, "Obsługiwane rodzaje gałęzi: " + formatEnums(getSupportedBranchKinds()));
         appendLine(report, "Wykryte cele pokrycia gałęzi: " + getCoverageGoalCount());
         appendLine(report, "Cele w metodach, dla których przygotowano kandydatów: " + getCandidateSpaceGoalCount());
         appendLine(report, "Pokryte cele w metodach, dla których przygotowano kandydatów: " + getCoveredCandidateSpaceGoalCount());
@@ -209,10 +210,12 @@ public final class GenerationReport {
         }
         appendLine(report, "");
 
-        appendLine(report, "Nieobsługiwane konstrukcje Javy");
-        for (String unsupportedJavaConstruct : getUnsupportedJavaConstructs()) {
-            appendLine(report, unsupportedJavaConstruct);
+        appendLine(report, "Obsługiwane elementy projektu");
+        appendLine(report, "obsługiwane rodzaje gałęzi: " + formatEnums(getSupportedBranchKinds()));
+        for (String supportedGenerationFeature : getSupportedGenerationFeatures()) {
+            appendLine(report, supportedGenerationFeature);
         }
+        appendLine(report, "");
 
         return report.toString();
     }
