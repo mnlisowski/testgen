@@ -1,0 +1,10 @@
+project,tool,measurement,covered,total,percent,source_file
+fit-bench,EvoSuite,JaCoCo branch,991,1005,98.6,raw/jacoco-evosuite/fit-bench/jacoco.csv
+fit-bench,Randoop,JaCoCo branch,591,1005,58.8,raw/jacoco-randoop/fit-bench/jacoco.csv
+fit-bench,EvoSuite,EvoSuite internal goals,1162,1181,98.4,raw/evosuite-internal/fit-bench/statistics.csv
+commons-codec,EvoSuite,JaCoCo branch,2107,2521,83.6,raw/jacoco-evosuite/commons-codec/jacoco.csv
+commons-codec,Randoop,JaCoCo branch,1664,2521,66.0,raw/jacoco-randoop/commons-codec/jacoco.csv
+commons-codec,EvoSuite,EvoSuite internal goals,2850,3154,90.4,raw/evosuite-internal/commons-codec/statistics.csv
+commons-validator,EvoSuite,JaCoCo branch,1120,1974,56.7,raw/jacoco-evosuite/commons-validator/jacoco.csv
+commons-validator,Randoop,JaCoCo branch,1030,1974,52.2,raw/jacoco-randoop/commons-validator/jacoco.csv
+commons-validator,EvoSuite,EvoSuite internal goals,1550,1824,85.0,raw/evosuite-internal/commons-validator/statistics.csv

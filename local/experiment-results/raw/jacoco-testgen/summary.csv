@@ -1,0 +1,7 @@
+variant,project,instruction_covered,instruction_total,instruction_percent,branch_covered,branch_total,branch_percent,line_covered,line_total,line_percent,tests,failures,errors,skipped,report
+no-profile,fit-bench,2996,3733,80.3,719,1005,71.5,918,1104,83.2,265,0,0,0,target/experiments/jacoco-testgen/no-profile/fit-bench/target/site/jacoco/jacoco.csv
+no-profile,commons-codec,18349,59198,31.0,801,2521,31.8,2063,5186,39.8,110,7,0,0,target/experiments/jacoco-testgen/no-profile/commons-codec/target/site/jacoco/jacoco.csv
+no-profile,commons-validator,11051,23295,47.4,320,1974,16.2,867,3147,27.6,102,0,0,0,target/experiments/jacoco-testgen/no-profile/commons-validator/target/site/jacoco/jacoco.csv
+with-profile-50,fit-bench,2788,3733,74.7,667,1005,66.4,870,1104,78.8,269,0,0,0,target/experiments/jacoco-testgen/with-profile-50/fit-bench/target/site/jacoco/jacoco.csv
+with-profile-50,commons-codec,21248,59198,35.9,1210,2521,48.0,2519,5186,48.6,171,7,0,0,target/experiments/jacoco-testgen/with-profile-50/commons-codec/target/site/jacoco/jacoco.csv
+with-profile-50,commons-validator,11776,23295,50.6,427,1974,21.6,991,3147,31.5,123,0,0,0,target/experiments/jacoco-testgen/with-profile-50/commons-validator/target/site/jacoco/jacoco.csv

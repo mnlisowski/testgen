@@ -1,0 +1,35 @@
+Raport z generowania testów
+
+Analiza projektu
+Przeanalizowane klasy: 25
+Wykryte metody: 126
+Metody, dla których udało się przygotować kandydatów: 125
+Metody, których nie udało się wywołać ze względu na ograniczenia projektu: 1
+
+Cele pokrycia gałęzi
+Wykryte cele pokrycia gałęzi: 715
+Cele w metodach, dla których przygotowano kandydatów: 707
+Pokryte cele w metodach, dla których przygotowano kandydatów: 582
+Wszystkie pokryte cele: 589
+Wszystkie pokryte cele mogą być większe niż pokryte cele w metodach z kandydatami, ponieważ wykonanie jednej metody może pośrednio wejść także do innych metod.
+
+Kandydaci
+Liczba wykonanych kandydatów: 5856
+Liczba kandydatów wybranych do testów: 265
+Liczba kandydatów zakończonych normalnie: 5817
+Liczba kandydatów zakończonych wyjątkiem: 39
+Liczba nieudanych wykonań: 0
+Liczba wykonań przerwanych przez limit czasu: 0
+
+Pominięte metody
+Brak
+
+Obsługiwane elementy projektu
+obsługiwane rodzaje gałęzi: IF, FOR, WHILE, SWITCH
+publiczne klasy, konstruktory i metody
+argumenty typów prostych, String, typy wyliczeniowe oraz null dla typów referencyjnych
+złożone obiekty tworzone rekurencyjnie przez publiczne konstruktory, jeśli ich zależności też są obsługiwane
+wartości początkowe z generatora wartości domyślnych, wskazówek statycznych i profilu wykonania
+wybór kandydatów na podstawie nowych celów pokrycia gałęzi
+testy JUnit z prostymi asercjami wyniku lub oczekiwanego wyjątku
+

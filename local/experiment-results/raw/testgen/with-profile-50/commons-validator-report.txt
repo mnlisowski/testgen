@@ -1,0 +1,38 @@
+Raport z generowania testów
+
+Analiza projektu
+Przeanalizowane klasy: 67
+Wykryte metody: 472
+Metody, dla których udało się przygotować kandydatów: 308
+Metody, których nie udało się wywołać ze względu na ograniczenia projektu: 164
+
+Cele pokrycia gałęzi
+Wykryte cele pokrycia gałęzi: 981
+Cele w metodach, dla których przygotowano kandydatów: 292
+Pokryte cele w metodach, dla których przygotowano kandydatów: 168
+Wszystkie pokryte cele: 246
+Wszystkie pokryte cele mogą być większe niż pokryte cele w metodach z kandydatami, ponieważ wykonanie jednej metody może pośrednio wejść także do innych metod.
+
+Kandydaci
+Liczba wykonanych kandydatów: 2675
+Liczba kandydatów wybranych do testów: 123
+Liczba kandydatów zakończonych normalnie: 2258
+Liczba kandydatów zakończonych wyjątkiem: 141
+Liczba nieudanych wykonań: 276
+Liczba wykonań przerwanych przez limit czasu: 0
+
+Pominięte metody
+org.apache.commons.validator.CreditCardValidator.addAllowedCardType: INTERFACE_MOCK
+org.apache.commons.validator.Field.validate: MAP_FIXTURE
+org.apache.commons.validator.routines.DomainValidator.getInstance: COLLECTION_FIXTURE
+org.apache.commons.validator.util.ValidatorUtils.copyMap: MAP_FIXTURE
+
+Obsługiwane elementy projektu
+obsługiwane rodzaje gałęzi: IF, FOR, WHILE, SWITCH
+publiczne klasy, konstruktory i metody
+argumenty typów prostych, String, typy wyliczeniowe oraz null dla typów referencyjnych
+złożone obiekty tworzone rekurencyjnie przez publiczne konstruktory, jeśli ich zależności też są obsługiwane
+wartości początkowe z generatora wartości domyślnych, wskazówek statycznych i profilu wykonania
+wybór kandydatów na podstawie nowych celów pokrycia gałęzi
+testy JUnit z prostymi asercjami wyniku lub oczekiwanego wyjątku
+
