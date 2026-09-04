@@ -63,6 +63,7 @@ public final class CandidateVariantGenerator {
         candidates.add(space.getBaseCandidate());
         addRandomInitialCandidates(space, candidates);
         addSingleSlotMutations(space, candidates);
+        addTwoSlotMutations(space, candidates);
 
         return candidates.toList();
     }
@@ -164,6 +165,65 @@ public final class CandidateVariantGenerator {
                 return;
             }
         }
+    }
+
+    private void addTwoSlotMutations(CandidateSpace space, UniqueCandidateList candidates) {
+        TestCandidate baseCandidate = space.getBaseCandidate();
+        List<CandidateValuePool> pools = space.getValuePools();
+
+        for (int firstIndex = 0; firstIndex < pools.size() - 1; firstIndex++) {
+            CandidateValuePool firstPool = pools.get(firstIndex);
+
+            for (int secondIndex = firstIndex + 1; secondIndex < pools.size(); secondIndex++) {
+                CandidateValuePool secondPool = pools.get(secondIndex);
+                addTwoSlotMutations(baseCandidate, firstPool, secondPool, candidates);
+
+                if (candidates.isFull()) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void addTwoSlotMutations(
+            TestCandidate baseCandidate,
+            CandidateValuePool firstPool,
+            CandidateValuePool secondPool,
+            UniqueCandidateList candidates
+    ) {
+        for (GeneratedArgument firstValue : pairMutationValues(firstPool)) {
+            if (candidateAlreadyHasValue(baseCandidate, firstPool.getSlot(), firstValue)) {
+                continue;
+            }
+
+            Optional<TestCandidate> firstMutation = replaceSlotValue(baseCandidate, firstPool.getSlot(), firstValue);
+
+            if (firstMutation.isEmpty()) {
+                continue;
+            }
+
+            for (GeneratedArgument secondValue : pairMutationValues(secondPool)) {
+                if (candidates.isFull()) {
+                    return;
+                }
+
+                if (candidateAlreadyHasValue(baseCandidate, secondPool.getSlot(), secondValue)) {
+                    continue;
+                }
+
+                replaceSlotValue(firstMutation.get(), secondPool.getSlot(), secondValue)
+                        .ifPresent(candidates::add);
+            }
+        }
+    }
+
+    private List<GeneratedArgument> pairMutationValues(CandidateValuePool pool) {
+        return pool.getOptions().stream()
+                .filter(option -> option.getTier() != CandidateValueTier.NULL)
+                .filter(option -> !isNullValue(option))
+                .map(CandidateValueOption::getArgument)
+                .limit(maxValuesPerSlot)
+                .toList();
     }
 
     private Optional<TestCandidate> replaceSlotValue(
