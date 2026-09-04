@@ -26,6 +26,19 @@ TLDR przepływu:
 - na końcu zapisuje testy JUnit 5 oraz raport tekstowy opisujący analizę
   projektu, liczbę kandydatów i uzyskane pokrycie.
 
+## Dokumentacja
+
+W repozytorium znajduje się dokładniejsza dokumentacja:
+
+- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) -
+
+Wyniki eksperymentów i wykresy znajdują się w katalogu:
+
+  ```text
+  docs/experiment-results
+  ```
+
+Opis zawartości katalogu znajduje się w [docs/experiment-results/README.md](docs/experiment-results/README.md).
 
 ## Uruchamianie
 
@@ -147,7 +160,7 @@ Przykladowy projekt testowy znajduje sie w:
 examples/fit-bench
 ```
 
-Jest to zwykly projekt Maven z klasami domenowymi, enumami, konstruktorami, metodami i galeziami sterowania. Projekt zostal wygenerowany automatycznie,w taki sposob żeby miescił się w ograniczeniach aktualnego MVP generatora.
+Jest to zwykly projekt Maven z klasami domenowymi, enumami, konstruktorami, metodami i galeziami sterowania. Projekt zostal wygenerowany automatycznie,w taki sposob żeby miescił się w ograniczeniach aktualnego generatora.
 
 
 
@@ -235,16 +248,3 @@ Raport generowania pokazuje te ograniczenia: ile metod przeszlo podstawowe regul
 
 ![Przykładowy raport generatora](docs/images/report.png)
 
-## Dokumenty pomocnicze
-
-W repozytorium znajduje się dokładniejsza dokumentacja:
-
-- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) -
-
-Wyniki eksperymentów i wykresy znajdują się w katalogu:
-
-  ```text
-  docs/experiment-results
-  ```
-
-Opis zawartości katalogu znajduje się w [docs/experiment-results/README.md](docs/experiment-results/README.md).
