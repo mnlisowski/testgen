@@ -341,10 +341,20 @@ public final class CandidateVariantGenerator {
     }
 
     private boolean slotMatchesSetupObject(CandidateValueSlot slot, GeneratedSetupObject setupObject) {
-        String ownerType = slot.getOwnerId().replace(".<init>", "");
+        String ownerType = constructorOwnerType(slot.getOwnerId());
 
         return setupObject.getType().equals(ownerType)
                 || setupObject.getType().equals(simpleName(ownerType));
+    }
+
+    private String constructorOwnerType(String ownerId) {
+        int constructorIndex = ownerId.indexOf(".<init>");
+
+        if (constructorIndex == -1) {
+            return ownerId;
+        }
+
+        return ownerId.substring(0, constructorIndex);
     }
 
     private boolean sameArgument(GeneratedArgument first, GeneratedArgument second) {
@@ -365,6 +375,7 @@ public final class CandidateVariantGenerator {
                 candidate.getClassName(),
                 candidate.getMethodName(),
                 candidate.getReturnType(),
+                candidate.getMethodParameterTypes(),
                 setupObjects,
                 candidate.getTargetVariableName(),
                 methodArguments
