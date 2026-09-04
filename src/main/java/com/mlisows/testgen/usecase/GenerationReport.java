@@ -21,12 +21,12 @@ public final class GenerationReport {
             BranchKind.SWITCH
     );
     private static final List<String> UNSUPPORTED_JAVA_CONSTRUCTS = List.of(
-            "do-while branches",
-            "switch expressions",
-            "try/catch/finally branches",
-            "lambda and stream predicate branches",
-            "short-circuit subconditions",
-            "ternary expressions"
+            "gałęzie do-while",
+            "wyrażenia switch",
+            "gałęzie try/catch/finally",
+            "gałęzie w lambdach i predykatach strumieni",
+            "skracane warunki logiczne, na przykład && albo ||",
+            "operator trójargumentowy"
     );
 
     private final List<ClassAnalysisResult> analysisResults;
@@ -165,38 +165,39 @@ public final class GenerationReport {
     public String toText() {
         StringBuilder report = new StringBuilder();
 
-        appendLine(report, "Test generation report");
+        appendLine(report, "Raport z generowania testów");
         appendLine(report, "");
 
-        appendLine(report, "Analysis");
-        appendLine(report, "Classes analyzed: " + getAnalyzedClassCount());
-        appendLine(report, "Methods analyzed: " + getAnalyzedMethodCount());
-        appendLine(report, "Methods passing planner rules: " + getSupportedMethodCount());
-        appendLine(report, "Skipped by planner: " + getSkippedMethods().size());
-        appendLine(report, "Methods with candidate space: " + getCandidateSpaceMethodCount());
-        appendLine(report, "Methods without candidate space: " + getFailedCandidateSpaceMethodCount());
+        appendLine(report, "Analiza projektu");
+        appendLine(report, "Przeanalizowane klasy: " + getAnalyzedClassCount());
+        appendLine(report, "Przeanalizowane metody: " + getAnalyzedMethodCount());
+        appendLine(report, "Metody spełniające podstawowe ograniczenia generatora: " + getSupportedMethodCount());
+        appendLine(report, "Metody odrzucone przez podstawowe ograniczenia generatora: " + getSkippedMethods().size());
+        appendLine(report, "Metody, dla których przygotowano kandydatów: " + getCandidateSpaceMethodCount());
+        appendLine(report, "Metody, dla których nie udało się przygotować kandydatów: " + getFailedCandidateSpaceMethodCount());
         appendLine(report, "");
 
-        appendLine(report, "Branch goals");
-        appendLine(report, "Supported branch kinds: " + formatEnums(getSupportedBranchKinds()));
-        appendLine(report, "Detected goals: " + getCoverageGoalCount());
-        appendLine(report, "Goals in methods with candidate space: " + getCandidateSpaceGoalCount());
-        appendLine(report, "Covered goals in methods with candidate space: " + getCoveredCandidateSpaceGoalCount());
-        appendLine(report, "Covered goals total: " + getCoveredBranchCount());
+        appendLine(report, "Cele pokrycia gałęzi");
+        appendLine(report, "Obsługiwane rodzaje gałęzi: " + formatEnums(getSupportedBranchKinds()));
+        appendLine(report, "Wykryte cele pokrycia gałęzi: " + getCoverageGoalCount());
+        appendLine(report, "Cele w metodach, dla których przygotowano kandydatów: " + getCandidateSpaceGoalCount());
+        appendLine(report, "Pokryte cele w metodach, dla których przygotowano kandydatów: " + getCoveredCandidateSpaceGoalCount());
+        appendLine(report, "Wszystkie pokryte cele: " + getCoveredBranchCount());
+        appendLine(report, "Wszystkie pokryte cele mogą być większe niż pokryte cele w metodach z kandydatami, ponieważ wykonanie jednej metody może pośrednio wejść także do innych metod.");
         appendLine(report, "");
 
-        appendLine(report, "Candidates");
-        appendLine(report, "Executed: " + getExecutedCandidateCount());
-        appendLine(report, "Selected: " + getSelectedCandidateCount());
-        appendLine(report, "Returned: " + countExecutedByOutcome(ExecutionOutcome.RETURNED));
-        appendLine(report, "Threw exception: " + countExecutedByOutcome(ExecutionOutcome.THREW_EXCEPTION));
-        appendLine(report, "Failed to execute: " + countExecutedByOutcome(ExecutionOutcome.FAILED_TO_EXECUTE));
-        appendLine(report, "Timed out: " + countExecutedByOutcome(ExecutionOutcome.TIMED_OUT));
+        appendLine(report, "Kandydaci");
+        appendLine(report, "Liczba wykonanych kandydatów: " + getExecutedCandidateCount());
+        appendLine(report, "Liczba kandydatów wybranych do testów: " + getSelectedCandidateCount());
+        appendLine(report, "Liczba kandydatów zakończonych normalnie: " + countExecutedByOutcome(ExecutionOutcome.RETURNED));
+        appendLine(report, "Liczba kandydatów zakończonych wyjątkiem: " + countExecutedByOutcome(ExecutionOutcome.THREW_EXCEPTION));
+        appendLine(report, "Liczba nieudanych wykonań: " + countExecutedByOutcome(ExecutionOutcome.FAILED_TO_EXECUTE));
+        appendLine(report, "Liczba wykonań przerwanych przez limit czasu: " + countExecutedByOutcome(ExecutionOutcome.TIMED_OUT));
         appendLine(report, "");
 
-        appendLine(report, "Skipped methods");
+        appendLine(report, "Pominięte metody");
         if (getSkippedMethods().isEmpty()) {
-            appendLine(report, "None");
+            appendLine(report, "Brak");
         } else {
             for (SkippedMethod skippedMethod : getSkippedMethods()) {
                 appendLine(report, skippedMethod.getClassName()
@@ -208,7 +209,7 @@ public final class GenerationReport {
         }
         appendLine(report, "");
 
-        appendLine(report, "Unsupported Java constructs");
+        appendLine(report, "Nieobsługiwane konstrukcje Javy");
         for (String unsupportedJavaConstruct : getUnsupportedJavaConstructs()) {
             appendLine(report, unsupportedJavaConstruct);
         }

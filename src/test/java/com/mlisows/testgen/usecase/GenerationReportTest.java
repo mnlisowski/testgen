@@ -104,7 +104,7 @@ class GenerationReportTest {
                 BranchKind.WHILE,
                 BranchKind.SWITCH
         ), report.getSupportedBranchKinds());
-        assertTrue(report.getUnsupportedJavaConstructs().contains("switch expressions"));
+        assertTrue(report.getUnsupportedJavaConstructs().contains("wyrażenia switch"));
 
         GenerationReport.SkippedMethod skippedMethod = report.getSkippedMethods().get(0);
         assertEquals("sample.ReportService", skippedMethod.getClassName());
@@ -116,21 +116,22 @@ class GenerationReportTest {
 
         String reportText = report.toText();
 
-        assertTrue(reportText.contains("Test generation report"));
-        assertTrue(reportText.contains("Classes analyzed: 2"));
-        assertTrue(reportText.contains("Methods passing planner rules: 1"));
-        assertTrue(reportText.contains("Methods with candidate space: 1"));
-        assertTrue(reportText.contains("Methods without candidate space: 1"));
-        assertTrue(reportText.contains("Supported branch kinds: IF, FOR, WHILE, SWITCH"));
-        assertTrue(reportText.contains("Detected goals: 3"));
-        assertTrue(reportText.contains("Goals in methods with candidate space: 2"));
-        assertTrue(reportText.contains("Covered goals in methods with candidate space: 1"));
-        assertTrue(reportText.contains("Covered goals total: 2"));
-        assertTrue(reportText.contains("Executed: 2"));
-        assertTrue(reportText.contains("Selected: 1"));
-        assertTrue(reportText.contains("Failed to execute: 1"));
+        assertTrue(reportText.contains("Raport z generowania testów"));
+        assertTrue(reportText.contains("Przeanalizowane klasy: 2"));
+        assertTrue(reportText.contains("Metody spełniające podstawowe ograniczenia generatora: 1"));
+        assertTrue(reportText.contains("Metody, dla których przygotowano kandydatów: 1"));
+        assertTrue(reportText.contains("Metody, dla których nie udało się przygotować kandydatów: 1"));
+        assertTrue(reportText.contains("Obsługiwane rodzaje gałęzi: IF, FOR, WHILE, SWITCH"));
+        assertTrue(reportText.contains("Wykryte cele pokrycia gałęzi: 3"));
+        assertTrue(reportText.contains("Cele w metodach, dla których przygotowano kandydatów: 2"));
+        assertTrue(reportText.contains("Pokryte cele w metodach, dla których przygotowano kandydatów: 1"));
+        assertTrue(reportText.contains("Wszystkie pokryte cele: 2"));
+        assertTrue(reportText.contains("Liczba wykonanych kandydatów: 2"));
+        assertTrue(reportText.contains("Liczba kandydatów wybranych do testów: 1"));
+        assertTrue(reportText.contains("Liczba nieudanych wykonań: 1"));
         assertTrue(reportText.contains("sample.ReportService.export: INTERFACE_MOCK, MAP_FIXTURE"));
-        assertTrue(reportText.contains("switch expressions"));
+        assertTrue(reportText.contains("Wszystkie pokryte cele mogą być większe"));
+        assertTrue(reportText.contains("wyrażenia switch"));
     }
 
     private static TestCandidate candidate(String amount) {
