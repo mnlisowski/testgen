@@ -10,6 +10,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.nodeTypes.NodeWithParameters;
 import com.github.javaparser.ast.stmt.Statement;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.ExecutableSignature;
 import com.mlisows.testgen.infrastructure.parser.JavaParserLanguageLevel;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;
 
@@ -104,11 +105,12 @@ public final class JavaParserArgumentInstrumenter implements SourceInstrumenter 
     }
 
     private void addRecorderToConstructor(String className, ConstructorDeclaration constructor) {
-        Statement recorderCall = recorderCall(className + ".<init>", constructor);
+        Statement recorderCall = recorderCall(constructorSignature(className, constructor), constructor);
         int insertIndex = constructorRecorderInsertIndex(constructor);
 
         constructor.getBody().addStatement(insertIndex, recorderCall);
     }
+
 
     private int constructorRecorderInsertIndex(ConstructorDeclaration constructor) {
         if (constructor.getBody().getStatements().isEmpty()) {
@@ -127,8 +129,16 @@ public final class JavaParserArgumentInstrumenter implements SourceInstrumenter 
     private void addRecorderToMethod(String className, MethodDeclaration method) {
         method.getBody().ifPresent(body -> body.addStatement(
                 0,
-                recorderCall(className + "." + method.getNameAsString(), method)
+                recorderCall(methodSignature(className, method), method)
         ));
+    }
+
+    private String constructorSignature(String className, ConstructorDeclaration constructor) {
+        return ExecutableSignature.constructor(className, parameterTypes(constructor));
+    }
+
+    private String methodSignature(String className, MethodDeclaration method) {
+        return ExecutableSignature.method(className, method.getNameAsString(), parameterTypes(method));
     }
 
     private Statement recorderCall(String ownerId, NodeWithParameters<?> executable) {
