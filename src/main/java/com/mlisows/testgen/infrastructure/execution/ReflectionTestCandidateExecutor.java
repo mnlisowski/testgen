@@ -173,6 +173,23 @@ public final class ReflectionTestCandidateExecutor implements TestCandidateExecu
     }
 
     private Method matchingMethod(Class<?> targetClass, TestCandidate candidate) {
+        if (candidate.getMethodParameterTypes().isEmpty()) {
+            return matchingMethodByArgumentCount(targetClass, candidate);
+        }
+
+        return Arrays.stream(targetClass.getMethods())
+                .filter(method -> Modifier.isPublic(method.getModifiers()))
+                .filter(method -> method.getName().equals(candidate.getMethodName()))
+                .filter(method -> method.getParameterCount() == candidate.getMethodParameterTypes().size())
+                .filter(method -> methodParameterTypesMatch(method, candidate))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No public method " + candidate.getMethodName()
+                                + " matching candidate parameter types in " + targetClass.getName()
+                ));
+    }
+
+    private Method matchingMethodByArgumentCount(Class<?> targetClass, TestCandidate candidate) {
         return Arrays.stream(targetClass.getMethods())
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .filter(method -> method.getName().equals(candidate.getMethodName()))
@@ -183,6 +200,20 @@ public final class ReflectionTestCandidateExecutor implements TestCandidateExecu
                                 + " with " + candidate.getMethodArguments().size()
                                 + " arguments in " + targetClass.getName()
                 ));
+    }
+
+    private boolean methodParameterTypesMatch(Method method, TestCandidate candidate) {
+        Class<?>[] actualTypes = method.getParameterTypes();
+
+        for (int index = 0; index < actualTypes.length; index++) {
+            String expectedType = candidate.getMethodParameterTypes().get(index);
+
+            if (!typeNameMatches(expectedType, actualTypes[index])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private Object[] resolveArguments(
