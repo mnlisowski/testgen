@@ -38,11 +38,11 @@ class JavaParserArgumentInstrumenterTest {
         String instrumentedSource = withoutWhitespace(Files.readString(outputPath));
 
         assertTrue(instrumentedSource.contains(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{\"threshold\"}, new String[]{\"int\"}, new Object[]{threshold});"
+                "ArgumentRecorder.record(\"sample.OrderService.<init>(int)\", new String[]{\"threshold\"}, new String[]{\"int\"}, new Object[]{threshold});"
         )));
 
         assertTrue(instrumentedSource.contains(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.calculate\", new String[]{\"amount\", \"status\"}, new String[]{\"int\", \"String\"}, new Object[]{amount, status});"
+                "ArgumentRecorder.record(\"sample.OrderService.calculate(int,String)\", new String[]{\"amount\", \"status\"}, new String[]{\"int\", \"String\"}, new Object[]{amount, status});"
         )));
 
 
@@ -72,7 +72,7 @@ class JavaParserArgumentInstrumenterTest {
 
         assertTrue(instrumentedSource.indexOf(withoutWhitespace("this(100);"))
                 < instrumentedSource.indexOf(withoutWhitespace(
-                "ArgumentRecorder.record(\"sample.OrderService.<init>\", new String[]{}, new String[]{}, new Object[]{});"
+                "ArgumentRecorder.record(\"sample.OrderService.<init>()\", new String[]{}, new String[]{}, new Object[]{});"
         )));
 
     }
