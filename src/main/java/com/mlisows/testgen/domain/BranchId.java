@@ -67,6 +67,10 @@ public final class BranchId {
         return discriminator;
     }
 
+    public String methodSignature() {
+        return className + "." + methodName;
+    }
+
     public String asString() {
         String baseId = className + "|" + methodName + "|" + lineNumber + "|" + branchKind + "|" + branchType;
 

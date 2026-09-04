@@ -36,6 +36,20 @@ class BranchIdTest {
     }
 
     @Test
+    void shouldReturnMethodSignature() {
+        BranchId branchId = new BranchId(
+                "sample.SimpleDiscountCalculator",
+                "calculate(int)",
+                6,
+                BranchKind.IF,
+                BranchType.TRUE,
+                ""
+        );
+
+        assertEquals("sample.SimpleDiscountCalculator.calculate(int)", branchId.methodSignature());
+    }
+
+    @Test
     void shouldParseBranchIdWithoutDiscriminator() {
         BranchId branchId = BranchId.parse("sample.Calculator|calculate|5|IF|TRUE");
 
