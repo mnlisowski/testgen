@@ -1,0 +1,46 @@
+services:
+  prepare-profile:
+    build: .
+    image: testgen
+    command:
+      - prepare-profile
+      - /project
+      - /profile-work
+    volumes:
+      - ./examples/fit-bench:/project:ro
+      - ./target/docker-profile-work/fit-bench:/profile-work
+      - ./target/docker-m2:/root/.m2
+
+  record-profile:
+    image: testgen
+    entrypoint:
+      - java
+    command:
+      - -Dtestgen.profile.dir=/profile-work
+      - -cp
+      - /profile-work/classes:/app/target/classes:/app/target/dependency/*
+      - sample.fit.DemoMain
+    volumes:
+      - ./target/docker-profile-work/fit-bench:/profile-work
+
+  generate-tests:
+    image: testgen
+    command:
+      - /project
+      - /test-work
+    volumes:
+      - ./examples/fit-bench:/project:ro
+      - ./target/docker-work/fit-bench:/test-work
+      - ./target/docker-m2:/root/.m2
+
+  generate-tests-with-profile:
+    image: testgen
+    command:
+      - /project
+      - /test-work
+      - /profile-work/observed-profile.txt
+    volumes:
+      - ./examples/fit-bench:/project:ro
+      - ./target/docker-work/fit-bench-with-profile:/test-work
+      - ./target/docker-profile-work/fit-bench:/profile-work:ro
+      - ./target/docker-m2:/root/.m2
