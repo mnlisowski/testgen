@@ -53,8 +53,8 @@ public final class EvaluateProjectCandidatesUseCase {
         Objects.requireNonNull(argumentValueHints, "argumentValueHints must not be null");
 
         Set<String> supportedMethodIds = supportedMethodIds(methodPlans);
+        Set<String> candidateSpaceMethodSignatures = new LinkedHashSet<>();
         List<TestCandidate> candidates = new ArrayList<>();
-        int candidateSpaceMethodCount = 0;
         int failedCandidateSpaceMethodCount = 0;
 
         for (ClassStructure classStructure : classStructures) {
@@ -76,14 +76,14 @@ public final class EvaluateProjectCandidatesUseCase {
                     continue;
                 }
 
-                candidateSpaceMethodCount++;
+                candidateSpaceMethodSignatures.add(methodId(classStructure, method));
                 candidates.addAll(candidateVariantGenerator.generateVariants(candidateSpace.get()));
             }
         }
 
         return candidateCoverageEvaluator.evaluate(
                 candidates,
-                candidateSpaceMethodCount,
+                candidateSpaceMethodSignatures,
                 failedCandidateSpaceMethodCount
         );
     }

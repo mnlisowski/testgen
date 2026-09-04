@@ -11,19 +11,15 @@ import java.util.Set;
 public final class CandidateCoverageEvaluation {
     private final List<TestCandidateExecutionResult> executedResults;
     private final List<TestCandidateExecutionResult> selectedResults;
-    private final int candidateSpaceMethodCount;
+    private final Set<String> candidateSpaceMethodSignatures;
     private final int failedCandidateSpaceMethodCount;
 
     public CandidateCoverageEvaluation(
             List<TestCandidateExecutionResult> executedResults,
             List<TestCandidateExecutionResult> selectedResults,
-            int candidateSpaceMethodCount,
+            Set<String> candidateSpaceMethodSignatures,
             int failedCandidateSpaceMethodCount
     ) {
-        if (candidateSpaceMethodCount < 0) {
-            throw new IllegalArgumentException("candidateSpaceMethodCount must not be negative");
-        }
-
         if (failedCandidateSpaceMethodCount < 0) {
             throw new IllegalArgumentException("failedCandidateSpaceMethodCount must not be negative");
         }
@@ -36,12 +32,15 @@ public final class CandidateCoverageEvaluation {
                 selectedResults,
                 "selectedResults must not be null"
         ));
-        this.candidateSpaceMethodCount = candidateSpaceMethodCount;
+        this.candidateSpaceMethodSignatures = Set.copyOf(Objects.requireNonNull(
+                candidateSpaceMethodSignatures,
+                "candidateSpaceMethodSignatures must not be null"
+        ));
         this.failedCandidateSpaceMethodCount = failedCandidateSpaceMethodCount;
     }
 
     public static CandidateCoverageEvaluation empty() {
-        return new CandidateCoverageEvaluation(List.of(), List.of(), 0, 0);
+        return new CandidateCoverageEvaluation(List.of(), List.of(), Set.of(), 0);
     }
 
     public List<TestCandidateExecutionResult> getExecutedResults() {
@@ -61,7 +60,11 @@ public final class CandidateCoverageEvaluation {
     }
 
     public int getCandidateSpaceMethodCount() {
-        return candidateSpaceMethodCount;
+        return candidateSpaceMethodSignatures.size();
+    }
+
+    public Set<String> getCandidateSpaceMethodSignatures() {
+        return candidateSpaceMethodSignatures;
     }
 
     public int getFailedCandidateSpaceMethodCount() {

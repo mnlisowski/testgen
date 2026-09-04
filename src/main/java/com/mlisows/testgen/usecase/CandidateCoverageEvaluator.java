@@ -7,6 +7,7 @@ import com.mlisows.testgen.usecase.ports.TestCandidateExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public final class CandidateCoverageEvaluator {
     private final TestCandidateExecutor candidateExecutor;
@@ -16,15 +17,16 @@ public final class CandidateCoverageEvaluator {
     }
 
     public List<TestCandidateExecutionResult> selectCoverageImprovingResults(List<TestCandidate> candidates) {
-        return evaluate(candidates, 0, 0).getSelectedResults();
+        return evaluate(candidates, Set.of(), 0).getSelectedResults();
     }
 
     public CandidateCoverageEvaluation evaluate(
             List<TestCandidate> candidates,
-            int candidateSpaceMethodCount,
+            Set<String> candidateSpaceMethodSignatures,
             int failedCandidateSpaceMethodCount
     ) {
         Objects.requireNonNull(candidates, "candidates must not be null");
+        Objects.requireNonNull(candidateSpaceMethodSignatures, "candidateSpaceMethodSignatures must not be null");
 
         CandidateArchive archive = new CandidateArchive();
         List<TestCandidateExecutionResult> executedResults = new ArrayList<>();
@@ -38,7 +40,7 @@ public final class CandidateCoverageEvaluator {
         return new CandidateCoverageEvaluation(
                 executedResults,
                 archive.getSelectedResults(),
-                candidateSpaceMethodCount,
+                candidateSpaceMethodSignatures,
                 failedCandidateSpaceMethodCount
         );
     }

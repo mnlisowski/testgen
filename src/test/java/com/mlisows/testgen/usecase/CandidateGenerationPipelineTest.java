@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,7 +77,7 @@ class CandidateGenerationPipelineTest {
                 analysisResult.getArgumentValueHints()
         ).orElseThrow();
         List<TestCandidate> candidates = candidateVariantGenerator.generateVariants(candidateSpace);
-        CandidateCoverageEvaluation evaluation = coverageEvaluator.evaluate(candidates, 0, 0);
+        CandidateCoverageEvaluation evaluation = coverageEvaluator.evaluate(candidates, Set.of("sample.maven.DiscountService.shippingFee(int)"), 0);
 
         List<TestCandidateExecutionResult> results = evaluation.getSelectedResults();
         List<String> coveredBranchIds = results.stream()

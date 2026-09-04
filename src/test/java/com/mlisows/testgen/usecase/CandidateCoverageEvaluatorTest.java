@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -67,7 +68,7 @@ class CandidateCoverageEvaluatorTest {
         ));
 
         CandidateCoverageEvaluation evaluation = new CandidateCoverageEvaluator(executor)
-                .evaluate(List.of(firstCandidate, failedCandidate, exceptionCandidate), 0, 0);
+                .evaluate(List.of(firstCandidate, failedCandidate, exceptionCandidate), Set.of("sample.Calculator.calculate"), 0);
 
         assertEquals(List.of(firstCandidate, failedCandidate, exceptionCandidate), evaluation.getExecutedResults().stream()
                 .map(TestCandidateExecutionResult::getCandidate)
