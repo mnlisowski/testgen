@@ -10,15 +10,10 @@ import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.stmt.WhileStmt;
-import com.mlisows.testgen.domain.BranchId;
-import com.mlisows.testgen.domain.BranchType;
-import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.*;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
-import com.mlisows.testgen.domain.BranchKind;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -277,12 +272,13 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             addHintIfMissing(
                     hints,
                     new ArgumentValueHint(
-                            className + "." + method.getNameAsString(),
+                            methodSignature(className, method),
                             parameter.get().getNameAsString(),
                             parameter.get().getType().asString(),
                             value,
                             "direct-static-condition"
                     )
+
             );
         }
     }
@@ -470,12 +466,20 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
             String source
     ) {
         return new ArgumentValueHint(
-                className + "." + method.getNameAsString(),
+                methodSignature(className, method),
                 parameter.getNameAsString(),
                 parameter.getType().asString(),
                 value,
                 source
         );
+    }
+
+    private String methodSignature(String className, MethodDeclaration method) {
+        List<String> parameterTypes = method.getParameters().stream()
+                .map(parameter -> parameter.getType().asString())
+                .toList();
+
+        return ExecutableSignature.method(className, method.getNameAsString(), parameterTypes);
     }
 
     private void addHintIfMissing(
