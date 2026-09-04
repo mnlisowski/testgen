@@ -38,9 +38,8 @@ services:
     command:
       - /project
       - /test-work
-      - /profile-work/observed-profile.txt
+      - /project/observed-profile.txt
     volumes:
       - ./examples/fit-bench:/project:ro
       - ./target/test-work/fit-bench-with-profile:/test-work
-      - ./target/docker-profile-work/fit-bench:/profile-work:ro
       - ./target/docker-m2:/root/.m2
