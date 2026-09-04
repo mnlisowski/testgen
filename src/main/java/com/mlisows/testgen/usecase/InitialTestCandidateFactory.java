@@ -71,9 +71,7 @@ public final class InitialTestCandidateFactory {
                 classStructure.getClassName(),
                 method.getName(),
                 method.getReturnType(),
-                method.getParameters().stream()
-                        .map(ParameterModel::getType)
-                        .toList(),
+                method.getParameterTypes(),
                 setupObjects,
                 targetSetup.get().getReferenceArgument().getValue(),
                 methodArguments.get().methodArguments()

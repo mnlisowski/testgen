@@ -31,5 +31,11 @@ public final class MethodModel {
     public List<ParameterModel> getParameters() {
         return parameters;
     }
+
+    public List<String> getParameterTypes() {
+        return parameters.stream()
+                .map(ParameterModel::getType)
+                .toList();
+    }
 }
 

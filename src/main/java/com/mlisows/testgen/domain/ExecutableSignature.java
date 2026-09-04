@@ -8,7 +8,7 @@ public final class ExecutableSignature {
     }
 
     public static String method(String className, MethodModel method) {
-        return method(className, method.getName(), parameterTypes(method.getParameters()));
+        return method(className, method.getName(), method.getParameterTypes());
     }
 
     public static String method(String className, String methodName, List<String> parameterTypes) {
