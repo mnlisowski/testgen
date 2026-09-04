@@ -106,7 +106,7 @@ public final class ReflectionTestCandidateExecutor implements TestCandidateExecu
 
         for (GeneratedSetupObject setupObject : candidate.getSetupObjects()) {
             Class<?> setupClass = loadSetupClass(candidate, setupObject, classLoader);
-            Constructor<?> constructor = matchingConstructor(setupClass, setupObject.getArguments().size());
+            Constructor<?> constructor = matchingConstructor(setupClass, setupObject);
             Object[] arguments = resolveArguments(setupObject.getArguments(), constructor.getParameterTypes(), variables);
 
             Object instance = constructor.newInstance(arguments);
@@ -126,13 +126,50 @@ public final class ReflectionTestCandidateExecutor implements TestCandidateExecu
         return target;
     }
 
-    private Constructor<?> matchingConstructor(Class<?> setupClass, int argumentCount) {
+    private Constructor<?> matchingConstructor(Class<?> setupClass, GeneratedSetupObject setupObject) {
+        if (setupObject.getConstructorParameters().isEmpty()) {
+            return matchingConstructorByArgumentCount(setupClass, setupObject.getArguments().size());
+        }
+
+        return Arrays.stream(setupClass.getConstructors())
+                .filter(constructor -> constructor.getParameterCount() == setupObject.getConstructorParameters().size())
+                .filter(constructor -> constructorParameterTypesMatch(constructor, setupObject))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No public constructor matching generated setup object in " + setupClass.getName()
+                ));
+    }
+
+    private Constructor<?> matchingConstructorByArgumentCount(Class<?> setupClass, int argumentCount) {
         return Arrays.stream(setupClass.getConstructors())
                 .filter(constructor -> constructor.getParameterCount() == argumentCount)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No public constructor with " + argumentCount + " arguments in " + setupClass.getName()
                 ));
+    }
+
+    private boolean constructorParameterTypesMatch(Constructor<?> constructor, GeneratedSetupObject setupObject) {
+        Class<?>[] actualTypes = constructor.getParameterTypes();
+
+        for (int index = 0; index < actualTypes.length; index++) {
+            String expectedType = setupObject.getConstructorParameters().get(index).getType();
+
+            if (!typeNameMatches(expectedType, actualTypes[index])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean typeNameMatches(String expectedType, Class<?> actualType) {
+        if (expectedType.equals(actualType.getSimpleName()) || expectedType.equals(actualType.getName())) {
+            return true;
+        }
+
+        String canonicalName = actualType.getCanonicalName();
+        return canonicalName != null && expectedType.equals(canonicalName);
     }
 
     private Method matchingMethod(Class<?> targetClass, TestCandidate candidate) {
