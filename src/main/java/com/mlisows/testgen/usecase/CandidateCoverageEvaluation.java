@@ -11,11 +11,23 @@ import java.util.Set;
 public final class CandidateCoverageEvaluation {
     private final List<TestCandidateExecutionResult> executedResults;
     private final List<TestCandidateExecutionResult> selectedResults;
+    private final int candidateSpaceMethodCount;
+    private final int failedCandidateSpaceMethodCount;
 
     public CandidateCoverageEvaluation(
             List<TestCandidateExecutionResult> executedResults,
-            List<TestCandidateExecutionResult> selectedResults
+            List<TestCandidateExecutionResult> selectedResults,
+            int candidateSpaceMethodCount,
+            int failedCandidateSpaceMethodCount
     ) {
+        if (candidateSpaceMethodCount < 0) {
+            throw new IllegalArgumentException("candidateSpaceMethodCount must not be negative");
+        }
+
+        if (failedCandidateSpaceMethodCount < 0) {
+            throw new IllegalArgumentException("failedCandidateSpaceMethodCount must not be negative");
+        }
+
         this.executedResults = List.copyOf(Objects.requireNonNull(
                 executedResults,
                 "executedResults must not be null"
@@ -24,10 +36,12 @@ public final class CandidateCoverageEvaluation {
                 selectedResults,
                 "selectedResults must not be null"
         ));
+        this.candidateSpaceMethodCount = candidateSpaceMethodCount;
+        this.failedCandidateSpaceMethodCount = failedCandidateSpaceMethodCount;
     }
 
     public static CandidateCoverageEvaluation empty() {
-        return new CandidateCoverageEvaluation(List.of(), List.of());
+        return new CandidateCoverageEvaluation(List.of(), List.of(), 0, 0);
     }
 
     public List<TestCandidateExecutionResult> getExecutedResults() {
@@ -44,6 +58,14 @@ public final class CandidateCoverageEvaluation {
 
     public int getSelectedCandidateCount() {
         return selectedResults.size();
+    }
+
+    public int getCandidateSpaceMethodCount() {
+        return candidateSpaceMethodCount;
+    }
+
+    public int getFailedCandidateSpaceMethodCount() {
+        return failedCandidateSpaceMethodCount;
     }
 
     public long countExecutedByOutcome(ExecutionOutcome outcome) {

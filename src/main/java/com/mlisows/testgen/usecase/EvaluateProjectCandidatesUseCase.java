@@ -54,6 +54,8 @@ public final class EvaluateProjectCandidatesUseCase {
 
         Set<String> supportedMethodIds = supportedMethodIds(methodPlans);
         List<TestCandidate> candidates = new ArrayList<>();
+        int candidateSpaceMethodCount = 0;
+        int failedCandidateSpaceMethodCount = 0;
 
         for (ClassStructure classStructure : classStructures) {
             for (MethodModel method : classStructure.getMethods()) {
@@ -70,14 +72,20 @@ public final class EvaluateProjectCandidatesUseCase {
                 );
 
                 if (candidateSpace.isEmpty()) {
+                    failedCandidateSpaceMethodCount++;
                     continue;
                 }
 
+                candidateSpaceMethodCount++;
                 candidates.addAll(candidateVariantGenerator.generateVariants(candidateSpace.get()));
             }
         }
 
-        return candidateCoverageEvaluator.evaluate(candidates);
+        return candidateCoverageEvaluator.evaluate(
+                candidates,
+                candidateSpaceMethodCount,
+                failedCandidateSpaceMethodCount
+        );
     }
 
     private Set<String> supportedMethodIds(List<MethodGenerationPlan> methodPlans) {

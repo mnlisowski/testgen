@@ -120,6 +120,14 @@ public final class GenerationReport {
         return coverageEvaluation.getSelectedCandidateCount();
     }
 
+    public int getCandidateSpaceMethodCount() {
+        return coverageEvaluation.getCandidateSpaceMethodCount();
+    }
+
+    public int getFailedCandidateSpaceMethodCount() {
+        return coverageEvaluation.getFailedCandidateSpaceMethodCount();
+    }
+
     public long countExecutedByOutcome(ExecutionOutcome outcome) {
         return coverageEvaluation.countExecutedByOutcome(outcome);
     }
@@ -141,8 +149,10 @@ public final class GenerationReport {
         appendLine(report, "Analysis");
         appendLine(report, "Classes analyzed: " + getAnalyzedClassCount());
         appendLine(report, "Methods analyzed: " + getAnalyzedMethodCount());
-        appendLine(report, "Supported methods: " + getSupportedMethodCount());
-        appendLine(report, "Skipped methods: " + getSkippedMethods().size());
+        appendLine(report, "Methods passing planner rules: " + getSupportedMethodCount());
+        appendLine(report, "Skipped by planner: " + getSkippedMethods().size());
+        appendLine(report, "Methods with candidate space: " + getCandidateSpaceMethodCount());
+        appendLine(report, "Methods without candidate space: " + getFailedCandidateSpaceMethodCount());
         appendLine(report, "");
 
         appendLine(report, "Branch goals");

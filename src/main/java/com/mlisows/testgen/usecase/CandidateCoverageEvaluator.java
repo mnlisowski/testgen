@@ -16,10 +16,14 @@ public final class CandidateCoverageEvaluator {
     }
 
     public List<TestCandidateExecutionResult> selectCoverageImprovingResults(List<TestCandidate> candidates) {
-        return evaluate(candidates).getSelectedResults();
+        return evaluate(candidates, 0, 0).getSelectedResults();
     }
 
-    public CandidateCoverageEvaluation evaluate(List<TestCandidate> candidates) {
+    public CandidateCoverageEvaluation evaluate(
+            List<TestCandidate> candidates,
+            int candidateSpaceMethodCount,
+            int failedCandidateSpaceMethodCount
+    ) {
         Objects.requireNonNull(candidates, "candidates must not be null");
 
         CandidateArchive archive = new CandidateArchive();
@@ -31,6 +35,11 @@ public final class CandidateCoverageEvaluator {
             archive.addIfImprovesCoverage(result);
         }
 
-        return new CandidateCoverageEvaluation(executedResults, archive.getSelectedResults());
+        return new CandidateCoverageEvaluation(
+                executedResults,
+                archive.getSelectedResults(),
+                candidateSpaceMethodCount,
+                failedCandidateSpaceMethodCount
+        );
     }
 }
