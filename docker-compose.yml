@@ -30,7 +30,7 @@ services:
       - /test-work
     volumes:
       - ./examples/fit-bench:/project:ro
-      - ./target/docker-work/fit-bench:/test-work
+      - ./target/test-work/fit-bench:/test-work
       - ./target/docker-m2:/root/.m2
 
   generate-tests-with-profile:
@@ -41,6 +41,6 @@ services:
       - /profile-work/observed-profile.txt
     volumes:
       - ./examples/fit-bench:/project:ro
-      - ./target/docker-work/fit-bench-with-profile:/test-work
+      - ./target/test-work/fit-bench-with-profile:/test-work
       - ./target/docker-profile-work/fit-bench:/profile-work:ro
       - ./target/docker-m2:/root/.m2
