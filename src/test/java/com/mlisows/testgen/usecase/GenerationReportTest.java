@@ -15,6 +15,7 @@ import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,7 +69,7 @@ class GenerationReportTest {
         CandidateCoverageEvaluation evaluation = new CandidateCoverageEvaluation(
                 List.of(selectedResult, failedResult),
                 List.of(selectedResult),
-                1,
+                Set.of("sample.Calculator.calculate(int)"),
                 1
         );
 
@@ -82,6 +83,7 @@ class GenerationReportTest {
         assertEquals(2, report.getAnalyzedMethodCount());
         assertEquals(1, report.getSupportedMethodCount());
         assertEquals(2, report.getCoverageGoalCount());
+        assertEquals(2, report.getCandidateSpaceGoalCount());
         assertEquals(List.of(falseBranch.asString(), trueBranch.asString()), report.getCoverageGoalBranchIds());
         assertEquals(1, report.getCoveredBranchCount());
         assertEquals(2, report.getExecutedCandidateCount());
@@ -115,6 +117,7 @@ class GenerationReportTest {
         assertTrue(reportText.contains("Methods without candidate space: 1"));
         assertTrue(reportText.contains("Supported branch kinds: IF, FOR, WHILE, SWITCH"));
         assertTrue(reportText.contains("Detected goals: 2"));
+        assertTrue(reportText.contains("Goals in methods with candidate space: 2"));
         assertTrue(reportText.contains("Covered goals: 1"));
         assertTrue(reportText.contains("Executed: 2"));
         assertTrue(reportText.contains("Selected: 1"));
@@ -137,7 +140,7 @@ class GenerationReportTest {
     private static BranchId branch(BranchType branchType) {
         return new BranchId(
                 "sample.Calculator",
-                "calculate",
+                "calculate(int)",
                 10,
                 BranchKind.IF,
                 branchType,
