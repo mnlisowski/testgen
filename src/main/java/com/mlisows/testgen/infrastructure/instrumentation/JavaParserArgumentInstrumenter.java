@@ -9,7 +9,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.nodeTypes.NodeWithParameters;
 import com.github.javaparser.ast.stmt.Statement;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.domain.ExecutableSignature;
 import com.mlisows.testgen.infrastructure.parser.JavaParserLanguageLevel;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;

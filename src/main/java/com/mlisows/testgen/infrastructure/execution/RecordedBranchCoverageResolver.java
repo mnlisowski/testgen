@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.execution;
 
-import com.mlisows.testgen.domain.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchId;
 
 import java.util.Comparator;
 import java.util.List;

@@ -1,5 +1,7 @@
 package com.mlisows.testgen.domain;
 
+import com.mlisows.testgen.domain.analysis.BranchId;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

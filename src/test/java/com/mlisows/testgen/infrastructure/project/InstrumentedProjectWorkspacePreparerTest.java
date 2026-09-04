@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.project;
 
-import com.mlisows.testgen.domain.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

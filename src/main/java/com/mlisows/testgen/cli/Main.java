@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import com.mlisows.testgen.domain.*;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
 import com.mlisows.testgen.infrastructure.execution.ReflectionTestCandidateExecutor;
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserArgumentInstrumenter;

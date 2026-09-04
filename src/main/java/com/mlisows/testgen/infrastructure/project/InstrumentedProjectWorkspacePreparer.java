@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.project;
 
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;
 import com.mlisows.testgen.infrastructure.instrumentation.JavaParserBranchInstrumenter;
 import com.mlisows.testgen.infrastructure.instrumentation.SourceDirectoryInstrumenter;

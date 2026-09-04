@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.instrumentation;
 
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;
 
 import java.io.IOException;

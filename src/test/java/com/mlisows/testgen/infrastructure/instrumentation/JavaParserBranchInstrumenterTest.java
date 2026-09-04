@@ -1,9 +1,9 @@
 package com.mlisows.testgen.infrastructure.instrumentation;
 
-import com.mlisows.testgen.domain.BranchId;
-import com.mlisows.testgen.domain.BranchKind;
-import com.mlisows.testgen.domain.BranchType;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchKind;
+import com.mlisows.testgen.domain.analysis.BranchType;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

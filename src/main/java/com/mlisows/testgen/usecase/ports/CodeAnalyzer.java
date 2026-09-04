@@ -1,6 +1,6 @@
 package com.mlisows.testgen.usecase.ports;
 
-import com.mlisows.testgen.domain.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 
 import java.nio.file.Path;
 

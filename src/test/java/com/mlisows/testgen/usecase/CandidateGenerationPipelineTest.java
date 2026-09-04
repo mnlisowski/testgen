@@ -1,10 +1,10 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.BranchId;
-import com.mlisows.testgen.domain.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.BranchId;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.domain.MethodGenerationPlan;
 import com.mlisows.testgen.domain.MethodModel;
 import com.mlisows.testgen.domain.ProjectClassStructureIndex;

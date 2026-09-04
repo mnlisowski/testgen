@@ -1,8 +1,8 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.BranchKind;
-import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.BranchKind;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.domain.ExecutionOutcome;
 import com.mlisows.testgen.domain.GenerationRequirement;
 import com.mlisows.testgen.domain.MethodGenerationPlan;

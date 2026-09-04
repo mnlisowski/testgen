@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class SimpleSetupObjectGenerator {
-    private static final int MAX_DEPTH = 2;
+    private static final int MAX_DEPTH = 5;
 
     private final SeedValueGenerator seedValueGenerator;
 

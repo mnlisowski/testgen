@@ -1,9 +1,9 @@
 package com.mlisows.testgen.infrastructure.instrumentation;
 
-import com.mlisows.testgen.domain.BranchId;
-import com.mlisows.testgen.domain.BranchType;
-import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchType;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.runtime.BranchRecorder;
 import org.junit.jupiter.api.Test;

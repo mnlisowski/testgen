@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.execution;
 
-import com.mlisows.testgen.domain.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchId;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

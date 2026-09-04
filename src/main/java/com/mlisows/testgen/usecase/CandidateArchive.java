@@ -1,6 +1,6 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchId;
 import com.mlisows.testgen.domain.TestCandidateExecutionResult;
 
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
 package com.mlisows.testgen.infrastructure.parser;
 
-import com.mlisows.testgen.domain.BranchKind;
-import com.mlisows.testgen.domain.BranchType;
-import com.mlisows.testgen.domain.ClassAnalysisResult;
-import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.analysis.BranchKind;
+import com.mlisows.testgen.domain.analysis.BranchType;
+import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
+import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.domain.ArgumentValueHint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

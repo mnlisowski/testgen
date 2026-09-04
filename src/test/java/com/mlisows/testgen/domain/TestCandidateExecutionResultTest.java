@@ -1,5 +1,9 @@
 package com.mlisows.testgen.domain;
 
+import com.mlisows.testgen.domain.analysis.BranchId;
+import com.mlisows.testgen.domain.analysis.BranchKind;
+import com.mlisows.testgen.domain.analysis.BranchType;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

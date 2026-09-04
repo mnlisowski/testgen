@@ -1,4 +1,4 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.analysis;
 
 public enum BranchType {
     TRUE,
