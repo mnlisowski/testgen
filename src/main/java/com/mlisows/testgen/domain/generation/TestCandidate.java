@@ -1,4 +1,4 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.generation;
 
 import java.util.List;
 import java.util.Objects;

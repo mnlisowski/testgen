@@ -1,4 +1,8 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.execution;
+
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.TestCandidate;
 
 import com.mlisows.testgen.domain.analysis.BranchId;
 import com.mlisows.testgen.domain.analysis.BranchKind;

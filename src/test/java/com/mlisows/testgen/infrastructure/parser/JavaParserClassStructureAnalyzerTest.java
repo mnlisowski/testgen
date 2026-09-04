@@ -1,8 +1,8 @@
 package com.mlisows.testgen.infrastructure.parser;
 
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.ConstructorModel;
-import com.mlisows.testgen.domain.MethodModel;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ConstructorModel;
+import com.mlisows.testgen.domain.structure.MethodModel;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

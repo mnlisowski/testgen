@@ -3,9 +3,9 @@ package com.mlisows.testgen.usecase;
 import com.mlisows.testgen.domain.analysis.BranchKind;
 import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.domain.analysis.CoverageGoal;
-import com.mlisows.testgen.domain.ExecutionOutcome;
-import com.mlisows.testgen.domain.GenerationRequirement;
-import com.mlisows.testgen.domain.MethodGenerationPlan;
+import com.mlisows.testgen.domain.execution.ExecutionOutcome;
+import com.mlisows.testgen.domain.generation.GenerationRequirement;
+import com.mlisows.testgen.domain.generation.MethodGenerationPlan;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

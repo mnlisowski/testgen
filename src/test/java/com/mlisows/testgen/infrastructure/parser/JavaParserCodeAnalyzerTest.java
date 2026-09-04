@@ -4,7 +4,7 @@ import com.mlisows.testgen.domain.analysis.BranchKind;
 import com.mlisows.testgen.domain.analysis.BranchType;
 import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.domain.analysis.CoverageGoal;
-import com.mlisows.testgen.domain.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

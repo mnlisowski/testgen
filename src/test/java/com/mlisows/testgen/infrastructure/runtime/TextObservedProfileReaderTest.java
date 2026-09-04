@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.runtime;
 
-import com.mlisows.testgen.domain.ObservedProfile;
+import com.mlisows.testgen.domain.profile.ObservedProfile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

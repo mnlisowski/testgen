@@ -5,9 +5,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TypeInfo;
-import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
 import com.mlisows.testgen.usecase.ports.TypeIndexAnalyzer;
 
 import java.io.IOException;

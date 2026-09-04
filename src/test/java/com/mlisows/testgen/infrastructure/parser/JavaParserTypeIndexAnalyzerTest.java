@@ -1,8 +1,8 @@
 package com.mlisows.testgen.infrastructure.parser;
 
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TypeInfo;
-import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

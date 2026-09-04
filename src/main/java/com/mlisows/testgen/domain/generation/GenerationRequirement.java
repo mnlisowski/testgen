@@ -1,4 +1,4 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.generation;
 
 public enum GenerationRequirement {
     NO_ARG_CONSTRUCTOR,

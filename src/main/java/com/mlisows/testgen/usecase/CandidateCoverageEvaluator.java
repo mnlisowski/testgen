@@ -1,7 +1,7 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.TestCandidate;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.generation.TestCandidate;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 import com.mlisows.testgen.usecase.ports.TestCandidateExecutor;
 
 import java.util.ArrayList;

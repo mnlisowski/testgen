@@ -7,10 +7,10 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.ConstructorModel;
-import com.mlisows.testgen.domain.MethodModel;
-import com.mlisows.testgen.domain.ParameterModel;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ConstructorModel;
+import com.mlisows.testgen.domain.structure.MethodModel;
+import com.mlisows.testgen.domain.structure.ParameterModel;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 
 import java.io.IOException;

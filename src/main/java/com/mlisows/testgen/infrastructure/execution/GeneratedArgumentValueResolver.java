@@ -1,6 +1,6 @@
 package com.mlisows.testgen.infrastructure.execution;
 
-import com.mlisows.testgen.domain.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
 
 import java.util.Map;
 import java.util.Objects;

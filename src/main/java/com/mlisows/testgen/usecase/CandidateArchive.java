@@ -1,7 +1,7 @@
 package com.mlisows.testgen.usecase;
 
 import com.mlisows.testgen.domain.analysis.BranchId;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 
 import java.util.ArrayList;
 import java.util.HashSet;

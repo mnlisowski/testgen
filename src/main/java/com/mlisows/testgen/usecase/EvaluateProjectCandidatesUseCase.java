@@ -1,6 +1,14 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.*;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.CandidateSpace;
+import com.mlisows.testgen.domain.generation.MethodGenerationPlan;
+import com.mlisows.testgen.domain.generation.TestCandidate;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ExecutableSignature;
+import com.mlisows.testgen.domain.structure.MethodModel;
+import com.mlisows.testgen.domain.structure.ProjectClassStructureIndex;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

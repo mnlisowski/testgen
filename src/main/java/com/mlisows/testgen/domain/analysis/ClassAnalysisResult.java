@@ -1,6 +1,6 @@
 package com.mlisows.testgen.domain.analysis;
 
-import com.mlisows.testgen.domain.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
 
 import java.util.List;
 import java.util.Objects;

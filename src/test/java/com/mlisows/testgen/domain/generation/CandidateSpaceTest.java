@@ -1,10 +1,10 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.generation;
 
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueOption;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValuePool;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlot;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueTier;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

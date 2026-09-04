@@ -1,9 +1,9 @@
 package com.mlisows.testgen.infrastructure.runtime;
 
-import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.ObservedInvocation;
-import com.mlisows.testgen.domain.ObservedProfile;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.profile.ObservedInvocation;
+import com.mlisows.testgen.domain.profile.ObservedProfile;
 import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
 
 import java.io.IOException;

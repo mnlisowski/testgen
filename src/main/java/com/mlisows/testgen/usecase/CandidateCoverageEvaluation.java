@@ -1,7 +1,7 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.ExecutionOutcome;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.execution.ExecutionOutcome;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 
 import java.util.LinkedHashSet;
 import java.util.List;

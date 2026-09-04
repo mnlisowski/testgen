@@ -1,14 +1,14 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.CandidateSpace;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
-import com.mlisows.testgen.domain.TestCandidate;
+import com.mlisows.testgen.domain.generation.CandidateSpace;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueOption;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValuePool;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlot;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueTier;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.TestCandidate;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

@@ -1,14 +1,14 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.ConstructorModel;
-import com.mlisows.testgen.domain.GenerationRequirement;
-import com.mlisows.testgen.domain.MethodGenerationPlan;
-import com.mlisows.testgen.domain.MethodModel;
-import com.mlisows.testgen.domain.ParameterModel;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TypeInfo;
-import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ConstructorModel;
+import com.mlisows.testgen.domain.generation.GenerationRequirement;
+import com.mlisows.testgen.domain.generation.MethodGenerationPlan;
+import com.mlisows.testgen.domain.structure.MethodModel;
+import com.mlisows.testgen.domain.structure.ParameterModel;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;

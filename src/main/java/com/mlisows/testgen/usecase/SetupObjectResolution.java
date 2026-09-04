@@ -1,7 +1,7 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
 
 import java.util.List;
 import java.util.Objects;

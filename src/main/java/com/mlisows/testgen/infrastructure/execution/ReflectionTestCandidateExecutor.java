@@ -1,10 +1,10 @@
 package com.mlisows.testgen.infrastructure.execution;
 
 import com.mlisows.testgen.domain.analysis.BranchId;
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
-import com.mlisows.testgen.domain.TestCandidate;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.TestCandidate;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 import com.mlisows.testgen.infrastructure.project.InstrumentedProjectWorkspace;
 import com.mlisows.testgen.infrastructure.runtime.BranchRecorder;
 import com.mlisows.testgen.usecase.ports.TestCandidateExecutor;

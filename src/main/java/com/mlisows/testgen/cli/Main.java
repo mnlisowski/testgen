@@ -6,7 +6,15 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-import com.mlisows.testgen.domain.*;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.MethodGenerationPlan;
+import com.mlisows.testgen.domain.profile.ObservedProfile;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ProjectClassStructureIndex;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
 import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.infrastructure.execution.JavaSourceCompiler;

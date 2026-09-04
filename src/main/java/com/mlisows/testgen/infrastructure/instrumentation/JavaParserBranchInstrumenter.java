@@ -21,7 +21,7 @@ import com.mlisows.testgen.domain.analysis.BranchId;
 import com.mlisows.testgen.domain.analysis.BranchKind;
 import com.mlisows.testgen.domain.analysis.BranchType;
 import com.mlisows.testgen.domain.analysis.CoverageGoal;
-import com.mlisows.testgen.domain.ExecutableSignature;
+import com.mlisows.testgen.domain.structure.ExecutableSignature;
 import com.mlisows.testgen.infrastructure.parser.JavaParserLanguageLevel;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;
 

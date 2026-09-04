@@ -1,11 +1,22 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.*;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
-import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
+import com.mlisows.testgen.domain.generation.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.CandidateSpace;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.TestCandidate;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ExecutableSignature;
+import com.mlisows.testgen.domain.structure.MethodModel;
+import com.mlisows.testgen.domain.structure.ParameterModel;
+import com.mlisows.testgen.domain.structure.ProjectClassStructureIndex;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeKind;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueOption;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValuePool;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlot;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueSlotKind;
+import com.mlisows.testgen.domain.generation.CandidateSpace.CandidateValueTier;
 
 import java.util.ArrayList;
 import java.util.List;

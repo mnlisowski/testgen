@@ -1,6 +1,6 @@
 package com.mlisows.testgen.usecase.ports;
 
-import com.mlisows.testgen.domain.ObservedProfile;
+import com.mlisows.testgen.domain.profile.ObservedProfile;
 
 import java.nio.file.Path;
 

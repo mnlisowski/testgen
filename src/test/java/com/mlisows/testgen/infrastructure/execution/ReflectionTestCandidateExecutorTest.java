@@ -3,11 +3,11 @@ package com.mlisows.testgen.infrastructure.execution;
 import com.mlisows.testgen.domain.analysis.BranchId;
 import com.mlisows.testgen.domain.analysis.BranchKind;
 import com.mlisows.testgen.domain.analysis.BranchType;
-import com.mlisows.testgen.domain.ExecutionOutcome;
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
-import com.mlisows.testgen.domain.TestCandidate;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.execution.ExecutionOutcome;
+import com.mlisows.testgen.domain.generation.GeneratedArgument;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.generation.TestCandidate;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

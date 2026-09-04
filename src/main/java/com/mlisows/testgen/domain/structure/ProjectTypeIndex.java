@@ -1,4 +1,4 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.structure;
 
 import java.util.HashMap;
 import java.util.List;

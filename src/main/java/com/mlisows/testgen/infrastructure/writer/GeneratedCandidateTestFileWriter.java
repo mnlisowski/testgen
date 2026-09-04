@@ -1,7 +1,7 @@
 package com.mlisows.testgen.infrastructure.writer;
 
-import com.mlisows.testgen.domain.ExecutionOutcome;
-import com.mlisows.testgen.domain.TestCandidateExecutionResult;
+import com.mlisows.testgen.domain.execution.ExecutionOutcome;
+import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 import com.mlisows.testgen.usecase.JUnitCandidateTestWriter;
 
 import java.io.IOException;

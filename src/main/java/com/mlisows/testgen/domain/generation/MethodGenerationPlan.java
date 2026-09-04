@@ -1,4 +1,6 @@
-package com.mlisows.testgen.domain;
+package com.mlisows.testgen.domain.generation;
+
+import com.mlisows.testgen.domain.structure.ExecutableSignature;
 
 import java.util.List;
 import java.util.Objects;

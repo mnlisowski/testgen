@@ -1,13 +1,13 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.ConstructorModel;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
-import com.mlisows.testgen.domain.ParameterModel;
-import com.mlisows.testgen.domain.ProjectClassStructureIndex;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.TypeInfo;
-import com.mlisows.testgen.domain.TypeKind;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ConstructorModel;
+import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
+import com.mlisows.testgen.domain.structure.ParameterModel;
+import com.mlisows.testgen.domain.structure.ProjectClassStructureIndex;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
