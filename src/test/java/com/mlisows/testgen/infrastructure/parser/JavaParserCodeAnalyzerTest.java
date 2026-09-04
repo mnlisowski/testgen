@@ -183,7 +183,7 @@ class JavaParserCodeAnalyzerTest {
 
         assertEquals(
                 List.of("99", "100", "101"),
-                valuesForSlot(result, "sample.Calculator.calculate.amount")
+                valuesForSlot(result, "sample.Calculator.calculate(int).amount")
         );
     }
 
@@ -211,7 +211,7 @@ class JavaParserCodeAnalyzerTest {
 
         assertEquals(
                 List.of("\"VIP\"", "\"BLOCKED\""),
-                valuesForSlot(result, "sample.Calculator.calculate.status")
+                valuesForSlot(result, "sample.Calculator.calculate(String).status")
         );
     }
 
@@ -240,7 +240,7 @@ class JavaParserCodeAnalyzerTest {
 
         assertEquals(
                 List.of("1", "2"),
-                valuesForSlot(result, "sample.Calculator.calculate.level")
+                valuesForSlot(result, "sample.Calculator.calculate(int).level")
         );
     }
 

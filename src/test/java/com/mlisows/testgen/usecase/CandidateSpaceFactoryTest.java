@@ -52,7 +52,7 @@ class CandidateSpaceFactoryTest {
         assertEquals(1, candidateSpace.get().getValuePools().size());
 
         CandidateValuePool amountPool = candidateSpace.get()
-                .findPoolBySlotId("sample.Calculator.calculate.amount")
+                .findPoolBySlotId("sample.Calculator.calculate(int).amount")
                 .orElseThrow();
 
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, amountPool.getSlot().getKind());
@@ -90,7 +90,7 @@ class CandidateSpaceFactoryTest {
                 new ProjectTypeIndex(List.of()),
                 new ProjectClassStructureIndex(List.of(calculator)),
                 List.of(new ArgumentValueHint(
-                        "sample.Calculator.calculate",
+                        "sample.Calculator.calculate(int)",
                         "amount",
                         "int",
                         "101",
@@ -101,7 +101,7 @@ class CandidateSpaceFactoryTest {
         assertTrue(candidateSpace.isPresent());
 
         CandidateValuePool amountPool = candidateSpace.get()
-                .findPoolBySlotId("sample.Calculator.calculate.amount")
+                .findPoolBySlotId("sample.Calculator.calculate(int).amount")
                 .orElseThrow();
 
         assertValues(amountPool, "101", "-1", "0", "1", "10", "100");
@@ -147,7 +147,7 @@ class CandidateSpaceFactoryTest {
         assertTrue(candidateSpace.isPresent());
 
         CandidateValuePool typePool = candidateSpace.get()
-                .findPoolBySlotId("sample.Calculator.calculate.type")
+                .findPoolBySlotId("sample.Calculator.calculate(CustomerType).type")
                 .orElseThrow();
 
         assertValues(typePool, "sample.CustomerType.REGULAR", "sample.CustomerType.GOLD");
@@ -200,16 +200,16 @@ class CandidateSpaceFactoryTest {
         assertEquals(4, candidateSpace.get().getValuePools().size());
 
         CandidateValuePool methodOrderPool = candidateSpace.get()
-                .findPoolBySlotId("sample.DiscountService.calculate.order")
+                .findPoolBySlotId("sample.DiscountService.calculate(Order).order")
                 .orElseThrow();
         CandidateValuePool orderTotalPool = candidateSpace.get()
-                .findPoolBySlotId("sample.Order.<init>.total")
+                .findPoolBySlotId("sample.Order.<init>(int,Customer).total")
                 .orElseThrow();
         CandidateValuePool orderCustomerPool = candidateSpace.get()
-                .findPoolBySlotId("sample.Order.<init>.customer")
+                .findPoolBySlotId("sample.Order.<init>(int,Customer).customer")
                 .orElseThrow();
         CandidateValuePool customerTypePool = candidateSpace.get()
-                .findPoolBySlotId("sample.Customer.<init>.type")
+                .findPoolBySlotId("sample.Customer.<init>(String).type")
                 .orElseThrow();
 
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, methodOrderPool.getSlot().getKind());

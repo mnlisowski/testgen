@@ -18,7 +18,7 @@ class CandidateSpaceTest {
     @Test
     void shouldCreateCandidateSpaceWithValuePools() {
         TestCandidate baseCandidate = candidate();
-        CandidateValuePool pool = pool("sample.Calculator.calculate.amount");
+        CandidateValuePool pool = pool("sample.Calculator.calculate(int).amount");
 
         CandidateSpace candidateSpace = new CandidateSpace(
                 baseCandidate,
@@ -29,12 +29,12 @@ class CandidateSpaceTest {
         assertEquals(List.of(pool), candidateSpace.getValuePools());
 
         Optional<CandidateValuePool> foundPool = candidateSpace.findPoolBySlotId(
-                "sample.Calculator.calculate.amount"
+                "sample.Calculator.calculate(int).amount"
         );
 
         assertTrue(foundPool.isPresent());
         assertEquals(pool, foundPool.get());
-        assertEquals("sample.Calculator.calculate.amount", foundPool.get().getSlot().id());
+        assertEquals("sample.Calculator.calculate(int).amount", foundPool.get().getSlot().id());
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, foundPool.get().getSlot().getKind());
         assertEquals(0, foundPool.get().getSlot().getArgumentIndex());
         assertEquals("int", foundPool.get().getValues().get(0).getType());
@@ -45,11 +45,11 @@ class CandidateSpaceTest {
     void shouldReturnEmptyWhenPoolDoesNotExist() {
         CandidateSpace candidateSpace = new CandidateSpace(
                 candidate(),
-                List.of(pool("sample.Calculator.calculate.amount"))
+                List.of(pool("sample.Calculator.calculate(int).amount"))
         );
 
         Optional<CandidateValuePool> foundPool = candidateSpace.findPoolBySlotId(
-                "sample.Calculator.calculate.missing"
+                "sample.Calculator.calculate(int).missing"
         );
 
         assertTrue(foundPool.isEmpty());

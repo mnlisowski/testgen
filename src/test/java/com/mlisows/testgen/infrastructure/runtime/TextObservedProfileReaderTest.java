@@ -20,19 +20,19 @@ class TextObservedProfileReaderTest {
 
         Files.writeString(profilePath, """
                   # observed runtime input profile
-                  hint|sample.Order.<init>|total|int|620|runtime-observed
-                  hint|sample.Order.<init>|status|String|"PAID"|runtime-observed
-                  invocation|sample.Order.<init>|int|620|String|"PAID"
+                  hint|sample.Order.<init>(int,String)|total|int|620|runtime-observed
+                  hint|sample.Order.<init>(int,String)|status|String|"PAID"|runtime-observed
+                  invocation|sample.Order.<init>(int,String)|int|620|String|"PAID"
                   """);
 
         ObservedProfile profile = new TextObservedProfileReader().read(profilePath);
 
         assertEquals(2, profile.getArgumentValueHints().size());
-        assertEquals("sample.Order.<init>.total", profile.getArgumentValueHints().get(0).slotId());
+        assertEquals("sample.Order.<init>(int,String).total", profile.getArgumentValueHints().get(0).slotId());
         assertEquals("620", profile.getArgumentValueHints().get(0).getValue());
 
         assertEquals(1, profile.getObservedInvocations().size());
-        assertEquals("sample.Order.<init>", profile.getObservedInvocations().get(0).getOwnerId());
+        assertEquals("sample.Order.<init>(int,String)", profile.getObservedInvocations().get(0).getOwnerId());
         assertEquals(2, profile.getObservedInvocations().get(0).getArguments().size());
         assertEquals("620", profile.getObservedInvocations().get(0).getArguments().get(0).getValue());
         assertEquals("\"PAID\"", profile.getObservedInvocations().get(0).getArguments().get(1).getValue());
