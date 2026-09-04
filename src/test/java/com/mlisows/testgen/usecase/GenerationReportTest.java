@@ -24,14 +24,19 @@ class GenerationReportTest {
 
     @Test
     void shouldSummarizeGenerationInputsAndCandidateEvaluation() {
-        BranchId falseBranch = branch(BranchType.FALSE);
-        BranchId trueBranch = branch(BranchType.TRUE);
-        ClassAnalysisResult analysisResult = new ClassAnalysisResult(
+        BranchId falseBranch = branch("sample.Calculator", "calculate(int)", BranchType.FALSE);
+        BranchId trueBranch = branch("sample.Calculator", "calculate(int)", BranchType.TRUE);
+        BranchId indirectlyCoveredBranch = branch("sample.Helper", "normalize(int)", BranchType.TRUE);
+        ClassAnalysisResult calculatorAnalysisResult = new ClassAnalysisResult(
                 "sample.Calculator",
                 List.of(
                         new CoverageGoal(falseBranch, "amount <= 100"),
                         new CoverageGoal(trueBranch, "amount > 100")
                 )
+        );
+        ClassAnalysisResult helperAnalysisResult = new ClassAnalysisResult(
+                "sample.Helper",
+                List.of(new CoverageGoal(indirectlyCoveredBranch, "value > 0"))
         );
 
         MethodGenerationPlan supportedPlan = new MethodGenerationPlan(
@@ -57,7 +62,7 @@ class GenerationReportTest {
 
         TestCandidateExecutionResult selectedResult = TestCandidateExecutionResult.returned(
                 candidate("-1"),
-                List.of(falseBranch),
+                List.of(falseBranch, indirectlyCoveredBranch),
                 "0"
         );
         TestCandidateExecutionResult failedResult = TestCandidateExecutionResult.failedToExecute(
@@ -74,18 +79,19 @@ class GenerationReportTest {
         );
 
         GenerationReport report = GenerationReport.from(
-                List.of(analysisResult),
+                List.of(calculatorAnalysisResult, helperAnalysisResult),
                 List.of(supportedPlan, skippedPlan),
                 evaluation
         );
 
-        assertEquals(1, report.getAnalyzedClassCount());
+        assertEquals(2, report.getAnalyzedClassCount());
         assertEquals(2, report.getAnalyzedMethodCount());
         assertEquals(1, report.getSupportedMethodCount());
-        assertEquals(2, report.getCoverageGoalCount());
+        assertEquals(3, report.getCoverageGoalCount());
         assertEquals(2, report.getCandidateSpaceGoalCount());
-        assertEquals(List.of(falseBranch.asString(), trueBranch.asString()), report.getCoverageGoalBranchIds());
-        assertEquals(1, report.getCoveredBranchCount());
+        assertEquals(1, report.getCoveredCandidateSpaceGoalCount());
+        assertEquals(List.of(falseBranch.asString(), trueBranch.asString(), indirectlyCoveredBranch.asString()), report.getCoverageGoalBranchIds());
+        assertEquals(2, report.getCoveredBranchCount());
         assertEquals(2, report.getExecutedCandidateCount());
         assertEquals(1, report.getSelectedCandidateCount());
         assertEquals(1, report.getCandidateSpaceMethodCount());
@@ -111,14 +117,15 @@ class GenerationReportTest {
         String reportText = report.toText();
 
         assertTrue(reportText.contains("Test generation report"));
-        assertTrue(reportText.contains("Classes analyzed: 1"));
+        assertTrue(reportText.contains("Classes analyzed: 2"));
         assertTrue(reportText.contains("Methods passing planner rules: 1"));
         assertTrue(reportText.contains("Methods with candidate space: 1"));
         assertTrue(reportText.contains("Methods without candidate space: 1"));
         assertTrue(reportText.contains("Supported branch kinds: IF, FOR, WHILE, SWITCH"));
-        assertTrue(reportText.contains("Detected goals: 2"));
+        assertTrue(reportText.contains("Detected goals: 3"));
         assertTrue(reportText.contains("Goals in methods with candidate space: 2"));
-        assertTrue(reportText.contains("Covered goals: 1"));
+        assertTrue(reportText.contains("Covered goals in methods with candidate space: 1"));
+        assertTrue(reportText.contains("Covered goals total: 2"));
         assertTrue(reportText.contains("Executed: 2"));
         assertTrue(reportText.contains("Selected: 1"));
         assertTrue(reportText.contains("Failed to execute: 1"));
@@ -137,10 +144,10 @@ class GenerationReportTest {
         );
     }
 
-    private static BranchId branch(BranchType branchType) {
+    private static BranchId branch(String className, String methodName, BranchType branchType) {
         return new BranchId(
-                "sample.Calculator",
-                "calculate(int)",
+                className,
+                methodName,
                 10,
                 BranchKind.IF,
                 branchType,

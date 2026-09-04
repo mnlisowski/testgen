@@ -134,6 +134,18 @@ public final class GenerationReport {
                 .count();
     }
 
+    public int getCoveredCandidateSpaceGoalCount() {
+        Set<String> candidateSpaceMethodSignatures = coverageEvaluation.getCandidateSpaceMethodSignatures();
+        Set<String> coveredBranchIds = coverageEvaluation.getCoveredBranchIds();
+
+        return (int) analysisResults.stream()
+                .flatMap(result -> result.getCoverageGoals().stream())
+                .map(CoverageGoal::getBranchId)
+                .filter(branchId -> candidateSpaceMethodSignatures.contains(branchId.methodSignature()))
+                .filter(branchId -> coveredBranchIds.contains(branchId.asString()))
+                .count();
+    }
+
     public int getFailedCandidateSpaceMethodCount() {
         return coverageEvaluation.getFailedCandidateSpaceMethodCount();
     }
@@ -169,7 +181,8 @@ public final class GenerationReport {
         appendLine(report, "Supported branch kinds: " + formatEnums(getSupportedBranchKinds()));
         appendLine(report, "Detected goals: " + getCoverageGoalCount());
         appendLine(report, "Goals in methods with candidate space: " + getCandidateSpaceGoalCount());
-        appendLine(report, "Covered goals: " + getCoveredBranchCount());
+        appendLine(report, "Covered goals in methods with candidate space: " + getCoveredCandidateSpaceGoalCount());
+        appendLine(report, "Covered goals total: " + getCoveredBranchCount());
         appendLine(report, "");
 
         appendLine(report, "Candidates");
