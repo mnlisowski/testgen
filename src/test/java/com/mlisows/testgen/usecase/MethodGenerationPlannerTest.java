@@ -191,6 +191,7 @@ class MethodGenerationPlannerTest {
         MethodGenerationPlan plan = new MethodGenerationPlan(
                 "sample.OrderService",
                 "process",
+                List.of("int", "String"),
                 List.of(
                         GenerationRequirement.NO_ARG_CONSTRUCTOR,
                         GenerationRequirement.PRIMITIVE_ARGUMENT,
@@ -210,6 +211,7 @@ class MethodGenerationPlannerTest {
         MethodGenerationPlan plan = new MethodGenerationPlan(
                 "sample.OrderService",
                 "process",
+                List.of("List<String>"),
                 List.of(
                         GenerationRequirement.NO_ARG_CONSTRUCTOR,
                         GenerationRequirement.COLLECTION_FIXTURE

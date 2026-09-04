@@ -17,6 +17,7 @@ class MethodGenerationPlanTest {
         MethodGenerationPlan plan = new MethodGenerationPlan(
                 "sample.Calculator",
                 "calculate",
+                List.of("int"),
                 requirements
         );
 
