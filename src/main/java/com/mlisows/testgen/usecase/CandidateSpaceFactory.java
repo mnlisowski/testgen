@@ -1,21 +1,11 @@
 package com.mlisows.testgen.usecase;
 
-import com.mlisows.testgen.domain.CandidateSpace;
+import com.mlisows.testgen.domain.*;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueOption;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValuePool;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlot;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueSlotKind;
 import com.mlisows.testgen.domain.CandidateSpace.CandidateValueTier;
-import com.mlisows.testgen.domain.ClassStructure;
-import com.mlisows.testgen.domain.GeneratedArgument;
-import com.mlisows.testgen.domain.GeneratedSetupObject;
-import com.mlisows.testgen.domain.MethodModel;
-import com.mlisows.testgen.domain.ParameterModel;
-import com.mlisows.testgen.domain.ProjectClassStructureIndex;
-import com.mlisows.testgen.domain.ProjectTypeIndex;
-import com.mlisows.testgen.domain.ArgumentValueHint;
-import com.mlisows.testgen.domain.TestCandidate;
-import com.mlisows.testgen.domain.TypeKind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +87,7 @@ public final class CandidateSpaceFactory {
             List<ArgumentValueHint> argumentValueHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
-        String ownerId = classStructure.getClassName() + "." + method.getName();
+        String ownerId = ExecutableSignature.method(classStructure.getClassName(), method);
 
         for (int index = 0; index < method.getParameters().size(); index++) {
             ParameterModel parameter = method.getParameters().get(index);
@@ -165,7 +155,12 @@ public final class CandidateSpaceFactory {
             List<ArgumentValueHint> argumentValueHints
     ) {
         List<CandidateValuePool> pools = new ArrayList<>();
-        String ownerId = setupClassName + ".<init>";
+        String ownerId = ExecutableSignature.constructor(
+                setupClassName,
+                constructorParameters.stream()
+                        .map(ParameterModel::getType)
+                        .toList()
+        );
 
         for (int index = 0; index < constructorParameters.size(); index++) {
             ParameterModel parameter = constructorParameters.get(index);
