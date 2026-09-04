@@ -1,40 +1,19 @@
 # Wyniki eksperymentów
 
-Ten katalog zawiera surowe pliki CSV użyte do odczytania wyników pokrycia w eksperymentach.
-Pliki są kopią wyników z katalogu `target/experiments`, aby wyniki nie opierały się tylko na ręcznie przepisanych liczbach.
+Tu są materiały z eksperymentów opisanych w dokumentacji projektu. Pliki są kopią wyników z katalogu `target/experiments`
 
-## Struktura
+## Najważniejsze pliki
 
-- `raw/jacoco-evosuite/<projekt>/jacoco.csv` - raport JaCoCo dla testów wygenerowanych przez EvoSuite.
-- `raw/jacoco-randoop/<projekt>/jacoco.csv` - raport JaCoCo dla testów wygenerowanych przez Randoop.
-- `raw/evosuite-internal/<projekt>/statistics.csv` - wewnętrzny raport EvoSuite z procesu generowania testów.
-- `summary.csv` - krótkie zestawienie liczb odczytanych z powyższych plików.
+- `figures/testgen-coverage.svg` - tabela z wynikami raportów wygenerowanych przez `testgen`, osobno dla uruchomienia bez profilu i z profilem runtime.
+- `figures/generators-comparison.svg` - tabela porównująca `testgen`, EvoSuite i Randoop. Główną metryką w tym zestawieniu jest pokrycie gałęzi mierzone przez JaCoCo.
+- `raw/testgen/no-profile` - raporty `report.txt` z naszego programu dla uruchomień bez profilu runtime.
+- `raw/testgen/with-profile-50` - raporty `report.txt` z naszego programu dla uruchomień z profilem runtime.
 
-## Jak liczono JaCoCo branch coverage
+## Dane wygenerowane przez jacoco i evosuite
 
-W pliku `jacoco.csv` używane są kolumny:
+- `summary.csv` -  zestawienie wyników EvoSuite i Randoop.
+- `raw/jacoco-testgen/summary.csv` - raport JaCoCo dla testów wygenerowanych przez `testgen`.
+- `raw/jacoco-evosuite/<projekt>/jacoco.csv` - raport JaCoCo dla Evosuite
+- `raw/jacoco-randoop/<projekt>/jacoco.csv` - raport JaCoCo dla testów Randoop
+- `raw/evosuite-internal/<projekt>/statistics.csv` - wewnętrzny raport EvoSuite
 
-- `BRANCH_MISSED`
-- `BRANCH_COVERED`
-
-Wynik jest liczony jako:
-
-```text
-BRANCH_COVERED / (BRANCH_MISSED + BRANCH_COVERED)
-```
-
-## Jak liczono wewnętrzne pokrycie EvoSuite
-
-W pliku `statistics.csv` używane są kolumny:
-
-- `Total_Goals`
-- `Covered_Goals`
-
-Wynik jest liczony jako:
-
-```text
-Covered_Goals / Total_Goals
-```
-
-To nie jest ta sama metryka co JaCoCo. JaCoCo liczy branche z bytecode'u przy uruchomieniu gotowych testów, a EvoSuite raportuje własne cele pokrycia z procesu generowania.
-Dlatego do porównania narzędzi podstawową metryką powinno być JaCoCo, a wynik wewnętrzny EvoSuite może być pokazany pomocniczo.

@@ -1,183 +1,247 @@
 # testgen
 
-`testgen` is a Java engineering thesis project about automatic generation of unit tests.
+`testgen` - to system automatycznego generowania  testow jednostkowych dla aplikacji Java.
 
-The project focuses on a limited but working pipeline: analyze Java source code,
-detect branches, generate JUnit tests, use runtime coverage/profile data, and
-apply a simple genetic algorithm to improve generated inputs.
+Jest to generator, ktory laczy statyczna analize kodu, instrumentacje, wykonywanie kandydatow testow, i selekcje tych kandydatow na podstawie pokrytych galezi programu.
+
+TLDR przepływu:
+
+- program analizuje projekt Maven i sprawdza, czy ma standardowy układ z
+  `pom.xml` oraz katalogiem `src/main/java`,
+- potem w analizie statycznej, za pomocą javaparsera, znajduje pliki źródłowe `.java` i na ich podstawie rozpoznaje
+  klasy, konstruktory, metody, parametry 
+- nastepnie wykrywa cele pokrycia gałęzi, na przykład gałęzie
+  instrukcji `if`, `for`, `while` i `switch`,
+- z warunków w kodzie próbuje wyciągnąć podpowiedzi wartości argumentów, np. liczby graniczne, napisy albo wartości enumów,
+- dla metod, które mieszczą się w aktualnych ograniczeniach projektu,
+  przygotowuje kandydatów testów, czyli konkretne wywołania metod razem z
+  potrzebnymi obiektami i argumentami,
+- opcjonalnie wykorzystuje observed profile, czyli wartości argumentów
+  zaobserwowane podczas wcześniejszego uruchomienia instrumentowanej aplikacji (tworzenie tej instrumentowanej kopii to oddzielny flow programu)
+- tworzy instrumentowaną kopię badanego projektu, aby podczas uruchamiania
+  kandydatów można było sprawdzić, które gałęzie kodu zostały faktycznie
+  wykonane,
+  - uruchamia kandydatów testów w trakcie działania programu i zapisuje wynik każdego wykonania
+- wybiera do końcowego zestawu te kandydaty, które zwiększają pokrycie celów  gałęzi,
+- na końcu zapisuje testy JUnit 5 oraz raport tekstowy opisujący analizę
+  projektu, liczbę kandydatów i uzyskane pokrycie.
 
 
-## Idea
+## Uruchamianie
 
-The generator starts with static analysis of Java source files. JavaParser is
-used to read class structure, constructors, methods, parameters, and basic branch
-points such as `if`, `for`, `while`, and `switch`.
+1. Poprzez docker compose
 
-Then the project checks which methods are possible to test with the current
-implementation. For example, a method with primitive or `String` arguments and a
-public no-argument constructor is easier to handle. Methods that require complex
-object creation, collections, maps, mocks, or framework context can be skipped
-and reported.
+Najpierw zbuduj obraz:
 
-For supported methods, the generator creates test candidates. At first these
-candidates are based on simple seed values, for example `-1`, `0`, `1`, `true`,
-`false`, `""`, and `"test"`. Later these candidates can be mutated by the
-genetic algorithm.
-
-The dynamic part is based on runtime information about branch execution. In the
-MVP, JaCoCo can be used as a simpler source of this data. It can show which
-branches were covered or missed during an execution of the program or existing
-tests. Later, a custom profiler may be used instead, so that the project can
-count how many times each branch was executed.
-
-This runtime profile is used to assign weights to coverage goals. Branches that
-were executed in a real run of the program can be treated as more important than
-branches that were never reached. The genetic algorithm can then prefer
-candidates that cover these more important branches.
-
-The generated tests are written as JUnit 5 tests. In the MVP, they are mostly
-smoke/regression-style tests for simple public methods.
-
-## Pipeline
-
-```text
-Java source file
- -> static analysis with JavaParser
-      -> class and method structure
-      -> branch detection
-      -> coverage goals
-
-Runtime profile input
- -> MVP: JaCoCo covered/missed branch data
- -> later: custom branch execution counters
- -> branch weights
-
-Method generation planning
- -> supported methods
- -> initial candidate population
-
-Evolutionary loop
- -> generate or mutate candidates
- -> write JUnit test code
- -> execute generated tests
- -> check candidate coverage
- -> calculate fitness from covered goals and branch weights
- -> select candidates for the next generation
-
-Final generated test suite
+```bash
+docker compose build
 ```
 
+wygeneruj testy dla przykladowego projektu:
 
-## Architecture
-
-The project follows Clean Architecture.
-
-Main packages:
-
-- `domain` - core data models
-- `usecase` - application logic
-- `usecase/ports` - interfaces used by the use cases
-- `infrastructure` - JavaParser, file system, coverage and execution adapters
-- `cli` - command-line entry point
-
-The main rule is that domain and use case code should not depend directly on
-JavaParser, the file system, or external tools.
-
-## Scope
-
-- public methods
-- public no-argument constructors
-- primitive method arguments
-- `String` method arguments
-- basic branch detection:
-  - `if`
-  - `for`
-  - `while`
-  - `switch`
-- generated JUnit 5 test files
-- seed-based input generation
-- simple mutation and selection
-- runtime profile input based on JaCoCo covered/missed branch data
-- coverage-based fitness score
-
-Planned or possible extensions:
-
-- primitive constructor arguments
-- enums
-- simple boundary values
-- simple assertions for primitive, boolean, and `String` return values
-- better reports about skipped methods
-
-Out of scope for the MVP:
-
-- advanced fixtures
-- collection and map generation
-- Mockito stubbing
-- Spring or other framework context
-- symbolic execution
-- long method-call sequences
-
-## Genetic Algorithm
-
-The genetic algorithm works on generated test candidates.
-
-In the MVP, one candidate is one call of one public method with
-generated arguments. The first population is created from simple seed values:
-
-```text
-numeric: -1, 0, 1, 10, 100
-boolean: false, true
-String: "", "test", "a"
+```bash
+docker compose run --rm generate-tests
 ```
 
-The fitness score is based on coverage goals detected during static analysis and
-on branch weights coming from runtime data. In the MVP, these weights can be
-based on a JaCoCo report which says whether a branch was covered or missed during
-a previous execution. Later, a custom profiler can provide more precise branch
-execution counts.
+Wyniki pojawia sie w:
 
-During the evolutionary loop, generated candidates also need to be executed so
-the system can check which coverage goals they actually cover. A candidate that
-covers more valuable goals should receive a better fitness score.
+```text
+target/test-work/fit-bench/generated-tests
+target/test-work/fit-bench/report.txt
+```
 
-Static analysis may simple input hints, but it is not supposed to solve
-every branch condition. 
+- `generated-tests` - wygenerowane testy JUnit,
+- `report.txt` - raport z analizy
 
-## Limitations
+## Uruchomienie z profilem runtime
 
-The generator should work best for simple classes, where branches depend mostly on method
-arguments.
+Program potrafi korzystac z wartosci argumentow zaobserwowanych podczas rzeczywistego uruchomienia aplikacji. Repozytorium zawiera gotowy profil dla przykladowego projektu:
 
-It will not fully support code where behavior depends on:
+```text
+examples/fit-bench/observed-profile.txt
+```
 
-- hidden object state
-- constructor-injected services
-- complex domain objects
-- external systems
-- frameworks
-- complicated mocks
+Testy z profilem runtime mozna wygenerowac tym samym serwisem Docker Compose:
 
-These limitations are expected and should be visible in the generated report.
+```bash
+docker compose run --rm generate-tests-with-profile
+```
 
-## Running Tests
+Wyniki pojawia sie w:
+
+```text
+target/test-work/fit-bench-with-profile/generated-tests
+target/test-work/fit-bench-with-profile/report.txt
+```
+
+Profil mozna tez przygotowac samodzielnie. Najpierw trzeba utworzyc instrumentowana kopie projektu:
+
+```bash
+docker compose run --rm prepare-profile
+```
+
+Ten krok zapisuje instrumentowane zrodla i skompilowane klasy w katalogu:
+
+```text
+target/docker-profile-work/fit-bench
+```
+
+Nastepnie trzeba uruchomic przykladowa aplikacje na tej instrumentowanej kopii:
+
+```bash
+docker compose run --rm record-profile
+```
+
+Po tym kroku powstaje plik:
+
+```text
+target/docker-profile-work/fit-bench/observed-profile.txt
+```
+
+## Uruchomienie lokalne
+
+Wymagania:
+
+- Java 21,
+- Maven,
+- projekt Maven, ktory ma standardowy katalog `src/main/java`.
+
+Uruchomienie testow projektu `testgen`:
 
 ```bash
 mvn test
 ```
 
-## CLI Usage
-
-
-Analyze a file and generate a test file:
+Zbudowanie programu i skopiowanie zaleznosci:
 
 ```bash
-mvn exec:java -Dexec.mainClass=com.mlisows.testgen.cli.Main -Dexec.args="src/test/resources/sample/SimpleDiscountCalculator.java target/generated-test-sources"
+mvn -q -DskipTests package dependency:copy-dependencies
 ```
 
-Example output:
+Wygenerowanie testow dla przykladowego projektu:
+
+```bash
+java -cp "target/classes:target/dependency/*" \
+  com.mlisows.testgen.cli.Main \
+  examples/fit-bench \
+  target/test-work/fit-bench-local
+```
+
+Ogolna postac polecenia:
 
 ```text
-target/generated-test-sources/sample/SimpleDiscountCalculatorTest.java
+testgen <maven-project-root> [work-root] [observed-profile]
 ```
 
+Tryb przygotowania profilu runtime:
 
+```text
+testgen prepare-profile <maven-project-root> [work-root]
+```
+
+## Przykladowy projekt
+
+Przykladowy projekt testowy znajduje sie w:
+
+```text
+examples/fit-bench
+```
+
+Jest to zwykly projekt Maven z klasami domenowymi, enumami, konstruktorami, metodami i galeziami sterowania. Projekt zostal wygenerowany automatycznie,w taki sposob żeby miescił się w ograniczeniach aktualnego MVP generatora.
+
+
+
+## Jak dziala generator
+
+Glowne wejscie programu znajduje sie w klasie:
+
+```text
+src/main/java/com/mlisows/testgen/cli/Main.java
+```
+
+Przeplyw generowania testow jest nastepujacy:
+
+1. Program rozpoznaje uklad projektu Maven. Sprawdza katalog projektu, `pom.xml`, `src/main/java` i opcjonalne zasoby.
+2. Program znajduje pliki `.java` w katalogu z kodem produkcyjnym.
+3. JavaParser buduje indeks typow. Dzieki temu generator wie, ktore pliki opisuja klasy, enumy albo interfejsy.
+4. Generator analizuje kod metod i wykrywa cele pokrycia galezi. Aktualnie obslugiwane sa przede wszystkim `if`, `for`, `while` i `switch`.
+5. Generator zbiera statyczne podpowiedzi wartosci argumentow. Przykladowo warunek `amount > 100` moze dac podpowiedz wartosci bliskich `100`.
+6. Generator analizuje strukture klas. Odczytuje konstruktory, metody, parametry, typy argumentow i typy zwracane.
+7. Planner metod sprawdza ograniczenia generatora. Odrzucane sa metody, ktorych aktualna wersja programu nie umie  obsluzyc, na przykład List<> jako parametr.
+8. Program opcjonalnie wczytuje profil runtime z pliku tekstowego. Profil zawiera wartosci argumentow zaobserwowane podczas prawdziwego uruchomienia instrumentowanej aplikacji.
+9. Program tworzy instrumentowana kopie projektu. Do kodu zrodlowego dodawane sa wywolania runtime recorderow - ta kopia jest kompilowana do osobnego katalogu.
+0Generator tworzy przestrzenie kandydatow. Dla kazdej metody, którą jestesmy w stanie obsłużyć biorąc pod uwagę ograniczenia naszego projektu, probujemy zbudowac obiekt docelowy, potrzebne obiekty pomocnicze (jak konstruktory klas zależnych) i argumenty metody.
+12. Generator tworzy warianty kandydatow. Korzysta z wartosci pobranych w analizie statycznej, wartosci pobrane z rzeczywistego działania programu, wartosci domyslnych, i prostych mutacji.
+13. Kandydaci sa wykonywani przez refleksje na instrumentowanej kopii projektu -  `BranchRecorder` zapisuje, ktore cele pokrycia zostaly trafione podczas wykonania kandydata.
+4Do koncowych testow wybierani sa kandydaci, ktorzy dodali nowe pokrycie. 
+4Program zapisuje wygenerowane testy JUnit i raport.
+
+## Architektura
+
+Korzystamy w dużej mierze z Clean Architecture:
+
+```text
+src/main/java/com/mlisows/testgen/domain
+src/main/java/com/mlisows/testgen/usecase
+src/main/java/com/mlisows/testgen/usecase/ports
+src/main/java/com/mlisows/testgen/infrastructure
+src/main/java/com/mlisows/testgen/cli
+```
+
+Warstwy:
+
+- `domain` - modele danych, na przyklad kandydat testu, cel pokrycia, plan metody, struktura klasy,
+- `usecase` - logika generowania kandydatow, mutacji, oceny pokrycia i raportowania,
+- `usecase/ports` - porty które implementujemy w warstwie infrastruktury,
+- `infrastructure` - implementacje, np. analizy przez JavaParser, kompilacji plików, wykonywania kandydatów, czy runtime recorderów zbierających rzeczywiste wartości parametrów metod i konstruktorów które pojawiły się w trakcie działania zewnętrznego projektu,
+- `cli` - punkt wejscia programu.
+- 
+![img_1.png](img_1.png)
+
+
+
+## Co jest zaimplementowane
+
+Zakres projektu:
+
+- analiza projektow Maven,
+- analiza klas, metod, konstruktorow i parametrow,
+- analiza struktur klas i enumow,
+- wykrywanie galezi `if`, `for`, `while` i `switch`,
+- statyczne podpowiedzi wartosci argumentow,
+- profil  z wartosciami argumentow które rzeczywiście wystąpiły w zewnętrznym projekcie
+- instrumentacja kodu do mierzenia pokrycia galezi,
+- instrumentacja kodu do zapisu wartosci argumentow runtime,
+- generowanie kandydatow testow,
+- rekurencyjne budowanie obiektow pomocniczych przez publiczne konstruktory,
+- generowanie wariantow i prostych mutacji argumentow,
+- wykonywanie kandydatow przez refleksje,
+- selekcja kandydatow na podstawie nowego pokrycia,
+- zapis testow JUnit 5,
+- raport tekstowy
+
+
+## Ograniczenia
+
+
+- brak wsparcia dla kolekcji, map, list
+- brak  mockowania zaleznosci,
+- brak obsługi Spring i innych frameworkow,
+- brak pelnego odtwarzania sesji uzytkownika(jest rekurencyjne budowanie obiektów, czyli metod i potrzebnych konstruktorów, ale nie ma odtwarzenia sekwencji metod które mogłyby pokryć nowy cel)
+- brak obslugi galezi  w lambdach, streamach, operatorze trojargumentowym i skrotowych warunkach logicznych,
+
+
+Raport generowania pokazuje te ograniczenia: ile metod przeszlo podstawowe reguly, dla ilu faktycznie udalo sie przygotowac kandydatow i ile celow pokrycia znajduje sie w metodach, ktore generator byl w stanie wywolac.
+
+![img.png](img.png)
+## Dokumenty pomocnicze
+
+W repozytorium znajduje się dokładniejsza dokumentacja:
+
+- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) -
+
+Wyniki eksperymentów i wykresy znajdują się w katalogu:
+
+  ```text
+  local/experiment-results
+  ```
