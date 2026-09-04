@@ -67,7 +67,9 @@ class GenerationReportTest {
         );
         CandidateCoverageEvaluation evaluation = new CandidateCoverageEvaluation(
                 List.of(selectedResult, failedResult),
-                List.of(selectedResult)
+                List.of(selectedResult),
+                1,
+                1
         );
 
         GenerationReport report = GenerationReport.from(
@@ -84,6 +86,8 @@ class GenerationReportTest {
         assertEquals(1, report.getCoveredBranchCount());
         assertEquals(2, report.getExecutedCandidateCount());
         assertEquals(1, report.getSelectedCandidateCount());
+        assertEquals(1, report.getCandidateSpaceMethodCount());
+        assertEquals(1, report.getFailedCandidateSpaceMethodCount());
         assertEquals(1, report.countExecutedByOutcome(ExecutionOutcome.RETURNED));
         assertEquals(1, report.countExecutedByOutcome(ExecutionOutcome.FAILED_TO_EXECUTE));
         assertEquals(List.of(
@@ -106,6 +110,9 @@ class GenerationReportTest {
 
         assertTrue(reportText.contains("Test generation report"));
         assertTrue(reportText.contains("Classes analyzed: 1"));
+        assertTrue(reportText.contains("Methods passing planner rules: 1"));
+        assertTrue(reportText.contains("Methods with candidate space: 1"));
+        assertTrue(reportText.contains("Methods without candidate space: 1"));
         assertTrue(reportText.contains("Supported branch kinds: IF, FOR, WHILE, SWITCH"));
         assertTrue(reportText.contains("Detected goals: 2"));
         assertTrue(reportText.contains("Covered goals: 1"));

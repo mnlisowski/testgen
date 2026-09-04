@@ -67,7 +67,7 @@ class CandidateCoverageEvaluatorTest {
         ));
 
         CandidateCoverageEvaluation evaluation = new CandidateCoverageEvaluator(executor)
-                .evaluate(List.of(firstCandidate, failedCandidate, exceptionCandidate));
+                .evaluate(List.of(firstCandidate, failedCandidate, exceptionCandidate), 0, 0);
 
         assertEquals(List.of(firstCandidate, failedCandidate, exceptionCandidate), evaluation.getExecutedResults().stream()
                 .map(TestCandidateExecutionResult::getCandidate)

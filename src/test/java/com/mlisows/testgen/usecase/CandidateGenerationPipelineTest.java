@@ -76,7 +76,7 @@ class CandidateGenerationPipelineTest {
                 analysisResult.getArgumentValueHints()
         ).orElseThrow();
         List<TestCandidate> candidates = candidateVariantGenerator.generateVariants(candidateSpace);
-        CandidateCoverageEvaluation evaluation = coverageEvaluator.evaluate(candidates);
+        CandidateCoverageEvaluation evaluation = coverageEvaluator.evaluate(candidates, 0, 0);
 
         List<TestCandidateExecutionResult> results = evaluation.getSelectedResults();
         List<String> coveredBranchIds = results.stream()
