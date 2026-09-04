@@ -90,7 +90,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private void collectIfGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
-        String methodName = method.getNameAsString();
+        String methodName = methodNameWithParameterTypes(method);
         List<IfStmt> ifStatements = method.findAll(IfStmt.class);
 
         for (IfStmt ifStatement : ifStatements) {
@@ -120,7 +120,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private void collectWhileGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
-        String methodName = method.getNameAsString();
+        String methodName = methodNameWithParameterTypes(method);
         List<WhileStmt> whileStatements = method.findAll(WhileStmt.class);
 
         for (WhileStmt whileStatement : whileStatements) {
@@ -138,7 +138,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private void collectForGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
-        String methodName = method.getNameAsString();
+        String methodName = methodNameWithParameterTypes(method);
         List<ForStmt> forStatements = method.findAll(ForStmt.class);
 
         for (ForStmt forStatement : forStatements) {
@@ -158,7 +158,7 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private void collectSwitchGoals(String className, MethodDeclaration method, List<CoverageGoal> coverageGoals) {
-        String methodName = method.getNameAsString();
+        String methodName = methodNameWithParameterTypes(method);
         List<SwitchStmt> switchStatements = method.findAll(SwitchStmt.class);
 
         for (SwitchStmt switchStatement : switchStatements) {
@@ -475,11 +475,15 @@ public final class JavaParserCodeAnalyzer implements CodeAnalyzer {
     }
 
     private String methodSignature(String className, MethodDeclaration method) {
+        return className + "." + methodNameWithParameterTypes(method);
+    }
+
+    private String methodNameWithParameterTypes(MethodDeclaration method) {
         List<String> parameterTypes = method.getParameters().stream()
                 .map(parameter -> parameter.getType().asString())
                 .toList();
 
-        return ExecutableSignature.method(className, method.getNameAsString(), parameterTypes);
+        return ExecutableSignature.methodName(method.getNameAsString(), parameterTypes);
     }
 
     private void addHintIfMissing(

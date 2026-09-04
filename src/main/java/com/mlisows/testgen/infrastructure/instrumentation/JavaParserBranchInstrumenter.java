@@ -22,6 +22,7 @@ import com.mlisows.testgen.domain.BranchId;
 import com.mlisows.testgen.domain.BranchKind;
 import com.mlisows.testgen.domain.BranchType;
 import com.mlisows.testgen.domain.CoverageGoal;
+import com.mlisows.testgen.domain.ExecutableSignature;
 import com.mlisows.testgen.infrastructure.parser.JavaParserLanguageLevel;
 import com.mlisows.testgen.usecase.ports.SourceInstrumenter;
 
@@ -93,14 +94,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     .line;
 
             Optional<CoverageGoal> trueGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.IF,
                     BranchType.TRUE
             );
 
             Optional<CoverageGoal> falseGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.IF,
                     BranchType.FALSE
@@ -142,14 +143,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     .line;
 
             Optional<CoverageGoal> trueGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.FOR,
                     BranchType.TRUE
             );
 
             Optional<CoverageGoal> falseGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.FOR,
                     BranchType.FALSE
@@ -189,14 +190,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     .line;
 
             Optional<CoverageGoal> trueGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.WHILE,
                     BranchType.TRUE
             );
 
             Optional<CoverageGoal> falseGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     BranchKind.WHILE,
                     BranchType.FALSE
@@ -239,7 +240,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
             int lineNumber = getLineNumber(statement);
 
             Optional<CoverageGoal> falseGoal = findGoal(
-                    method.get().getNameAsString(),
+                    methodNameWithParameterTypes(method.get()),
                     lineNumber,
                     branchKind,
                     BranchType.FALSE
@@ -271,7 +272,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
 
             for (SwitchEntry entry : switchStatement.getEntries()) {
                 Optional<CoverageGoal> goal = findSwitchGoal(
-                        method.get().getNameAsString(),
+                        methodNameWithParameterTypes(method.get()),
                         lineNumber,
                         entry
                 );
@@ -375,6 +376,14 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     && branchId.getBranchKind() == branchKind
                     && branchId.getBranchType() == branchType
                     && branchId.getDiscriminator().equals(discriminator);
+        }
+
+        private String methodNameWithParameterTypes(MethodDeclaration method) {
+            List<String> parameterTypes = method.getParameters().stream()
+                    .map(parameter -> parameter.getType().asString())
+                    .toList();
+
+            return ExecutableSignature.methodName(method.getNameAsString(), parameterTypes);
         }
 
         private int getLineNumber(Node node) {
