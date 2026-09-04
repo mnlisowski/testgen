@@ -48,8 +48,12 @@ public final class MethodGenerationPlanner {
             plans.add(new MethodGenerationPlan(
                     classStructure.getClassName(),
                     method.getName(),
+                    method.getParameters().stream()
+                            .map(ParameterModel::getType)
+                            .toList(),
                     requirements
             ));
+
         }
 
         return plans;

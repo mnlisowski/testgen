@@ -36,6 +36,7 @@ class GenerationReportTest {
         MethodGenerationPlan supportedPlan = new MethodGenerationPlan(
                 "sample.Calculator",
                 "calculate",
+                List.of(),
                 List.of(
                         GenerationRequirement.NO_ARG_CONSTRUCTOR,
                         GenerationRequirement.PRIMITIVE_ARGUMENT
@@ -44,6 +45,7 @@ class GenerationReportTest {
         MethodGenerationPlan skippedPlan = new MethodGenerationPlan(
                 "sample.ReportService",
                 "export",
+                List.of(),
                 List.of(
                         GenerationRequirement.NO_ARG_CONSTRUCTOR,
                         GenerationRequirement.INTERFACE_MOCK,
