@@ -329,6 +329,76 @@ class JavaParserBranchInstrumenterTest {
         ));
     }
 
+
+
+
+
+    @Test
+    void shouldNotInsertFalseHitAfterAlwaysTrueWhile() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int waitForValue() {
+                          while (true) {
+                              return 1;
+                          }
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "waitForValue()", 5, BranchKind.WHILE, BranchType.TRUE),
+                        goal("sample.Calculator", "waitForValue()", 5, BranchKind.WHILE, BranchType.FALSE)
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains("sample.Calculator|waitForValue()|5|WHILE|TRUE"));
+        assertFalse(instrumentedSource.contains("sample.Calculator|waitForValue()|5|WHILE|FALSE"));
+    }
+
+    @Test
+    void shouldEscapeQuoteInSwitchBranchId() throws Exception {
+        Path sourcePath = tempDir.resolve("Calculator.java");
+        Path outputPath = tempDir.resolve("instrumented/Calculator.java");
+
+        Files.writeString(sourcePath, """
+                  package sample;
+
+                  public class Calculator {
+                      public int calculate(char marker) {
+                          switch (marker) {
+                              case '"':
+                                  return 1;
+                              default:
+                                  return 0;
+                          }
+                      }
+                  }
+                  """);
+
+        new JavaParserBranchInstrumenter().instrument(
+                sourcePath,
+                outputPath,
+                List.of(
+                        goal("sample.Calculator", "calculate(char)", 5, BranchKind.SWITCH, BranchType.CASE, "'\"'"),
+                        goal("sample.Calculator", "calculate(char)", 5, BranchKind.SWITCH, BranchType.DEFAULT, "")
+                )
+        );
+
+        String instrumentedSource = Files.readString(outputPath);
+
+        assertTrue(instrumentedSource.contains("CASE|'\\\"'"));
+    }
+
     private static CoverageGoal goal(
             String className,
             String methodName,
@@ -337,6 +407,8 @@ class JavaParserBranchInstrumenterTest {
     ) {
         return goal(className, methodName, lineNumber, BranchKind.IF, branchType);
     }
+
+
 
     private static CoverageGoal goal(
             String className,
@@ -347,6 +419,8 @@ class JavaParserBranchInstrumenterTest {
     ) {
         return goal(className, methodName, lineNumber, branchKind, branchType, "");
     }
+
+
 
     private static CoverageGoal goal(
             String className,

@@ -6,7 +6,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
@@ -165,7 +164,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     trueGoal.get().getBranchId().asString()
             ));
 
-            if (isDirectlyLabeled(forStatement)) {
+            if (isDirectlyLabeled(forStatement) || isAlwaysTrueLoop(forStatement)) {
                 return forStatement;
             }
 
@@ -212,7 +211,7 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     trueGoal.get().getBranchId().asString()
             ));
 
-            if (isDirectlyLabeled(whileStatement)) {
+            if (isDirectlyLabeled(whileStatement) || isAlwaysTrueLoop(whileStatement)) {
                 return whileStatement;
             }
 
@@ -233,6 +232,10 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
 
             Optional<MethodDeclaration> method = labeledStatement.findAncestor(MethodDeclaration.class);
             if (method.isEmpty()) {
+                return labeledStatement;
+            }
+
+            if (isAlwaysTrueLoop(statement)) {
                 return labeledStatement;
             }
 
@@ -425,15 +428,46 @@ public final class JavaParserBranchInstrumenter implements SourceInstrumenter {
                     .isPresent();
         }
 
+        private boolean isAlwaysTrueLoop(Statement statement) {
+            if (statement.isWhileStmt()) {
+                return isTrueLiteral(statement.asWhileStmt().getCondition());
+            }
+
+            if (statement.isForStmt()) {
+                return statement.asForStmt().getCompare()
+                        .map(this::isTrueLiteral)
+                        .orElse(true);
+            }
+
+            return false;
+        }
+
+        private boolean isTrueLiteral(Expression expression) {
+            return expression.isBooleanLiteralExpr()
+                    && expression.asBooleanLiteralExpr().getValue();
+        }
+
         private Statement hitStatement(String branchId) {
             Expression recorderClass = StaticJavaParser.parseExpression(
                     "com.mlisows.testgen.infrastructure.runtime.BranchRecorder"
             );
 
             MethodCallExpr hitCall = new MethodCallExpr(recorderClass, "hit");
-            hitCall.addArgument(new StringLiteralExpr(branchId));
+            hitCall.addArgument(javaStringLiteral(branchId));
 
             return new ExpressionStmt(hitCall);
+        }
+
+        private Expression javaStringLiteral(String value) {
+            return StaticJavaParser.parseExpression("\"" + escapeJavaString(value) + "\"");
+        }
+
+        private String escapeJavaString(String value) {
+            return value.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
         }
     }
 }
