@@ -4,13 +4,7 @@ Ten dokument wyjaśnia cel projektu, jak jest zorganizowany architektonicznie, o
 
 ## 2. Cel projektu
 
-Cel projektu to automatyczne generowanie testów regresyjnych dla aplikacji Java. 
-
-`testgen` analizuje projekt Maven, rozpoznaje metody możliwe do
-przetestowania dla aktualnych ograniczeń programu, generuje kandydatów testów, i wybiera te przypadki, które po wykonaniu zwiększają pokrycie gałęzi.
-
-Wygenerowane testy opisują aktualne zachowanie programu dla konkretnych danych  wejściowych.  Projekt nie ocenia
-poprawności biznesowej aplikacji - tylko pomaga utworzyć początkowy zestaw testów, które później mogą wykryć regresje.
+Cel projektu to automatyczne generowanie testów regresyjnych dla aplikacji Java.
 
 ## 3. Idea działania w skrócie
 
