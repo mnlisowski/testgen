@@ -21,7 +21,7 @@ TLDR przepływu:
 - tworzy instrumentowaną kopię badanego projektu, aby podczas uruchamiania
   kandydatów można było sprawdzić, które gałęzie kodu zostały faktycznie
   wykonane,
-  - uruchamia kandydatów testów w trakcie działania programu i zapisuje wynik każdego wykonania
+- uruchamia kandydatów testów w trakcie działania programu i zapisuje wynik każdego wykonania
 - wybiera do końcowego zestawu te kandydaty, które zwiększają pokrycie celów  gałęzi,
 - na końcu zapisuje testy JUnit 5 oraz raport tekstowy opisujący analizę
   projektu, liczbę kandydatów i uzyskane pokrycie.
@@ -30,13 +30,13 @@ TLDR przepływu:
 
 W repozytorium znajduje się dokładniejsza dokumentacja:
 
-- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) -
+- [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
 
 Wyniki eksperymentów i wykresy znajdują się w katalogu:
 
-  ```text
-  docs/experiment-results
-  ```
+```text
+docs/experiment-results
+```
 
 Opis zawartości katalogu znajduje się w [docs/experiment-results/README.md](docs/experiment-results/README.md).
 
@@ -163,7 +163,6 @@ examples/fit-bench
 Jest to zwykly projekt Maven z klasami domenowymi, enumami, konstruktorami, metodami i galeziami sterowania. Projekt zostal wygenerowany automatycznie,w taki sposob żeby miescił się w ograniczeniach aktualnego generatora.
 
 
-
 ## Jak dziala generator
 
 Glowne wejscie programu znajduje sie w klasie:
@@ -183,11 +182,11 @@ Przeplyw generowania testow jest nastepujacy:
 7. Planner metod sprawdza ograniczenia generatora. Odrzucane sa metody, ktorych aktualna wersja programu nie umie  obsluzyc, na przykład List<> jako parametr.
 8. Program opcjonalnie wczytuje profil runtime z pliku tekstowego. Profil zawiera wartosci argumentow zaobserwowane podczas prawdziwego uruchomienia instrumentowanej aplikacji.
 9. Program tworzy instrumentowana kopie projektu. Do kodu zrodlowego dodawane sa wywolania runtime recorderow - ta kopia jest kompilowana do osobnego katalogu.
-0Generator tworzy przestrzenie kandydatow. Dla kazdej metody, którą jestesmy w stanie obsłużyć biorąc pod uwagę ograniczenia naszego projektu, probujemy zbudowac obiekt docelowy, potrzebne obiekty pomocnicze (jak konstruktory klas zależnych) i argumenty metody.
-12. Generator tworzy warianty kandydatow. Korzysta z wartosci pobranych w analizie statycznej, wartosci pobrane z rzeczywistego działania programu, wartosci domyslnych, i prostych mutacji.
-13. Kandydaci sa wykonywani przez refleksje na instrumentowanej kopii projektu -  `BranchRecorder` zapisuje, ktore cele pokrycia zostaly trafione podczas wykonania kandydata.
-4Do koncowych testow wybierani sa kandydaci, ktorzy dodali nowe pokrycie. 
-4Program zapisuje wygenerowane testy JUnit i raport.
+10. Generator tworzy przestrzenie kandydatow. Dla kazdej metody, którą jestesmy w stanie obsłużyć biorąc pod uwagę ograniczenia naszego projektu, probujemy zbudowac obiekt docelowy, potrzebne obiekty pomocnicze (jak konstruktory klas zależnych) i argumenty metody.
+11. Generator tworzy warianty kandydatow. Korzysta z wartosci pobranych w analizie statycznej, wartosci pobrane z rzeczywistego działania programu, wartosci domyslnych, i prostych mutacji.
+12. Kandydaci sa wykonywani przez refleksje na instrumentowanej kopii projektu -  `BranchRecorder` zapisuje, ktore cele pokrycia zostaly trafione podczas wykonania kandydata.
+13. Do koncowych testow wybierani sa kandydaci, ktorzy dodali nowe pokrycie.
+14. Program zapisuje wygenerowane testy JUnit i raport.
 
 ## Architektura
 
@@ -212,7 +211,6 @@ Warstwy:
 ![Struktura plików projektu](docs/images/files.png)
 
 
-
 ## Co jest zaimplementowane
 
 Zakres projektu:
@@ -222,7 +220,7 @@ Zakres projektu:
 - analiza struktur klas i enumow,
 - wykrywanie galezi `if`, `for`, `while` i `switch`,
 - statyczne podpowiedzi wartosci argumentow,
-- profil  z wartosciami argumentow które rzeczywiście wystąpiły w zewnętrznym projekcie
+- profil  z wartosciami argumentow które rzeczywiście wystąpiły w zewnętrznym projekcie,
 - instrumentacja kodu do mierzenia pokrycia galezi,
 - instrumentacja kodu do zapisu wartosci argumentow runtime,
 - generowanie kandydatow testow,
@@ -235,7 +233,6 @@ Zakres projektu:
 
 
 ## Ograniczenia
-
 
 - brak wsparcia dla kolekcji, map, list
 - brak  mockowania zaleznosci,
