@@ -2,6 +2,22 @@
 
 Ten dokument wyjaśnia cel projektu, jak jest zorganizowany architektonicznie, oraz jak przebiega generowanie testów krok po kroku.
 
+## 1. Spis treści
+
+- [2. Cel projektu](#2-cel-projektu)
+- [3. Idea działania w skrócie](#3-idea-działania-w-skrócie)
+- [4. Dane wejściowe i wyjściowe](#4-dane-wejściowe-i-wyjściowe)
+- [5. Uruchomienie](#5-uruchomienie)
+- [6. Architektura](#6-architektura)
+- [7. Główne pojęcia projektu](#7-główne-pojęcia-projektu)
+- [8. Szczegółowy przepływ](#8-szczegółowy-przepływ)
+- [9. Przepływ trybu prepare-profile](#9-przepływ-trybu-prepare-profile)
+- [10. Przykład całościowy](#10-przykład-całościowy)
+- [11. Raport](#11-raport)
+- [12. Ograniczenia](#12-ograniczenia)
+- [13. Porównanie z Randoop i EvoSuite](#13-porównanie-z-randoop-i-evosuite)
+- **[14. Eksperymenty](#14-eksperymenty)**
+
 ## 2. Cel projektu
 
 Cel projektu to automatyczne generowanie testów regresyjnych dla aplikacji Java.
