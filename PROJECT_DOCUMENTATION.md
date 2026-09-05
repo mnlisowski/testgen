@@ -20,7 +20,10 @@ Ten dokument wyjaśnia cel projektu, jak jest zorganizowany architektonicznie, o
 
 ## 2. Cel projektu
 
-Cel projektu to automatyczne generowanie testów regresyjnych dla aplikacji Java.
+Cel to automatyczne generowanie zestawu testów regresyjnych dla aplikacji Java. Program ma analizować kod źródłowy projektu Maven, wykrywać metody i cele pokrycia gałęzi, tworzyć kandydatów testów oraz wybierać te, które podczas wykonania faktycznie zwiększają pokrycie.
+
+Projekt wykorzystuje dwa źródła informacji: analizę statyczną kodu oraz profil runtime. Analiza statyczna znajduje strukturę klas, metody, parametry, gałęzie sterowania i proste podpowiedzi wartości argumentów. Profil runtime służy do zebrania wartości argumentów zaobserwowanych podczas rzeczywistego działania instrumentowanej kopii projektu, a następnie do wykorzystania tych wartości przy generowaniu kandydatów testów.
+
 
 ## 3. Idea działania w skrócie
 
