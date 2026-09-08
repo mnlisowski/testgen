@@ -1,0 +1,15 @@
+\babel@toc {polish}{}\relax 
+\contentsline {section}{\numberline {1\relax .\enspace }Praefatio}{9}{section.1}%
+\contentsline {section}{\numberline {2\relax .\enspace }De Finibus Bonorum et Malorum}{11}{section.2}%
+\contentsline {subsection}{\numberline {2.1\relax .\enspace }Critique of Pure Reason}{12}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2\relax .\enspace }Categorical Imperative}{14}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1\relax .\enspace }Deontological Ethics}{14}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2\relax .\enspace }Consequentialism -- the Ideal of practical reason}{15}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3\relax .\enspace }G\"odel's ontological proof}{16}{subsection.2.3}%
+\contentsline {section}{\numberline {3\relax .\enspace }Code listings}{17}{section.3}%
+\contentsline {section}{\numberline {4\relax .\enspace }Summatio}{19}{section.4}%
+\contentsline {section}{Bibliografia}{21}{section*.5}%
+\contentsline {section}{Wykaz symboli i skrótów}{22}{section*.6}%
+\contentsline {section}{Spis rysunków}{22}{section*.6}%
+\contentsline {section}{Spis tabel}{22}{section*.6}%
+\contentsline {section}{Spis załączników}{22}{section*.7}%
