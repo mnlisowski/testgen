@@ -1,0 +1,18 @@
+{
+  "found": 199,
+  "started": 199,
+  "successful": 193,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$kIl24qTP$mihgMYTwd1qUOkUWIjWlOLBK/Cf76eubhvj1Ai6VH.2TDU4bjpGWkiAGeTxY0UD/1GcaHTN5lclhNJX5.OxH.1> but was: <$6$GzKMwnsX$G9hAWCepyZMAM4ythr/Pvz1vqpMD1L2UveH8gDz.XIbjNvkaHAV/yW4G5T6lqnFk/nI6t9WXwTv0CbdRcd4N/.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$F0qx2GqA$/PBTPzcIvprqKSxunqT27nlYQXyVKuNCV81tIzte6bFUeU/B6rGk6V1xRbSS454.2ozQSFBrkY27CllY8YnB41> but was: <$6$SzUsjQ8T$c7g6.SjqSFMnkefiJCPbFht30yZQQytdK7BlndSMgYheAEsr6OC8Vh2eZV0zcKk.YstaZX.ifZC5nQNP4kOek.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$h6A7Tswf$LyxYyds8KJZBn6uHtYx2HEi99KiDURy0lltYt59ENoafMT56B7BRLM7qINWAWhSnETlzS.uJrc6MPhp6ctcTT.> but was: <$6$Szjn6.9G$bQXrJwFSzve3NbbyHGZKtrEt28nq5sJHYghsxyzbZjBt34/ZWgouQcj54dAzK36nZDbEgX.aF90KvIPPgvkTr0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <9Grwh229/VRZ.> but was: <zKOcR/Mjy2i6o>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$lbu.FsC2$DSid3cWvTaFQPOOby3fu3.> but was: <$apr1$sjXsSvD8$Vd80PT0Kz1zwqGv7yH3q21>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$cqx5D8lF$Sv1JeFCzrnFSa8nJRFa/X/> but was: <$apr1$f/QFGT1q$ITUU8LV7U8/JL0e4SEoG50>"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "found": 148,
+  "started": 148,
+  "successful": 141,
+  "failed": 7,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$IizFvkpx$Ay8TR0WoZAT0LTR7gkxNkc1XsWdT2nBxve6Mdr5BAsFdkgKNT/A0bXjEyJEwsNFdvU.L.sYPF25gpG35AzyY71> but was: <$6$EemtxXvH$Wkdp1a6cYqUsAPHEhX1VfpQXx5SE4KDKz0dkNgGNTboz.rtHkIMcgMbr45mad7ovHz94J2wxuAUb4y/UH35V61>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$L/clw/48$GTugimjEsBP0l.KgXHtPH/fQTBoVIz7Qi4oBHGli.3pnlvbBT94nCDbFM6vKAj904RPUcc2uivM2khTzPCG5.0> but was: <$6$Vxd7uqZW$RzjYwe2YrLmuoINFmoj0NJBMXjknHjzDlqzw4/pDt2RHTwNJHTYVx0shWAnyFTGHI5PP9.390hvCHJl1h.//m1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <OecFBzaPOMNKk> but was: <jIkZqXfmFTEmM>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$YKGpVXQx$zbAqJ5opsrpx/3LAkMVgU.> but was: <$apr1$TB9DyboM$pCErgv2Yfdvg61BSqPO/Q/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt2()]: org.opentest4j.AssertionFailedError: expected: <$apr1$dbeRDZ7i$NrssiXRWuZSi4p3r6XRqf1> but was: <$apr1$8vZczHzW$clmXQ2aoh1.6BMZ5CnvDV0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$wtqadgnw$j8NBChVlabFR/RkqMGWcF/> but was: <$apr1$I.9H.InL$GiwxIgV7.hRhVzFXTHFio.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt5()]: org.opentest4j.AssertionFailedError: expected: <$apr1$bZef3ycP$jbGJXDR8dPeMpsDWRhgzZ1> but was: <$apr1$IEXbJQaz$C5iw7.Cu6GsqLYotVm0RX.>"
+  ]
+}

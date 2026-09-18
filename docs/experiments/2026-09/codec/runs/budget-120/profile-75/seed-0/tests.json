@@ -1,0 +1,18 @@
+{
+  "found": 215,
+  "started": 215,
+  "successful": 209,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$wNto4doN$rrLabtZfsmebCuudLyhJ6WNJxTqevriqj7oyISqNFfU1/JBhsn.4Dnxxi.ZuUhbQfVf9aB45FROcPHpE3Jgq3/> but was: <$6$vlCNjxIi$4i1GWAgOL9M6aAmCJYVfVSzJT5saOFLEqCX0VvcVMBrNpETCbvsSH/d6v3kToknUdHJgZDczrpB1U865AlSnO1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$y20r.wp7$Dy7Uki5x91glaN40AlakqE2glK0Z2j0IdwbBVLSY1RdWLAEBcenUS8cr0rCF4I7TUIrUfxl3XLzGjN1Qj4f2q1> but was: <$6$6g68qYPC$IghrgZtLfYxy2/cBRrry4S0fItBKyB.u73SzcbilPk/IVT9xjkqDsNX86WMnxGQMV6PO1eCJnX1fKcpvZ6YKE/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$HcPRcjmA$uT/tCFq3VBCWcfBXb5N6FSWerhFPqk6SJ/nRoG0c8UWbaV9xehDDci8g1XSvZzgIzoONq0JCfMm6F2F2GHafN/> but was: <$6$AqK32In2$Vf1wwnAr6VvOtXPgDwNDJhXgr4qfErTCvViCSGJr0cud.PGWTUM1vDzsUU2RhqWhRAlhJrpedCNWs1zBGNVEY1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <c1ROpaxA4d0NM> but was: <ipkoZkXIQgmNk>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$ajxyL072$vhimP1TUywrjq5eD/ztgQ/> but was: <$apr1$6VhUwXr.$0BQixgN1XwvAyCt7H1d9t0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$0IzD1DAK$kvXLrR3pIuVQu98tit7AQ1> but was: <$apr1$C2DyhxbQ$I1Up3VByqsLGSHoN.NrvT0>"
+  ]
+}

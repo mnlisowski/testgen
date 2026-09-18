@@ -1,0 +1,18 @@
+{
+  "found": 217,
+  "started": 217,
+  "successful": 211,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$h2omlXPT$xu2unx/yQZellVwItc4T92vpiGEpGrDOiam7EosefoptHSnLy7vQUlNAdv4TW61OMpKzSnpXlU45sNXypszQe/> but was: <$6$sKLYe2Dh$Js7obI3G9r0GBUE/Dl29JPkuX4Zq319G.O2us5YXSa78aGAIw9zqecK3PewOwMyn7udePJw8cE.Ou3E/cd9Oh/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$elPI0xs4$rii3u.h81bQDGqMvsZxPE23Y9zsv6WhEUdow51Mu/24C72Lxcd3QSKBMABgU1GG6AjIvNweUHQIS0zJAzy6Nj1> but was: <$6$oaEXHYDo$4zlxo/1nOsrM7l1as4A.d1xShX5xILp9OoIkEaNH5./gJY1QvTbZ4/kjtCdyGYI2zvMjBpQ4DeJRr0Cu6Gzjd.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$9psQQapY$L6STCep8KlE2rbU.ojkb5qqTi0YdRZz0lLWW2gTxfbWaLjo/ucBQ6Ymjvcft/huuUF2OHBxiQDVR6H2kBl50U.> but was: <$6$Nkn8/R1W$hOlmg6Hd3JfNzZ2M7tNALEIqh9v.NChNkk4W.bmnC6CwqyDqtz3mR/M2nhbS.HAA2fxj3lMtGI2qAzUU6Lptt.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <ro46DZg1ViGBs> but was: <VRItQV3ProdUU>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$WRIA7svp$O7JIXfHAQIMMJnpoYZ4Dc1> but was: <$apr1$nlwl6spL$HrxuNhaOima3QNd9NMofF1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$1RMdLk.s$BXXNRbEKoODe6BIFD1NfK/> but was: <$apr1$g5Pq39Bu$yCU9dvUQI71PFmBwdpZ.b.>"
+  ]
+}

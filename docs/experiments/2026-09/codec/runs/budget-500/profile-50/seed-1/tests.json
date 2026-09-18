@@ -1,0 +1,18 @@
+{
+  "found": 221,
+  "started": 221,
+  "successful": 215,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$6c2K9YHf$Dla1P1czPjyPOSL2OBmZ56nFtGsVpWPfpxDSPtAPQiEi3dXLTigY5mmjDM7d.a1fZkQ49o850ElJFqPSRth0Z.> but was: <$6$xgzdJPW3$m.GtfIAWgBKfSWw4g25TNx2s0plgdCCPybLkdoTauWU4pfSj37XvtnjA6CYRq//9TL.FX.KVz2MmycF1ygMtJ.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$Ckyn4WTn$M9NmWCTheUuXl63WOZx4I0d34C2mtdwlG4f5debCweu8voU8wrM3zrDqVp5pKPu09KwHCp7isjc0v3Lkps8tc1> but was: <$6$3nJWhB/N$WqpALX/3nefgRmOlYi3JDuWJtDEc5jTtTVP6TmZQV1HwwzWjmIw0EzBXCLfqfLS.rILb4TH0mmrlkwihtPVde1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$0NPj0hws$PdL5.QpXyyG2dPWzk0Q2IUqC8B2lIOqYrEHHmn/rtZW3HyMr7pC6R6SQfteE/TY83sEiw5DZLdEsXTYJEGVEn0> but was: <$6$V.8CezdW$8QGCOarmbqFFfG7aMiMPIkkgcn8VTKBboDMlJEWb2V2R4PFndrz.iCFDlKIuTvnWMZdNK83hEliluWnt9g2BZ.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <EbAE8hqQSPFpQ> but was: <U1vmIcpYJc7lM>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$/XcLJ2Z.$DL7IthVlUtx.Ol5KTdxw./> but was: <$apr1$/iJc.9f1$KwdAnJkF5pt1t5rC5IjvG1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$qdo0p3gQ$4HNrZ.6h9VT/.3ecq3FIr.> but was: <$apr1$Tfybhn4j$2FJETW.0Aiu5aZLNbP3HE.>"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "found": 242,
+  "started": 242,
+  "successful": 236,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$tyCRxcqQ$Us030r..224jSBI7WwSSAECJQ7/8OZidd27VxjiElS5IZVvdMEWH4dUJXWfg07MIJvzFqKODEuLHp2xHHlkU2/> but was: <$6$0vb66gbO$ici3JC0uUUoBy0mlVvmhsHR5xwAlWkrqLbr3QXn8Ymr3XB4r9ZTLb8rOX/vaV8t5ftzDYsy16gxwAHuWHfOEo/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$3tW590S0$qeUyPOHXZrUzg.8/HJT.YupDHT3X631Or0a3MBGX6Wo2PL8XDSjZXUvtBd1mDPi3GeAYzUtpdK7jA60DAGDn3/> but was: <$6$zOX4jSrC$coA52RVkH1NQLk7PdpM4.3vvfQDjTD19Z3gth2XkHwyOKzrV20PhWNtQ4KX5FqMg27L5gXzqr5msDfrKO7Pe40>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$In0iDATu$7ckq6VjOkmSJcnqyHvlgWsYlkCkjxu3JtnEYKYPQzELzXGt7GrDrY.UNYdJ9aUESpnrciS9MWfr1biToIQmQk0> but was: <$6$FJcCPn6p$o8hM9DSbJMZog2y.nWL8y/zHz93oyjVZv0zKWVZGS89yGKJngri/tg65dbytdIDNaPEs5YN/TqkxvUkOtjjWg1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <tJtiYmH8qLLpc> but was: <Uix7d5Gc7wblA>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$xS5B84Ro$NyQA94NpGc3UQkiBsqTCE.> but was: <$apr1$rTQjE3Ir$S/XpYvsExcbP6phT0VVzt.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$832VbLwz$nEfzFDC/eiSZ8Ar5dPGB//> but was: <$apr1$v79SQGGb$wSQvV4ECb1G0dasFLTov30>"
+  ]
+}

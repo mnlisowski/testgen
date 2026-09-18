@@ -1,0 +1,18 @@
+{
+  "found": 179,
+  "started": 179,
+  "successful": 173,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$MmO6LVaC$bHOjPIXRdunFVonwUX6CajMNksABUTCj6zNsGwZELkxPkFdmDA.r6lNk72Ut6pRSGzGT22UugC4jqsT6hFaUd/> but was: <$6$ed38hyX0$dA4jeQ5WWFzbJVIpDPkfYHzkHVI6bS2g/uY8KvU.X1S.gXmgtWe49Wxl2hDILPa95PQDBO.BDX0YmaKexz6P1.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$5Y/8H9W/$tNpOjYZO0hEkcYQ1sYbB.iMxWyW1f5TKGASniW0Ic0tHmoJRBMjKuIF7xOrX.JhGjhNQFRI7vXNN8GHx2r2ld1> but was: <$6$qF6WkIsV$O5SFpijj3xktCwdw2yu.oYXRCi1tVvI/zot/ioiD6cN/lisLBm/RvaOSTd9eY64S2DXPeEZEmKGsbGCDdeFqJ/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$VHXlCh3I$UVqPYPClYAPqat.B71PSOmLlApZ7SiTsW3iY6O7.c66TEPovMyr1iHCPLdMvYPnQlalJLwhYDP4OdTEXJsSuz1> but was: <$6$TviIePpO$KqnKvo4FQwqu0XQxNhozvfKCKwf/8WjCxtTRVTcbiX7GHOFAUpG6ZSTeMBs9EOYU.E0x3GAwBUw03vuxatms31>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <HbBRfiLjGM/ec> but was: <vsN5kRpSr0C2o>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$Mf5OUMsL$HIeJ8qUZ91lI9IlV3wg4k.> but was: <$apr1$VyrU9tAI$aR3E.fdJVUraPi4KcOD3C0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$4N6HbuD6$5ps1J.YtoKUKCUKX91MXJ0> but was: <$apr1$/sm32/jH$AsyU7WKC19b3WJ0o2Y5GA0>"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "found": 186,
+  "started": 186,
+  "successful": 181,
+  "failed": 5,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$u0BXGXd4$Zod3/qm4OInFZ8SnM3W9UnXjHd24svaqe7Z7NJRGYfz17Plc3fe4mxYXOlwYTAEqOxhdHnczLfZEAC7iVbjpG1> but was: <$6$WnkOCR./$JDBYiklmSS/LlNZv2QwsKYIMG.wODLq7SbuyfM3X.YjzYz/C7r9/9SSs1hGMDQ0D5gbMIbHOq63aJWOIHOIwe/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$SKzEt8UH$X8YTYX.honj0Zm20dokS0VvA9MQkBZjSU/axjwPBNjo.rNV0NMyYpEodNTeKWwxhSToWeI0vSakHUP4dF.Vfm1> but was: <$6$bh998f17$HjgkxtLIWnkB0dN5Lb7qI9dT7552UgUvCJv7T5mWiqvp6c7Jy9a2XBfXJtT5krNLTaZOXIGVCzctMwoEv0lJr.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <oancftCywVXHU> but was: <3OSSYmNYZEG3I>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$NMTcfW8m$iVNvOZTB3G/Tlp8Zj1yO01> but was: <$apr1$gyYYjfy6$QrLZaP8AvSkJ9mv98amzm0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$KQjQ7JPq$pi6tLLrPMrtJHaw4R.gUc1> but was: <$apr1$au87j.aO$CurgSnBpL4QZHWAxwE.sz0>"
+  ]
+}

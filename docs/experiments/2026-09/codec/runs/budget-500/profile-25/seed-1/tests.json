@@ -1,0 +1,18 @@
+{
+  "found": 187,
+  "started": 187,
+  "successful": 181,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$M5zI47C5$p2S3xr4a1dTvqWldOnU20m7FiTb.qKYICy9CQToeonoNi61TYi8O3K7fEf9hdBoAW2w5saRoUOlu7lyLlbP6J0> but was: <$6$BHNGIRbE$KuLDD.IchM/E9f59M8DnCipPmbwlVnSTnqW6kBqdUt4rPGHMBgvHDeFrlnm4CMvuelIFsqkINv7Odykez0Ppc/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$3vYSJlaG$E7tbkxlC3ffBmUbWfczGOWQVFp8OhSoPBOSSWvatJuXpEILxFV0jvLkE1BFPMMVXEUpQaTikpKFo8b2zUgNAW1> but was: <$6$itC.XLCw$KsyY2xWtwaPsZRWK7omgpq1QQxJleSBvajZGhUqKWrLIhvDWHqxmmvag5gp5G2w439XwG22Xfc3/j0sPR6edr1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$SF6eH/PL$5RwwEMzr4YUgtfH5QigPnMyTsxQVDoUMPP/yFaTC.imwyxffSa/fZexSaRMG7sPaRob61rdY/Z6a7RMGgVZMY.> but was: <$6$Cj6OwuCi$7EzM0/Fh24AqFEmtqAWp8mjmMjPhEKjDsiHoZ4ONXVeKJMHLQiYq9FeTnrIB6vYjImXx7/y7SiOs7V.ERXr/s/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <.Wum/WKpxRjy.> but was: <dmRs9yOZDYBt2>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$wAO9C1Hr$esi3j7gHUq1yGbwzBCml80> but was: <$apr1$z1WMK4AP$bzqUVpRk0dIARbRA4CPBS0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$qtQYAYux$g1NrVcmNhJdRYbjXyBt5p0> but was: <$apr1$yXMh8oyw$EMxMkieRqMLWU9eUSHHEz/>"
+  ]
+}

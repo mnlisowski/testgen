@@ -1,0 +1,19 @@
+{
+  "found": 148,
+  "started": 148,
+  "successful": 141,
+  "failed": 7,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$g7eKRerx$H5LX58CrzSXWjNqLjWMTeIyEEtBYzgW9YU0DxrVgNebcTfzFYIlxzn9u9hFw0bZJvEkHu1EcYpImddoPhmBLu0> but was: <$6$Iv.uujSE$dZMPf1Nwy81C2k3VNHoiVaTyT3ew/z/S8Ir/Six88vZnyF1lcG0IncXq1tWEaXapub22199dDYmsy/xVk5QxV/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$1lOIjIhH$2kXidV2KBptBw56yKVaqaxeWj/eRYK3o0wNLdYcRzbT0gKKlemV5kH8HQZ7hkYmg78VV9vn68PEMe3e5pAwJZ.> but was: <$6$K6ijQ99/$X3IX58O/2ln.4bLqp0f1E3vyw1Sjqu1Gm6Q8O/PvlsmUefzlrdOxkY00/PQMwrRUuJdCZfsLEKdGyWkQmdUTx.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$Tt0on/fX$5YJCnGenF5qXz5O.f042kRfUt6.RmyFpSTMXZRHn8JR.e/jvc7A5HegyjquTWAcuXv237x3XDj8DF0EsC9YVk.> but was: <$6$wuWwC49O$VdC4AXdrhHt.Cobp3u8Vl0iHd9E42LTMKmhLZrVeDD9RiiofmXw3soCYG/wL58FUQIumY76eiLWnnUB5oZLEu.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <1PeKYscbzRK8U> but was: <dJ.Er.8PQ.Cyk>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$L//6AYZf$Yxqy4wIcbAdYNtVZEvDM21> but was: <$apr1$QN5fFdbd$d6ssZdP3mriJaKlXi92Rn0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt2()]: org.opentest4j.AssertionFailedError: expected: <$apr1$kRYvJGKu$lKzv9GX84QKZgt5Ow4QcL/> but was: <$apr1$jq2Ps5vM$LS/xrl5dOmbClfyZ0m.Cp.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt4()]: org.opentest4j.AssertionFailedError: expected: <$apr1$AIc6NX9j$nlcUhTGIsJK/r4it8qjNV1> but was: <$apr1$BoqJYXo7$.ftmeZJ0XeItrqNfjo7Hl0>"
+  ]
+}

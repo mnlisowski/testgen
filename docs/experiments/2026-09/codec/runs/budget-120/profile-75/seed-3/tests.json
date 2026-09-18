@@ -1,0 +1,18 @@
+{
+  "found": 210,
+  "started": 210,
+  "successful": 204,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$k8fSJB/1$BKcjhv1rfYgRwFY5aQD25KiI3KwBaSfaq2E209f6ZFVWgv0sf1pa6ZLjlMIPezRb1jqPOI8aMQV1MgZyNsmVP0> but was: <$6$Qdl6BUV3$jJFILxvkoFBQv2De9ISCbZZeUuRzjGUpVU2sCGcus0F4us4khBj61LvOgs53Frp6DAyWVSNaFka.cb8WgEjkW.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$xr7nVJTa$vU4ORlFRj6OmaL0VCfeDkjZgdOs1R9PToOgieDNSgTzZ03/lmfJF/knu1RSUPWf/p4HtcUIIuC2uaGxfe8gV7.> but was: <$6$6vrKcDr5$DMb52NIiSNsLbfEVJmA5i6yr4H5.bT3Zq/NWS7HL0aPX1FWTYkDEtgsi1Eux1s/U8kqmYmvEX0p24flwSRkLj/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$oycMJpEH$Y6UnigslFLneWrsBpNDyQ1d07gVaNQJ/oQEByBw0XBT7WehtJKovnu/SKP.drTZv6OO41ga1R1UlsMQ7nS3.P.> but was: <$6$zEpXXaqC$9hZne/LIK1N35wjbZlVXsk4zhdBOgeRbBq8GdsDADwta0W2xiecMjhfaKVq65Vta57vPWZu2ZegUJi1MD7hl90>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <w.tQozP8XGvbo> but was: <ydEJ1Rp6a7MgM>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$myOTJTs3$9LFK6YdRMcT.LVOM.1ndI0> but was: <$apr1$0DNbR0ub$2SKEptlFkvYDJD9jMrQgA/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$FrhXbWbS$8YHdqa69qndmXq9N6SQ97.> but was: <$apr1$.mcS29oR$HltTb.mAfRfzhqQh3.ALZ1>"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "found": 236,
+  "started": 236,
+  "successful": 230,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$zbSI2cUV$JGvub2.ErG.eIsTZQ0/qvkWRtdj2IPZWmTDdXRygwVDp.o6svcsYQBRzMc/pCrkzGJFpppJEjyHbfHR9OHQ02.> but was: <$6$aiAlkQle$WX.CXcokjnzZO4BPJqrrLZhGZ3P53ESwobplDDwZOBZFjj6STmn03eE6Jt00czuW0pTpV5MQ6HwrD5wzHOm0n0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$wOBkYGjd$iF40GNCb.viqAVSLGq8XVbspA0Q0P9DaWvkFK7WRN6O3wwTa.3obbMeNJv6TA25h4WU7.xShFFBoZcWFuHR9w1> but was: <$6$GYUeJjcQ$QlG2LaLDcxdMepYGO0iQGgem8fe3t5F4gCszCj6FoqchVfKPf0APi5ijV0QWdnttu/mTd4r4vCXZd0NWOuF1V1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$v95qDtVy$4mDIkET3gTLXS2D9diwQo4c78jEX05ip6PUtUJ5tzwmOWUDZVkbJT3xT/NVd2Hn1yjp3FsIZlgO0zjO9mKspA.> but was: <$6$YGAbyLgZ$2yc.0/CsZd4GT.y9h.hc93US2w8sxR8YQXyUG7mVEpDquJZgbBNFcSpqJjJryUJrCh9awUGt6MBkGx3b8kQLn.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <MInEkxxGXDOvA> but was: <isr38vVwm8yrI>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$.RO1d7mA$Hx7tLdz9I9yVtKgdUUgC2.> but was: <$apr1$ZgmOF2bh$meIJGW1noPsCD/wQIGheu0>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$jmg1ziy6$P68y9zQRSySacQMLRkQGZ.> but was: <$apr1$dgoNFMp0$Pp6Crl0RR8Qj/O27BzIM1.>"
+  ]
+}

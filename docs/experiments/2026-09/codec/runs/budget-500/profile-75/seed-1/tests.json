@@ -1,0 +1,18 @@
+{
+  "found": 234,
+  "started": 234,
+  "successful": 228,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$6Fs5/Q/y$uyHyruGSy.uCGcW4F7O26nsRLM/mheIW8MvXX3xciclZssYZp4MyvRg.zUKQC1P3FD60Di5ItyqPNqiAMyqva0> but was: <$6$qUCvln2s$3J3jcSfLQhREERwoGOrQM4PCpy49K6WdeOkr5B3IpnvU7hGA06LhoNK3EkO0mqrze.sz9KhDk398HD7Z/zQo6.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$YYucl.0p$8AO3IgHKUfKzqhwBu.pddOCxaHxdvlqoKf568G9rQE3D.evXANKTjUB8fzZKUJZzN7m0Dr.LZOuApkZY5a/fD/> but was: <$6$cKT8Ok/U$FBiDz.4KKAcvGSFRDJkZJUHlNzeAYfyQvQlz9d1wPJ5Uv0CRiexcKcB1CIDXs49bCtFd0v8dxT3LyU63Q15qA.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$oabTaMHS$W1ENTsPN2C/spHLWt2DYcPYE6gAuK3xRQ3g4xaTp7ficSkIOvyl.MKp/NExi.1lDBFU15V5YW52sd.lDoZJPF/> but was: <$6$9c5ic7wv$Z3kRvIojuYer6xqNHjtUDKAwOfHm1UWiVqT2areQYpVhWHaPrbxXvquQHJeqQ5xDlB/c0yk3ktQop/cPoIhi10>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <6WRXbpoNl4Ehc> but was: <FcvWW0SVk5RrE>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$meBXClYt$JD4xSwLP7j6rAJtAKqviV.> but was: <$apr1$uk0z.73H$edxWOqMLJ4cdfa4rxamsg.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$6pKIJjRy$qHFJLxMKizXEr.9HMOU0T1> but was: <$apr1$eRKfYfKI$Mrfsp0XUAvyb8LIbs7iS70>"
+  ]
+}

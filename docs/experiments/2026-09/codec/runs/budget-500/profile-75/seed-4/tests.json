@@ -1,0 +1,18 @@
+{
+  "found": 233,
+  "started": 233,
+  "successful": 227,
+  "failed": 6,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": [
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <$6$LP0nEsO3$toxIMbXYx3n2pQ2q1BTUHcwZ7kNNtn6QdBWXj1Pn4Yc1zjp3qHmJYBswuTXmrNtj9za3tDC.tmiOXwf6Ro.fH.> but was: <$6$5WTjJxY9$i2SS3B/b8H1LbpAgrg1SpSchuhEDrvlTeGN6Tj/ytmHlakexgUkwsDihLa.KgwoSeUg4YCF7kuE7SpGB.fgY5.>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt2()]: org.opentest4j.AssertionFailedError: expected: <$6$WbJxeQyr$If2lhnUhPt7uzhf39Qgkh0wc6fGrRsV1dVUU4XIVhcRQQdv/ad0MqprHtftZGeJ/6c4B8sAYP5kRH.nscpbz7/> but was: <$6$KJTUAOqL$xj.Tl8/foL4k5aXo53xqo6IX8gyZO6xYMlGz6kH8OuvzQxK1.9Msav.tqRaTGE3ttyZuco8WaJxknNdUmpeco1>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.CryptTest]/[method:shouldCallCrypt3()]: org.opentest4j.AssertionFailedError: expected: <$6$6cfPAX0O$G.l.fhM0qpdSEs7Gg1VOXL6MYEBT0k4oDFYO6ViKsJ3dgxwhnNGJPmtIJbEWHu8HNgUODTaZVzKIoNWvyCRWQ0> but was: <$6$gnAyFruI$WXqb9bznmqjR5DK/eA2kDnh/4RIJz5XtSbhvFb.F4UYUSdCd5DJvjhQJdB3snBX/IMFxf3CwNI1s2nNCVdTdP/>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.UnixCryptTest]/[method:shouldCallCrypt1()]: org.opentest4j.AssertionFailedError: expected: <YHDMqaWY4xUU.> but was: <y6R5JKnXPoauE>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt1()]: org.opentest4j.AssertionFailedError: expected: <$apr1$mVjA.lHB$p6atY2IAd0pRFHMaTQrHA0> but was: <$apr1$LhIsnX7x$1.r7B4jL/nU0FrcmZWbf60>",
+    "[engine:junit-jupiter]/[class:org.apache.commons.codec.digest.Md5CryptTest]/[method:shouldCallApr1Crypt3()]: org.opentest4j.AssertionFailedError: expected: <$apr1$CFjttoje$C8uHnuE0lWdHkUNX0IQl01> but was: <$apr1$cely.3Sr$POGwx.0tDLrT/GqGZy1Ry1>"
+  ]
+}

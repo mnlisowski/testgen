@@ -1,0 +1,11 @@
+{
+  "found": 341,
+  "started": 341,
+  "successful": 341,
+  "failed": 0,
+  "skipped": 0,
+  "aborted": 0,
+  "containerFailures": 0,
+  "productionClasses": "original-production-classes (not included)",
+  "failures": []
+}
