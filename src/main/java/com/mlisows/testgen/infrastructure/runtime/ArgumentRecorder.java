@@ -8,6 +8,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -18,10 +20,14 @@ public final class ArgumentRecorder {
     private static final String PROFILE_FILE_NAME = "observed-profile.txt";
     private static final Set<String> profileLines = new LinkedHashSet<>();
 
+    private static final Map<String, Integer> recordCounts = new HashMap<>();
+    private static int maxValuesPerArgument = -1;
+    private static int maxInvocationsPerOwner;
+
     private ArgumentRecorder() {
     }
 
-    public static void record(
+    public static synchronized void record(
             String ownerId,
             String[] argumentNames,
             String[] argumentTypes,
@@ -36,45 +42,57 @@ public final class ArgumentRecorder {
             throw new IllegalArgumentException("Argument data must have the same size as argument values");
         }
 
+        initializeLimits();
         List<String> invocationFields = new ArrayList<>();
         invocationFields.add("invocation");
         invocationFields.add(ownerId);
-
         boolean invocationCanBeReplayed = true;
 
         for (int index = 0; index < argumentValues.length; index++) {
-            Object argumentValue = argumentValues[index];
-
-            if (isRecordable(argumentValue)) {
-                String literal = javaLiteral(argumentValue);
-
-                addProfileLine(String.join(
-                        "|",
-                        "hint",
-                        ownerId,
-                        argumentNames[index],
-                        argumentTypes[index],
-                        literal,
-                        SOURCE
-                ));
-
-                invocationFields.add(argumentTypes[index]);
-                invocationFields.add(literal);
-            } else {
+            Object value = argumentValues[index];
+            if (!isRecordable(value)) {
                 invocationCanBeReplayed = false;
+                continue;
             }
+
+            String literal = javaLiteral(value);
+            addProfileLine(
+                    String.join("|", "hint", ownerId, argumentNames[index], argumentTypes[index], literal, SOURCE),
+                    "hint|" + ownerId + "|" + index,
+                    maxValuesPerArgument
+            );
+            invocationFields.add(argumentTypes[index]);
+            invocationFields.add(literal);
         }
 
         if (invocationCanBeReplayed) {
-            addProfileLine(String.join("|", invocationFields));
+            addProfileLine(String.join("|", invocationFields), "invocation|" + ownerId, maxInvocationsPerOwner);
         }
     }
 
-    public static List<String> snapshotLines() {
+    private static void initializeLimits() {
+        if (maxValuesPerArgument >= 0) {
+            return;
+        }
+        int values = readLimit("testgen.profile.maxValuesPerArgument");
+        int invocations = readLimit("testgen.profile.maxInvocationsPerOwner");
+        maxValuesPerArgument = values;
+        maxInvocationsPerOwner = invocations;
+    }
+
+    private static int readLimit(String property) {
+        int value = Integer.parseInt(System.getProperty(property, "100"));
+        if (value < 0) {
+            throw new IllegalArgumentException(property + " must be nonnegative");
+        }
+        return value;
+    }
+
+    public static synchronized List<String> snapshotLines() {
         return List.copyOf(profileLines);
     }
 
-    public static void writeTo(Path profilePath) {
+    public static synchronized void writeTo(Path profilePath) {
         Objects.requireNonNull(profilePath, "profilePath must not be null");
 
         try {
@@ -90,14 +108,19 @@ public final class ArgumentRecorder {
         }
     }
 
-    public static void reset() {
+    public static synchronized void reset() {
         profileLines.clear();
+        recordCounts.clear();
+        maxValuesPerArgument = -1;
     }
 
-    private static void addProfileLine(String line) {
-        if (profileLines.add(line)) {
-            liveProfilePath().ifPresent(path -> appendLine(path, line));
+    private static void addProfileLine(String line, String key, int limit) {
+        if (recordCounts.getOrDefault(key, 0) >= limit || profileLines.contains(line)) {
+            return;
         }
+        liveProfilePath().ifPresent(path -> appendLine(path, line));
+        profileLines.add(line);
+        recordCounts.merge(key, 1, Integer::sum);
     }
 
     private static Optional<Path> liveProfilePath() {
@@ -135,12 +158,8 @@ public final class ArgumentRecorder {
             return true;
         }
 
-        if (value instanceof String stringValue) {
-            return !stringValue.contains("|");
-        }
-
-        if (value instanceof Character characterValue) {
-            return characterValue != '|';
+        if (value instanceof String || value instanceof Character) {
+            return true;
         }
 
         return value instanceof Byte
@@ -202,12 +221,12 @@ public final class ArgumentRecorder {
     }
 
     private static String escapeString(String value) {
-        return value
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        StringBuilder result = new StringBuilder();
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            result.append(character == '"' ? "\\\"" : escapeCharacter(character));
+        }
+        return result.toString();
     }
 
     private static String escapeCharacter(char value) {
@@ -217,7 +236,15 @@ public final class ArgumentRecorder {
             case '\n' -> "\\n";
             case '\r' -> "\\r";
             case '\t' -> "\\t";
-            default -> Character.toString(value);
+            case '\b' -> "\\b";
+            case '\f' -> "\\f";
+            default -> {
+                if (Character.isISOControl(value) || Character.isSurrogate(value) || value == '|') {
+                    String hex = Integer.toHexString(value);
+                    yield "\\u" + "0".repeat(4 - hex.length()) + hex;
+                }
+                yield Character.toString(value);
+            }
         };
     }
 }

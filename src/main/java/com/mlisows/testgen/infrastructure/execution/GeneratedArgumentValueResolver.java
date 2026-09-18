@@ -46,6 +46,17 @@ final class GeneratedArgumentValueResolver {
             return resolveString(value);
         }
 
+        if (targetType == char.class || targetType == Character.class) {
+            if (value.length() < 3 || !value.startsWith("'") || !value.endsWith("'")) {
+                throw new IllegalArgumentException("Invalid character literal: " + value);
+            }
+            String decoded = unescapeJavaString(value.substring(1, value.length() - 1));
+            if (decoded.length() != 1) {
+                throw new IllegalArgumentException("Invalid character literal: " + value);
+            }
+            return decoded.charAt(0);
+        }
+
         if (targetType.isEnum()) {
             return resolveEnum(targetType, value);
         }
@@ -102,7 +113,19 @@ final class GeneratedArgumentValueResolver {
             }
 
             if (escaped) {
-                result.append(unescapedCharacter(current));
+                if (current == 'u') {
+                    if (index + 4 >= value.length()) {
+                        throw new IllegalArgumentException("Incomplete Unicode escape: " + value);
+                    }
+                    String hex = value.substring(index + 1, index + 5);
+                    if (!hex.matches("[0-9a-fA-F]{4}")) {
+                        throw new IllegalArgumentException("Invalid Unicode escape: " + value);
+                    }
+                    result.append((char) Integer.parseInt(hex, 16));
+                    index += 4;
+                } else {
+                    result.append(unescapedCharacter(current));
+                }
                 escaped = false;
                 continue;
             }

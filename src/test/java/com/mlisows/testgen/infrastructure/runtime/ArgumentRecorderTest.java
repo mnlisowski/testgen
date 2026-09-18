@@ -120,7 +120,7 @@ class ArgumentRecorderTest {
     }
 
     @Test
-    void shouldSkipStringValuesContainingProfileSeparator() {
+    void shouldEscapeStringValuesContainingProfileSeparator() {
         ArgumentRecorder.record(
                 "sample.MessageService.normalize",
                 new String[]{"message"},
@@ -128,6 +128,9 @@ class ArgumentRecorderTest {
                 new Object[]{"A|B"}
         );
 
-        assertEquals(List.of(), ArgumentRecorder.snapshotLines());
+        assertEquals(List.of(
+                "hint|sample.MessageService.normalize|message|String|\"A\\u007cB\"|runtime-observed",
+                "invocation|sample.MessageService.normalize|String|\"A\\u007cB\""
+        ), ArgumentRecorder.snapshotLines());
     }
 }
