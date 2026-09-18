@@ -36,7 +36,10 @@ import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
 
 public final class Main {
     private static final String GENERATE_TESTS_USAGE =
-            "Usage: testgen <maven-project-root> [work-root] [observed-profile]";
+            "Usage: testgen <maven-project-root> [work-root] [observed-profile|-]"
+                    + " [seed] [max-candidates] [initial-candidates] [mutated-initial-candidates] [max-values-per-slot]\n"
+                    + "Defaults: seed=0, max-candidates=50, initial-candidates=10,"
+                    + " mutated-initial-candidates=3, max-values-per-slot=10";
     private static final String PREPARE_PROFILE_USAGE =
             "usage: testgen prepare-profile <maven-project-root> <work-root>";
     private static final String DEFAULT_TEST_WORK_DIRECTORY = "target/testgen-work";
@@ -52,10 +55,17 @@ public final class Main {
     }
 
     private static void generateTests(String[] args) {
-        if (args.length < 1 || args.length > 3) {
+        if (args.length == 0 || args.length > 8 || args[0].equals("--help")) {
             System.out.println(GENERATE_TESTS_USAGE);
             return;
         }
+        long seed = args.length > 3 ? Long.parseLong(args[3]) : 0;
+        int maxCandidates = args.length > 4 ? Integer.parseInt(args[4]) : 50;
+        int initialCandidates = args.length > 5 ? Integer.parseInt(args[5]) : 10;
+        int mutatedInitialCandidates = args.length > 6 ? Integer.parseInt(args[6]) : 3;
+        int maxValuesPerSlot = args.length > 7 ? Integer.parseInt(args[7]) : 10;
+        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(
+                initialCandidates, mutatedInitialCandidates, maxValuesPerSlot, maxCandidates, seed);
 
         Path projectRoot = Path.of(args[0]);
         Path workRoot = getWorkRoot(projectRoot, args);
@@ -114,7 +124,6 @@ public final class Main {
 
 
         CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
-        CandidateVariantGenerator candidateVariantGenerator = new CandidateVariantGenerator(10, 50);
         ReflectionTestCandidateExecutor candidateExecutor = new ReflectionTestCandidateExecutor(workspace);
         CandidateCoverageEvaluator candidateCoverageEvaluator = new CandidateCoverageEvaluator(candidateExecutor);
 
@@ -267,8 +276,8 @@ public final class Main {
         return projectRoot.resolve(DEFAULT_TEST_WORK_DIRECTORY);
     }
 
-    private static Path observedProfilePath(String[] args) {
-        if (args.length == 3) {
+    static Path observedProfilePath(String[] args) {
+        if (args.length >= 3 && !args[2].equals("-")) {
             return Path.of(args[2]);
         }
 

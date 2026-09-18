@@ -46,6 +46,11 @@ public final class CandidateVariantGenerator {
 
     public CandidateVariantGenerator(int initialCandidateCount, int mutatedInitialCount,
                                      int maxValuesPerSlot, int maxCandidates) {
+        this(initialCandidateCount, mutatedInitialCount, maxValuesPerSlot, maxCandidates, 0);
+    }
+
+    public CandidateVariantGenerator(int initialCandidateCount, int mutatedInitialCount,
+                                     int maxValuesPerSlot, int maxCandidates, long seed) {
         if (mutatedInitialCount < 0) {
             throw new IllegalArgumentException("mutatedInitialCount must not be negative");
         }
@@ -65,7 +70,7 @@ public final class CandidateVariantGenerator {
         this.maxValuesPerSlot = maxValuesPerSlot;
         this.maxCandidates = maxCandidates;
         this.mutatedInitialCount = mutatedInitialCount;
-        this.random = new Random(0);
+        this.random = new Random(seed);
     }
 
     public List<TestCandidate> generateVariants(CandidateSpace space) {
