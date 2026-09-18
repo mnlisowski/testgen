@@ -21,12 +21,15 @@ class SeededArgumentSetGeneratorTest {
                 new ParameterModel("amount", "int")
         ));
 
-        assertEquals(5, argumentSets.size());
+        assertEquals(8, argumentSets.size());
         assertEquals("-1", argumentSets.get(0).get(0).getValue());
         assertEquals("0", argumentSets.get(1).get(0).getValue());
         assertEquals("1", argumentSets.get(2).get(0).getValue());
         assertEquals("10", argumentSets.get(3).get(0).getValue());
         assertEquals("100", argumentSets.get(4).get(0).getValue());
+        assertEquals("-10", argumentSets.get(5).get(0).getValue());
+        assertEquals("-100", argumentSets.get(6).get(0).getValue());
+        assertEquals("2", argumentSets.get(7).get(0).getValue());
     }
 
     @Test

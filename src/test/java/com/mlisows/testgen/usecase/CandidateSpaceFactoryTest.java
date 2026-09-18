@@ -58,8 +58,11 @@ class CandidateSpaceFactoryTest {
         assertEquals(CandidateValueSlotKind.METHOD_ARGUMENT, amountPool.getSlot().getKind());
         assertEquals(0, amountPool.getSlot().getArgumentIndex());
         assertEquals("int", amountPool.getSlot().getType());
-        assertValues(amountPool, "-1", "0", "1", "10", "100");
+        assertValues(amountPool, "-1", "0", "1", "10", "100", "-10", "-100", "2");
         assertTiers(amountPool,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
@@ -104,9 +107,12 @@ class CandidateSpaceFactoryTest {
                 .findPoolBySlotId("sample.Calculator.calculate(int).amount")
                 .orElseThrow();
 
-        assertValues(amountPool, "101", "-1", "0", "1", "10", "100");
+        assertValues(amountPool, "101", "-1", "0", "1", "10", "100", "-10", "-100", "2");
         assertTiers(amountPool,
                 CandidateValueTier.EXACT,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
@@ -217,7 +223,7 @@ class CandidateSpaceFactoryTest {
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, orderTotalPool.getSlot().getKind());
         assertEquals(0, orderTotalPool.getSlot().getArgumentIndex());
-        assertValues(orderTotalPool, "-1", "0", "1", "10", "100");
+        assertValues(orderTotalPool, "-1", "0", "1", "10", "100", "-10", "-100", "2");
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, orderCustomerPool.getSlot().getKind());
         assertEquals(1, orderCustomerPool.getSlot().getArgumentIndex());
@@ -228,10 +234,23 @@ class CandidateSpaceFactoryTest {
         );
 
         assertEquals(CandidateValueSlotKind.SETUP_OBJECT_ARGUMENT, customerTypePool.getSlot().getKind());
-        assertValues(customerTypePool, "\"\"", "null", "\"test\"", "\"a\"");
+        assertValues(customerTypePool, "\"\"", "null", "\"test\"", "\"a\"",
+                "\"0\"", "\"-1\"", "\"123\"", "\"1.5\"", "\" \"", "\"ABC\"", "\"!?\"",
+                "\"\\t\\n\"", "\" a \"", "\"\u00e9\u03a9\u4e2d\"", "\"" + "a".repeat(32) + "\"");
         assertTiers(customerTypePool,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.NULL,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
+                CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK,
                 CandidateValueTier.FALLBACK
         );

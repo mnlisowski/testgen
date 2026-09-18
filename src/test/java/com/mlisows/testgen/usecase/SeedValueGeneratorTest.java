@@ -12,10 +12,10 @@ class SeedValueGeneratorTest {
     void shouldGenerateSeedValuesForNumericTypes() {
         SeedValueGenerator generator = new SeedValueGenerator();
 
-        assertEquals(List.of("-1", "0", "1", "10", "100"), generator.seedValuesFor("int"));
-        assertEquals(List.of("-1", "0", "1", "10", "100"), generator.seedValuesFor("long"));
-        assertEquals(List.of("-1.0", "0.0", "1.0", "10.0", "100.0"), generator.seedValuesFor("double"));
-        assertEquals(List.of("-1.0f", "0.0f", "1.0f", "10.0f", "100.0f"), generator.seedValuesFor("float"));
+        assertEquals(List.of("-1", "0", "1", "10", "100", "-10", "-100", "2"), generator.seedValuesFor("int"));
+        assertEquals(List.of("-1", "0", "1", "10", "100", "-10", "-100", "2"), generator.seedValuesFor("long"));
+        assertEquals(List.of("-1.0", "0.0", "1.0", "10.0", "100.0", "-10.0", "0.5", "-0.5"), generator.seedValuesFor("double"));
+        assertEquals(List.of("-1.0f", "0.0f", "1.0f", "10.0f", "100.0f", "-10.0f", "0.5f", "-0.5f"), generator.seedValuesFor("float"));
     }
 
     @Test
@@ -29,8 +29,16 @@ class SeedValueGeneratorTest {
     void shouldGenerateSeedValuesForStringType() {
         SeedValueGenerator generator = new SeedValueGenerator();
 
-        assertEquals(List.of("\"\"", "\"test\"", "\"a\""), generator.seedValuesFor("String"));
-        assertEquals(List.of("\"\"", "\"test\"", "\"a\""), generator.seedValuesFor("java.lang.String"));
+        assertEquals(List.of(
+                    "\"\"", "\"test\"", "\"a\"", "\"0\"", "\"-1\"", "\"123\"", "\"1.5\"",
+                    "\" \"", "\"ABC\"", "\"!?\"", "\"\\t\\n\"", "\" a \"",
+                    "\"\u00e9\u03a9\u4e2d\"", "\"" + "a".repeat(32) + "\""
+            ), generator.seedValuesFor("String"));
+        assertEquals(List.of(
+                    "\"\"", "\"test\"", "\"a\"", "\"0\"", "\"-1\"", "\"123\"", "\"1.5\"",
+                    "\" \"", "\"ABC\"", "\"!?\"", "\"\\t\\n\"", "\" a \"",
+                    "\"\u00e9\u03a9\u4e2d\"", "\"" + "a".repeat(32) + "\""
+            ), generator.seedValuesFor("java.lang.String"));
     }
 
     @Test
