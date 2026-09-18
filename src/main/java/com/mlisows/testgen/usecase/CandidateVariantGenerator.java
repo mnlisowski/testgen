@@ -11,6 +11,8 @@ import com.mlisows.testgen.domain.generation.GeneratedSetupObject;
 import com.mlisows.testgen.domain.generation.TestCandidate;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -20,12 +22,14 @@ import java.util.Set;
 
 public final class CandidateVariantGenerator {
     private static final int DEFAULT_INITIAL_CANDIDATE_COUNT = 10;
+    private static final int DEFAULT_MUTATED_INITIAL_COUNT = 3;
     private static final int DEFAULT_MAX_VALUES_PER_SLOT = 3;
     private static final int DEFAULT_MAX_CANDIDATES = 25;
 
     private final int initialCandidateCount;
     private final int maxValuesPerSlot;
     private final int maxCandidates;
+    private final int mutatedInitialCount;
     private final Random random;
 
     public CandidateVariantGenerator() {
@@ -37,6 +41,14 @@ public final class CandidateVariantGenerator {
     }
 
     public CandidateVariantGenerator(int initialCandidateCount, int maxValuesPerSlot, int maxCandidates) {
+        this(initialCandidateCount, DEFAULT_MUTATED_INITIAL_COUNT, maxValuesPerSlot, maxCandidates);
+    }
+
+    public CandidateVariantGenerator(int initialCandidateCount, int mutatedInitialCount,
+                                     int maxValuesPerSlot, int maxCandidates) {
+        if (mutatedInitialCount < 0) {
+            throw new IllegalArgumentException("mutatedInitialCount must not be negative");
+        }
         if (initialCandidateCount < 0) {
             throw new IllegalArgumentException("initialCandidateCount must not be negative");
         }
@@ -52,49 +64,71 @@ public final class CandidateVariantGenerator {
         this.initialCandidateCount = initialCandidateCount;
         this.maxValuesPerSlot = maxValuesPerSlot;
         this.maxCandidates = maxCandidates;
+        this.mutatedInitialCount = mutatedInitialCount;
         this.random = new Random(0);
     }
 
     public List<TestCandidate> generateVariants(CandidateSpace space) {
-        return generateVariants(space, initialCandidateCount, maxCandidates);
+        return generateVariants(space, space);
     }
 
-    public List<TestCandidate> generateVariants(
-            CandidateSpace staticSpace, CandidateSpace combinedSpace
-    ) {
-        int staticLimit = maxCandidates / 3;
-        int staticInitialCount = initialCandidateCount / 3;
+    public List<TestCandidate> generateVariants(CandidateSpace staticSpace, CandidateSpace combinedSpace) {
+        Objects.requireNonNull(staticSpace, "staticSpace must not be null");
+        Objects.requireNonNull(combinedSpace, "combinedSpace must not be null");
+
         UniqueCandidateList candidates = new UniqueCandidateList(maxCandidates);
-        for (TestCandidate candidate : generateVariants(staticSpace, staticInitialCount, staticLimit)) {
-            candidates.add(candidate);
+        candidates.add(combinedSpace.getBaseCandidate());
+        List<CandidateSpace> randomStarts = new ArrayList<>();
+        int staticCount = initialCandidateCount / 2;
+        addRandomCandidates(staticSpace, staticCount, candidates, randomStarts);
+        addRandomCandidates(combinedSpace, initialCandidateCount - staticCount, candidates, randomStarts);
+        if (candidates.isFull()) {
+            return candidates.toList();
         }
-        for (TestCandidate candidate : generateVariants(combinedSpace,
-                initialCandidateCount - staticInitialCount, maxCandidates - staticLimit)) {
-            candidates.add(candidate);
+
+        List<CandidateSpace> starts = new ArrayList<>();
+        starts.add(combinedSpace);
+        if (mutatedInitialCount > 0) {
+            Collections.shuffle(randomStarts, random);
+            starts.addAll(randomStarts.subList(0, Math.min(mutatedInitialCount, randomStarts.size())));
         }
+
+        List<Iterator<TestCandidate>> variants = new ArrayList<>();
+        for (CandidateSpace start : starts) {
+            UniqueCandidateList mutations = new UniqueCandidateList(maxCandidates);
+            addSingleSlotMutations(start, mutations);
+            addTwoSlotMutations(start, mutations);
+            variants.add(mutations.toList().iterator());
+        }
+        addAlternately(variants, candidates);
         return candidates.toList();
     }
 
-    private List<TestCandidate> generateVariants(CandidateSpace space, int initialCount, int limit) {
-        Objects.requireNonNull(space, "space must not be null");
-
-        UniqueCandidateList candidates = new UniqueCandidateList(limit);
-
-        candidates.add(space.getBaseCandidate());
-        addRandomInitialCandidates(space, candidates, initialCount);
-        addSingleSlotMutations(space, candidates);
-        addTwoSlotMutations(space, candidates);
-
-        return candidates.toList();
-    }
-
-    private void addRandomInitialCandidates(CandidateSpace space, UniqueCandidateList candidates, int initialCount) {
-        for (int index = 0; index < initialCount; index++) {
-            if (candidates.isFull()) {
-                return;
+    private void addRandomCandidates(CandidateSpace space, int count, UniqueCandidateList candidates,
+                                     List<CandidateSpace> randomStarts) {
+        for (int index = 0; index < count && !candidates.isFull(); index++) {
+            TestCandidate candidate = buildRandomInitialCandidate(space);
+            if (candidates.add(candidate)) {
+                randomStarts.add(new CandidateSpace(candidate, space.getValuePools()));
             }
+        }
+    }
 
-            candidates.add(buildRandomInitialCandidate(space));
+    private void addAlternately(List<Iterator<TestCandidate>> sources, UniqueCandidateList candidates) {
+        boolean added = true;
+        while (added && !candidates.isFull()) {
+            added = false;
+            for (Iterator<TestCandidate> source : sources) {
+                if (candidates.isFull()) {
+                    return;
+                }
+                while (source.hasNext()) {
+                    if (candidates.add(source.next())) {
+                        added = true;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -160,31 +194,24 @@ public final class CandidateVariantGenerator {
     }
 
     private void addSingleSlotMutations(CandidateSpace space, UniqueCandidateList candidates) {
-        TestCandidate baseCandidate = space.getBaseCandidate();
-
+        List<Iterator<TestCandidate>> variants = new ArrayList<>();
         for (CandidateValuePool pool : space.getValuePools()) {
-            int addedForSlot = 0;
-
+            UniqueCandidateList mutations = new UniqueCandidateList(maxValuesPerSlot);
             for (GeneratedArgument value : pool.getValues()) {
-                if (candidates.isFull() || addedForSlot >= maxValuesPerSlot) {
+                if (mutations.isFull()) {
                     break;
                 }
-
-                if (candidateAlreadyHasValue(baseCandidate, pool.getSlot(), value)) {
+                if (candidateAlreadyHasValue(space.getBaseCandidate(), pool.getSlot(), value)) {
                     continue;
                 }
-
-                Optional<TestCandidate> mutation = replaceSlotValue(baseCandidate, pool.getSlot(), value);
-
-                if (mutation.isPresent() && candidates.add(mutation.get())) {
-                    addedForSlot++;
+                Optional<TestCandidate> mutation = replaceSlotValue(space.getBaseCandidate(), pool.getSlot(), value);
+                if (mutation.isPresent()) {
+                    mutations.add(mutation.get());
                 }
             }
-
-            if (candidates.isFull()) {
-                return;
-            }
+            variants.add(mutations.toList().iterator());
         }
+        addAlternately(variants, candidates);
     }
 
     private void addTwoSlotMutations(CandidateSpace space, UniqueCandidateList candidates) {
