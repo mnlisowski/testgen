@@ -186,7 +186,23 @@ public final class JUnitCandidateTestWriter {
             return "'" + escapeJavaCharacter(returnValue) + "'";
         }
 
-        return returnValue;
+        return switch (returnType) {
+            case "byte", "Byte", "java.lang.Byte" -> "(byte) " + returnValue;
+            case "short", "Short", "java.lang.Short" -> "(short) " + returnValue;
+            case "long", "Long", "java.lang.Long" -> returnValue + "L";
+            case "float", "Float", "java.lang.Float" -> floatingPointLiteral(returnValue, "java.lang.Float", "f");
+            case "double", "Double", "java.lang.Double" -> floatingPointLiteral(returnValue, "java.lang.Double", "");
+            default -> returnValue;
+        };
+    }
+
+    private String floatingPointLiteral(String value, String type, String suffix) {
+        return switch (value) {
+            case "NaN" -> type + ".NaN";
+            case "Infinity" -> type + ".POSITIVE_INFINITY";
+            case "-Infinity" -> type + ".NEGATIVE_INFINITY";
+            default -> value + suffix;
+        };
     }
 
     private String escapeJavaString(String value) {
