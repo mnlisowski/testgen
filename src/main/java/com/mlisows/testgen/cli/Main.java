@@ -28,6 +28,7 @@ import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
 import com.mlisows.testgen.infrastructure.project.*;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 import com.mlisows.testgen.infrastructure.writer.GeneratedCandidateTestFileWriter;
+import com.google.gson.GsonBuilder;
 import com.mlisows.testgen.usecase.*;
 import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
 import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
@@ -110,7 +111,6 @@ public final class Main {
         for (ClassAnalysisResult analysisResult : analysisResultsByPath.values()) {
             argumentValueHints.addAll(analysisResult.getArgumentValueHints());
         }
-        argumentValueHints.addAll(observedProfile.getArgumentValueHints());
 
 
         CandidateSpaceFactory candidateSpaceFactory = new CandidateSpaceFactory();
@@ -130,7 +130,8 @@ public final class Main {
                 methodPlans,
                 typeIndex,
                 classIndex,
-                argumentValueHints
+                argumentValueHints,
+                observedProfile.getArgumentValueHints()
         );
 
 
@@ -332,15 +333,23 @@ public final class Main {
         );
 
         Path reportPath = workRoot.resolve("report.txt");
+        Path coveredGoalsPath = workRoot.resolve("covered-goals.json");
 
         try {
             Files.createDirectories(workRoot);
             Files.writeString(reportPath, report.toText());
+            writeCoveredGoals(coveredGoalsPath, coverageEvaluation.getCoveredBranchIds());
         } catch (IOException exception) {
-            throw new IllegalStateException("Cannot write report: " + reportPath, exception);
+            throw new IllegalStateException("Cannot write generation results in: " + workRoot, exception);
         }
 
         System.out.println("Report: " + reportPath);
+        System.out.println("Covered goals: " + coveredGoalsPath);
+    }
+
+    static void writeCoveredGoals(Path path, Set<String> ids) throws IOException {
+        String json = new GsonBuilder().setPrettyPrinting().create().toJson(ids.stream().sorted().toList());
+        Files.writeString(path, json + "\n");
     }
 
     private static List<MethodGenerationPlan> planMethods(
