@@ -56,20 +56,40 @@ public final class CandidateVariantGenerator {
     }
 
     public List<TestCandidate> generateVariants(CandidateSpace space) {
+        return generateVariants(space, initialCandidateCount, maxCandidates);
+    }
+
+    public List<TestCandidate> generateVariants(
+            CandidateSpace staticSpace, CandidateSpace combinedSpace
+    ) {
+        int staticLimit = maxCandidates / 3;
+        int staticInitialCount = initialCandidateCount / 3;
+        UniqueCandidateList candidates = new UniqueCandidateList(maxCandidates);
+        for (TestCandidate candidate : generateVariants(staticSpace, staticInitialCount, staticLimit)) {
+            candidates.add(candidate);
+        }
+        for (TestCandidate candidate : generateVariants(combinedSpace,
+                initialCandidateCount - staticInitialCount, maxCandidates - staticLimit)) {
+            candidates.add(candidate);
+        }
+        return candidates.toList();
+    }
+
+    private List<TestCandidate> generateVariants(CandidateSpace space, int initialCount, int limit) {
         Objects.requireNonNull(space, "space must not be null");
 
-        UniqueCandidateList candidates = new UniqueCandidateList(maxCandidates);
+        UniqueCandidateList candidates = new UniqueCandidateList(limit);
 
         candidates.add(space.getBaseCandidate());
-        addRandomInitialCandidates(space, candidates);
+        addRandomInitialCandidates(space, candidates, initialCount);
         addSingleSlotMutations(space, candidates);
         addTwoSlotMutations(space, candidates);
 
         return candidates.toList();
     }
 
-    private void addRandomInitialCandidates(CandidateSpace space, UniqueCandidateList candidates) {
-        for (int index = 0; index < initialCandidateCount; index++) {
+    private void addRandomInitialCandidates(CandidateSpace space, UniqueCandidateList candidates, int initialCount) {
+        for (int index = 0; index < initialCount; index++) {
             if (candidates.isFull()) {
                 return;
             }

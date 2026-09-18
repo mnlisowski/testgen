@@ -54,6 +54,21 @@ public final class EvaluateProjectCandidatesUseCase {
             ProjectClassStructureIndex classIndex,
             List<ArgumentValueHint> argumentValueHints
     ) {
+        return evaluate(classStructures, methodPlans, typeIndex, classIndex, argumentValueHints, List.of());
+    }
+
+    public CandidateCoverageEvaluation evaluate(
+            List<ClassStructure> classStructures,
+            List<MethodGenerationPlan> methodPlans,
+            ProjectTypeIndex typeIndex,
+            ProjectClassStructureIndex classIndex,
+            List<ArgumentValueHint> staticHints,
+            List<ArgumentValueHint> profileHints
+    ) {
+        Objects.requireNonNull(staticHints, "staticHints must not be null");
+        Objects.requireNonNull(profileHints, "profileHints must not be null");
+        List<ArgumentValueHint> argumentValueHints = new ArrayList<>(staticHints);
+        argumentValueHints.addAll(profileHints);
         Objects.requireNonNull(classStructures, "classStructures must not be null");
         Objects.requireNonNull(methodPlans, "methodPlans must not be null");
         Objects.requireNonNull(typeIndex, "typeIndex must not be null");
@@ -85,7 +100,16 @@ public final class EvaluateProjectCandidatesUseCase {
                 }
 
                 candidateSpaceMethodSignatures.add(methodId(classStructure, method));
-                candidates.addAll(candidateVariantGenerator.generateVariants(candidateSpace.get()));
+                if (profileHints.isEmpty()) {
+                    candidates.addAll(candidateVariantGenerator.generateVariants(candidateSpace.get()));
+                } else {
+                    CandidateSpace staticSpace = candidateSpaceFactory.create(
+                            classStructure, method, typeIndex, classIndex, staticHints
+                    ).orElseThrow();
+                    candidates.addAll(candidateVariantGenerator.generateVariants(
+                            staticSpace, candidateSpace.get()
+                    ));
+                }
             }
         }
 
