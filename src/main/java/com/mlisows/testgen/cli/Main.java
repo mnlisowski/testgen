@@ -153,7 +153,15 @@ public final class Main {
 
         System.out.println("Generated tests: " + outputRoot);
 
-        writeReport(workRoot, analysisResultsByPath, methodPlans, coverageEvaluation);
+        String settings = "Ustawienia generowania\n"
+                + "Ziarno: " + seed + "\n"
+                + "Limit kandydatów na metodę: " + maxCandidates + "\n"
+                + "Liczba prób losowania kandydatów: " + initialCandidates + "\n"
+                + "Limit losowych startów do mutowania (oprócz bazowego): " + mutatedInitialCandidates + "\n"
+                + "Limit wartości na argument: " + maxValuesPerSlot + "\n"
+                + "Profil: " + (observedProfilePath == null ? "wyłączony"
+                        : observedProfilePath.toAbsolutePath().normalize()) + "\n\n";
+        writeReport(workRoot, analysisResultsByPath, methodPlans, coverageEvaluation, settings);
     }
 
     private static void prepareProfile(String[] args) {
@@ -333,7 +341,8 @@ public final class Main {
             Path workRoot,
             Map<Path, ClassAnalysisResult> analysisResultsByPath,
             List<MethodGenerationPlan> methodPlans,
-            CandidateCoverageEvaluation coverageEvaluation
+            CandidateCoverageEvaluation coverageEvaluation,
+            String settings
     ) {
         GenerationReport report = GenerationReport.from(
                 List.copyOf(analysisResultsByPath.values()),
@@ -346,7 +355,7 @@ public final class Main {
 
         try {
             Files.createDirectories(workRoot);
-            Files.writeString(reportPath, report.toText());
+            Files.writeString(reportPath, settings + report.toText());
             writeCoveredGoals(coveredGoalsPath, coverageEvaluation.getCoveredBranchIds());
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot write generation results in: " + workRoot, exception);
