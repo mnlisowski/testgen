@@ -188,13 +188,27 @@ Fit Bench już bez profilu osiągał wysokie pokrycie. Wiele jego warunków zale
 
 Większy profil nie dawał jednakowej poprawy we wszystkich projektach. W Validatorze wyraźniejszy wzrost wystąpił między 50% a 75%, natomiast w Fit Bench wyniki czterech profili były zbliżone. 
 
-Poniżej podaję zakres wyników i odchylenie standardowe dla wariantu bez profilu i z profilem 100%. 
+Poniżej podaję minimum, maksimum i odchylenie standardowe dla wszystkich wariantów profilu przy budżecie 120 kandydatów. 
 
-| Projekt | Bez profilu: min–max | Odch. std. [p.p.] | Profil 100%: min–max | Odch. std. [p.p.] |
-| --- | ---: | ---: | ---: | ---: |
-| Codec | 57,31–57,31% | 0,00 | 84,98–86,56% | 0,71 |
-| Validator | 52,40–52,74% | 0,15 | 71,23–72,60% | 0,57 |
-| Fit Bench | 86,00–87,55% | 0,74 | 87,27–90,52% | 1,27 |
+**Minimum i maksimum pokrycia [%]**
+
+| Profil | Codec | Validator | Fit Bench |
+| --- | ---: | ---: | ---: |
+| Bez profilu | 57,31–57,31% | 52,40–52,74% | 86,00–87,55% |
+| 25% | 73,91–75,49% | 63,01–64,04% | 87,98–90,95% |
+| 50% | 79,05–83,79% | 65,41–66,44% | 89,25–90,52% |
+| 75% | 83,79–87,75% | 70,21–71,23% | 87,13–90,66% |
+| 100% | 84,98–86,56% | 71,23–72,60% | 87,27–90,52% |
+
+**Odchylenie standardowe [p.p.]**
+
+| Profil | Codec | Validator | Fit Bench |
+| --- | ---: | ---: | ---: |
+| Bez profilu | 0,00 | 0,15 | 0,74 |
+| 25% | 0,74 | 0,38 | 1,16 |
+| 50% | 2,19 | 0,38 | 0,50 |
+| 75% | 1,54 | 0,46 | 1,30 |
+| 100% | 0,71 | 0,57 | 1,27 |
 
 Odchylenie standardowe obliczono z pięciu uruchomień, z dzielnikiem n − 1, i podano w punktach procentowych (p.p.). Profil był taki sam we wszystkich powtórzeniach, więc odchylenie nie obejmuje różnic między losowaniami testów do profilu.
 
@@ -297,13 +311,27 @@ Budżet 500 kandydatów, 125 prób losowych:
 
 JaCoCo potwierdziło korzyść z profilu, którą już zaobserwowaliśmy wcześniej w wewnętrznym pomiarze. Przy większym budżecie, profil 100% poprawił średnie pokrycie względem braku profilu o 13,94 punktu procentowego w Codec, 16,37 w Validatorze i 3,03 w Fit Bench. 
 
-Zakresy wyników i odchylenia standardowe dla większego budżetu:
+Poniżej podaję minimum, maksimum i odchylenie standardowe pokrycia JaCoCo dla wszystkich wariantów profilu przy budżecie 500 kandydatów.
 
-| Projekt | Bez profilu: min–max | Odch. std. [p.p.] | Profil 100%: min–max | Odch. std. [p.p.] |
-| --- | ---: | ---: | ---: | ---: |
-| Codec | 36,45–36,65% | 0,07 | 49,94–50,97% | 0,48 |
-| Validator | 20,52–20,82% | 0,11 | 36,88–37,44% | 0,22 |
-| Fit Bench | 78,41–79,90% | 0,59 | 81,39–83,38% | 0,78 |
+**Minimum i maksimum pokrycia [%]**
+
+| Profil | Codec | Validator | Fit Bench |
+| --- | ---: | ---: | ---: |
+| Bez profilu | 36,45–36,65% | 20,52–20,82% | 78,41–79,90% |
+| 25% | 41,49–42,72% | 30,60–30,95% | 81,09–83,38% |
+| 50% | 47,88–49,50% | 31,66–32,17% | 82,09–83,18% |
+| 75% | 49,11–50,42% | 35,71–36,22% | 81,89–83,18% |
+| 100% | 49,94–50,97% | 36,88–37,44% | 81,39–83,38% |
+
+**Odchylenie standardowe [p.p.]**
+
+| Profil | Codec | Validator | Fit Bench |
+| --- | ---: | ---: | ---: |
+| Bez profilu | 0,07 | 0,11 | 0,59 |
+| 25% | 0,49 | 0,14 | 0,91 |
+| 50% | 0,66 | 0,21 | 0,46 |
+| 75% | 0,57 | 0,19 | 0,54 |
+| 100% | 0,48 | 0,22 | 0,78 |
 
 Odchylenie standardowe obliczono z pięciu uruchomień, z dzielnikiem n − 1, i podano w punktach procentowych (p.p.). Profil był taki sam we wszystkich powtórzeniach, więc odchylenie nie obejmuje różnic między losowaniami testów do profilu.
 
