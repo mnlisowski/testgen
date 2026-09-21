@@ -108,9 +108,21 @@ Dla każdego projektu uruchomiłem generator bez profilu, oraz z każdym z czter
 | Liczba losowych kandydatów poddawanych mutacji | 3 | 3 |
 | Ziarna generatora                              | 0, 1, 2, 3, 4 | 0, 1, 2, 3, 4 |
 
-Mutacjom podlega kandydat bazowy - czyli kandydat z wartościami argumentów pochodzących z puli bazowej, oraz trzech wybranych kandydatów losowych - czyli kandydatów z losowymi wartościami argumentów uzyskanymi z analizy statycznej, oraz z profilu.  Limit na metodę obejmuje ich wszystkich łącznie, a także warianty powstałe przez mutacje.
+### Którzy kandydaci są wykonywani i zapisywani
 
-Po dołączeniu profilu, połowa prób tworzenia losowych kandydatów korzysta z wartości bazowych i podpowiedzi statycznych, a druga połowa zarówno z wartości bazowych, podpowiedzi statycznych, i  wartości profilowych. Dla 30 prób podział wynosi 15 i 15, a dla 125 prób: 62 i 63. Bez profilu wszystkie próby korzystają z wartości bazowych i statycznych.
+Dla każdej metody, dla której udało się przygotować wywołanie, generator wykonuje następujące kroki:
+
+1. Dodaje kandydata bazowego, a następnie próbuje utworzyć 30 lub 125 kandydatów losowych. 
+2. Mutuje kandydata bazowego oraz trzech kandydatów wybranych losowo z już utworzonych. Pozostali kandydaci losowi też zostają na liście do wykonania, choć nie są mutowani.
+3. Uzupełnia listę wariantami po mutacji - kończy po osiągnięciu łącznego limitu 120 lub 500 kandydatów na metodę. 
+4. Wykonuje wszystkich kandydatów z tej listy. Zachowuje wynik tylko wtedy, gdy kandydat pokrył przynajmniej jeden cel, którego nie pokrył żaden wcześniej zachowany kandydat. Ten zbiór pokrytych celów jest wspólny dla całego projektu, nie osobny dla każdej metody.
+5. Z wybranych wyników zapisuje testy. Wywołanie może zakończyć się normalnie albo rzucić wyjątek sprawdzany później przez asercję. Błąd przygotowania lub wykonania kandydata nie jest zapisywany jako test.
+
+Limit kandydatów nie oznacza więc liczby zapisanych testów. Przykładowo generator może wykonać 120 kandydatów dla metody, ale zachować tylko kilka, jeśli pozostałe nie zwiększają pokrycia.
+
+Po dołączeniu profilu połowa prób losowych korzysta z wartości bazowych i podpowiedzi statycznych, a druga połowa również z wartości z profilu. Dla 30 prób podział wynosi 15 i 15, a dla 125 prób: 62 i 63. Dla każdego argumentu pierwszeństwo mają podpowiedzi dotyczące tego argumentu; wartości bazowe są używane, gdy brakuje podpowiedzi. 
+
+Trzech kandydatów do mutowania wybieram spośród zachowanych kandydatów losowych.
 
 Przy większym budżecie zwiększam zarówno limit kandydatów, jak i liczbę prób losowych, zachowując ich proporcję.  Podział pul i liczba losowych kandydatów poddawanych mutacji pozostają takie same.
 
@@ -120,6 +132,12 @@ Każdy wariant - czyli wariant bez profilu, oraz z czterema różnymi profilami,
 
 
 Łącznie przeprowadziłem 150 uruchomień: trzy projekty, dwa budżety, pięć wariantów profilu i pięć ziaren. Sto uruchomień dotyczyło bibliotek, a pięćdziesiąt Fit Bench. Każdy wynik bez profilu porównuję z czterema wynikami z profilem. 
+
+### Sprzęt i pomiar czasu
+
+Eksperymenty `testgen` wykonywałem na komputerze z procesorem Intel Core i7-14650HX, pamięcią RAM około 64 GB i systemem Ubuntu 24.04.3. Skrypt korzystał z OpenJDK 21 i Maven 3.9.16. Każde uruchomienie generatora odbywało się w osobnym procesie Javy. Skrypt wykonywał pomiary kolejno, nie równolegle.
+
+Czas mierzyłem od uruchomienia procesu generatora do jego zakończenia. Obejmuje więc start Javy, analizę projektu, przygotowanie i wykonanie kandydatów oraz zapis testów i raportu. Nie obejmuje wcześniejszego zbierania profilu, ani późniejszego uruchamiania zapisanych testów z JaCoCo. Są to czasy całego procesu na tym komputerze, a nie pomiar samego algorytmu doboru argumentów.
 
 ### Zapis wyników i późniejszy pomiar testów
 
@@ -281,9 +299,9 @@ Pomiar objął wszystkie 150 zestawów.
 | Validator | 50 | 7762 | 7762 | 0 |
 | Fit Bench | 50 | 16078 | 16078 | 0 |
 
-Są to sumy wykonań ze wszystkich konfiguracji, nie liczba unikalnych testów jednego projektu. W każdym zestawie Codec nie przeszło od 5 do 8 testów; wszystkie niepowodzenia dotyczyły metod `Crypt`, `Md5Crypt` i `UnixCrypt`. Metody te  mogą zwracać różne wyniki przy tych samych argumentach, podczas gdy generator zapisuje konkretny wynik w asercji. 
+Tabela sumuje wykonania ze wszystkich konfiguracji. W każdym zestawie biblioteki Codec nie przeszło od 5 do 8 testów klas `Crypt`, `Md5Crypt` i `UnixCrypt`. Przyczyną była losowa sól, czyli dodatkowa losowa wartość używana przy obliczaniu skrótu hasła. Metoda może przez to zwracać różne wyniki dla tych samych argumentów, a generator oczekiwał w asercji wyniku uzyskanego podczas generowania.
 
-Pokrycie JaCoCo dlaCodec obejmuje także kod wykonany przez te testy zakończone nieudaną asercją. Nie jest to zatem pomiar wyłącznie poprawnych testów regresyjnych. 
+Błędy te wpływają na interpretację pokrycia JaCoCo, ponieważ uwzględnia on również kod wykonany przed nieudaną asercją w celu wyliczenia pokrycia.
 
 ### Pokrycie gałęzi całego projektu
 
@@ -337,6 +355,17 @@ Odchylenie standardowe obliczono z pięciu uruchomień, z dzielnikiem n − 1, i
 
 W Fit Bench przy większym budżecie profil 100% dał nieco niższą średnią niż profil 75%: 82,23% wobec 82,79%. Różnica wynosi około 0,56 punktu procentowego. Może wynikać z losowania, lub z małej użyteczności dodatkowych informacji otrzymywanych z profilu z profilu 100% względem profilu 75%.
 
+### Wpływ nieprzechodzących testów na pokrycie
+
+Żeby sprawdzić skalę tego wpływu, powtórzyłem pomiar Codec dla budżetu 500 i ziarna 0, najpierw ze wszystkimi testami, a następnie bez tych, które wcześniej nie przeszły. Nie generowałem nowych testów.
+
+| Wariant | Wszystkie testy | Bez nieprzechodzących testów | Spadek pokrycia |
+| --- | ---: | ---: | ---: |
+| Bez profilu | 36,65% | 34,55% | 53 gałęzie (2,10 p.p.) |
+| Profil 100% | 50,85% | 50,54% | 8 gałęzi (0,32 p.p.) |
+
+Pominąłem odpowiednio 7 i 6 testów; wszystkie pozostałe przeszły poprawnie. W tej parze pomiarów profil nadal wyraźnie poprawiał pokrycie.  Problem wskazuje na potrzebę sprawdzania stabilności wyników przed zapisaniem asercji.
+
 ### Porównanie z Randoopem i EvoSuite
 
 Wyniki `testgen` porównuję z Randoopem i EvoSuite za pomocą pokrycia gałęzi mierzonego przez JaCoCo. 
@@ -372,9 +401,11 @@ Wysokie pokrycie nie oznacza jeszcze, że asercje są właściwe ani że program
 
 ### Wnioski
 
-Eksperymenty wykazały, że w badanych projektach profil argumentów poprawiał średnie pokrycie zarówno w wewnętrznym pomiarze, jak i podczas wykonania zapisanych testów z JaCoCo. Największa poprawa względem braku profilu wystąpiła w bibliotekach. W Fit Bench wariant bez profilu osiągał już wysoki wynik,  dlatego dodatkowa korzyść była mniejsza.
+W badanych projektach dodanie profilu poprawiło średnie pokrycie. Największa korzyść wystąpiła w Codec i Validatorze, gdzie wartości z testów bibliotek pozwoliły dotrzeć do kodu, którego generator nie pokrywał przy użyciu samych wartości bazowych i podpowiedzi statycznych. W Fit Bench poprawa była mniejsza. Projekt ten przygotowano z uwzględnieniem ograniczeń generatora, a wiele jego warunków pozwala bezpośrednio wyznaczyć przydatne podpowiedzi z analizy statycznej. Dzięki temu generator już bez profilu osiągał wysokie pokrycie i pozostawało mniej miejsca na poprawę.
 
-Większy budżet pomagał lepiej wykorzystać dostępne argumenty, ale wzrost liczby wykonywanych kandydatów nie był proporcjonalny do wzrostu pokrycia. W bibliotekach bez profilu poprawa była niewielka. Warto więc rozwijać sposób doboru wartości i ich kombinacji, a nie tylko zwiększać liczbę prób. 
+Rozszerzanie profilu na ogół zwiększało pokrycie, szczególnie w bibliotekach Codec i Validator. Dodatkowe testy dostarczały więc wartości przydatnych podczas generowania kandydatów. W Fit Bench różnice między rozmiarami profilu były mniejsze i pojawiały się niewielkie spadki, które mogły wynikać z losowania kandydatów przy ograniczonym budżecie.
+
+Zwiększenie budżetu pomagało, ale nie wszędzie w takim samym stopniu. W bibliotekach bez profilu poprawa była niewielka, natomiast w Fit Bench większa liczba prób wyraźniej zwiększała pokrycie i ograniczała utratę wcześniej osiąganych celów po dodaniu profilu. Wyniki sugerują więc, że warto poprawiać zarówno źródła argumentów, jak i sposób ich wyboru, zamiast polegać wyłącznie na zwiększaniu liczby kandydatów.
 
 ### Materiały pomiarowe
 
