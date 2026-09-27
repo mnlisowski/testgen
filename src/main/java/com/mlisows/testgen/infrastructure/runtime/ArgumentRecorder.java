@@ -43,10 +43,14 @@ public final class ArgumentRecorder {
         }
 
         initializeLimits();
+        String invocationKey = "invocation|" + ownerId;
+        boolean invocationCanBeReplayed = recordCounts.getOrDefault(invocationKey, 0)
+                < maxInvocationsPerOwner;
         List<String> invocationFields = new ArrayList<>();
-        invocationFields.add("invocation");
-        invocationFields.add(ownerId);
-        boolean invocationCanBeReplayed = true;
+        if (invocationCanBeReplayed) {
+            invocationFields.add("invocation");
+            invocationFields.add(ownerId);
+        }
 
         for (int index = 0; index < argumentValues.length; index++) {
             Object value = argumentValues[index];
@@ -55,18 +59,28 @@ public final class ArgumentRecorder {
                 continue;
             }
 
+            String hintKey = "hint|" + ownerId + "|" + index;
+            boolean needsHint = recordCounts.getOrDefault(hintKey, 0) < maxValuesPerArgument;
+            if (!needsHint && !invocationCanBeReplayed) {
+                continue;
+            }
+
             String literal = javaLiteral(value);
-            addProfileLine(
-                    String.join("|", "hint", ownerId, argumentNames[index], argumentTypes[index], literal, SOURCE),
-                    "hint|" + ownerId + "|" + index,
-                    maxValuesPerArgument
-            );
-            invocationFields.add(argumentTypes[index]);
-            invocationFields.add(literal);
+            if (needsHint) {
+                addProfileLine(
+                        String.join("|", "hint", ownerId, argumentNames[index], argumentTypes[index], literal, SOURCE),
+                        hintKey,
+                        maxValuesPerArgument
+                );
+            }
+            if (invocationCanBeReplayed) {
+                invocationFields.add(argumentTypes[index]);
+                invocationFields.add(literal);
+            }
         }
 
         if (invocationCanBeReplayed) {
-            addProfileLine(String.join("|", invocationFields), "invocation|" + ownerId, maxInvocationsPerOwner);
+            addProfileLine(String.join("|", invocationFields), invocationKey, maxInvocationsPerOwner);
         }
     }
 
