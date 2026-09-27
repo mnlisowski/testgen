@@ -9,7 +9,7 @@ TLDR przepływu:
 - program analizuje projekt Maven i sprawdza, czy ma standardowy układ z
   `pom.xml` oraz katalogiem `src/main/java`,
 - potem w analizie statycznej, za pomocą javaparsera, znajduje pliki źródłowe `.java` i na ich podstawie rozpoznaje
-  klasy, konstruktory, metody, parametry 
+  klasy, konstruktory, metody, parametry
 - nastepnie wykrywa cele pokrycia gałęzi, na przykład gałęzie
   instrukcji `if`, `for`, `while` i `switch`,
 - z warunków w kodzie próbuje wyciągnąć podpowiedzi wartości argumentów, np. liczby graniczne, napisy albo wartości enumów,
@@ -61,10 +61,12 @@ Wyniki pojawia sie w:
 ```text
 target/test-work/fit-bench/generated-tests
 target/test-work/fit-bench/report.txt
+target/test-work/fit-bench/covered-goals.json
 ```
 
 - `generated-tests` - wygenerowane testy JUnit,
-- `report.txt` - raport z analizy
+- `report.txt` - raport z analizy i ustawienia generowania,
+- `covered-goals.json` - identyfikatory pokrytych celow.
 
 ## Uruchomienie z profilem runtime
 
@@ -85,6 +87,7 @@ Wyniki pojawia sie w:
 ```text
 target/test-work/fit-bench-with-profile/generated-tests
 target/test-work/fit-bench-with-profile/report.txt
+target/test-work/fit-bench-with-profile/covered-goals.json
 ```
 
 Profil mozna tez przygotowac samodzielnie. Najpierw trzeba utworzyc instrumentowana kopie projektu:
@@ -117,7 +120,15 @@ Wymagania:
 
 - Java 21,
 - Maven,
-- projekt Maven, ktory ma standardowy katalog `src/main/java`.
+- projekt Maven, ktory ma standardowy katalog `src/main/java`. (przykładowy jest w `examples/fit-bench`)
+
+`mvn -version` powinno pokazywac Java 21. Jeśli nie, w systemie Ubuntu mozna ustawic JDK 21 dla biezacego terminala:
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
 
 Uruchomienie testow projektu `testgen`:
 
@@ -143,7 +154,27 @@ java -cp "target/classes:target/dependency/*" \
 Ogolna postac polecenia:
 
 ```text
-testgen <maven-project-root> [work-root] [observed-profile]
+testgen <maven-project-root> [work-root] [observed-profile|-]
+        [seed] [max-candidates] [initial-candidates]
+        [mutated-initial-candidates] [max-values-per-slot]
+```
+
+Parametry generowania maja nastepujace wartosci domyslne:
+
+- `seed=0` - ziarno losowania,
+- `max-candidates=50` - limit kandydatow na metode,
+- `initial-candidates=10` - liczba prob utworzenia kandydatow losowych,
+- `mutated-initial-candidates=3` - limit losowych kandydatow poddawanych mutacji,
+- `max-values-per-slot=10` - limit wartosci argumentu wykorzystywanych w mutacjach.
+
+Znak `-` oznacza brak profilu, gdy podawane sa dalsze parametry. Przyklad:
+
+```bash
+java -cp "target/classes:target/dependency/*" \
+  com.mlisows.testgen.cli.Main \
+  examples/fit-bench \
+  target/test-work/fit-bench-local \
+  - 42 120 30 3 10
 ```
 
 Tryb przygotowania profilu runtime:
