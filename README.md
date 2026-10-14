@@ -480,3 +480,35 @@ curl -i -X POST http://localhost:8080/api/generations \
 
 Zadanie zachowuje identyfikator oraz zawartość wybranego profilu. Generator otrzymuje
 jego rekordy, bez potrzeby odczytywania pliku na dysku.
+
+### PostgreSQL — pierwszy etap integracji
+
+Uruchom bazę, a następnie serwer z profilem `postgres`:
+
+```bash
+docker compose up -d --wait postgres
+mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+PostgreSQL jest dostępny lokalnie na porcie `5432`, z bazą i użytkownikiem `testgen`.
+Domyślne hasło lokalnego demo to `testgen`. Możesz ustawić `TESTGEN_POSTGRES_PASSWORD`
+i `TESTGEN_POSTGRES_PORT`; użyj tych samych wartości dla Compose i aplikacji.
+Dane bazy są przechowywane w wolumenie `postgres-data`.
+
+Flyway wykonuje migracje z `src/main/resources/db/migration`. Pierwsza migracja tworzy
+pustą tabelę `projects`. Hibernate ma ustawione `ddl-auto=validate`, więc nie tworzy
+ani nie zmienia tabel. Zapis projektów, profili i jobów przez JPA będzie dodawany
+w kolejnych krokach. **Obecnie profile i zadania nadal są w pamięci, również przy
+aktywnym profilu `postgres`.**
+
+Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
+Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi
+`postgres` w powyższym poleceniu uruchamia ją bez zmiany sposobu korzystania z usług CLI.
+
+Testy wymagają teraz działającego Dockera: `PostgresConfigurationTest` uruchamia
+własny, tymczasowy PostgreSQL przez Testcontainers, na automatycznie wybranym porcie.
+Nie korzysta z bazy uruchomionej przez Compose.
+
+```bash
+mvn test
+```

@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:17
+    profiles: [database]
+    environment:
+      POSTGRES_DB: testgen
+      POSTGRES_USER: testgen
+      POSTGRES_PASSWORD: ${TESTGEN_POSTGRES_PASSWORD:-testgen}
+    ports:
+      - "127.0.0.1:${TESTGEN_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testgen -d testgen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   prepare-profile:
     build: .
     image: testgen
@@ -43,3 +60,6 @@ services:
       - ./examples/fit-bench:/project:ro
       - ./target/test-work/fit-bench-with-profile:/test-work
       - ./target/docker-m2:/root/.m2
+
+volumes:
+  postgres-data:
