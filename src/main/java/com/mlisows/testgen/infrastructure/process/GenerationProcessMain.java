@@ -1,7 +1,6 @@
-package com.mlisows.testgen.cli;
+package com.mlisows.testgen.infrastructure.process;
 
 import com.mlisows.testgen.infrastructure.TestgenUseCases;
-import com.mlisows.testgen.infrastructure.process.GenerationProcessProtocol;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 

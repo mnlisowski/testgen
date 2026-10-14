@@ -1,6 +1,5 @@
 package com.mlisows.testgen.infrastructure.process;
 
-import com.mlisows.testgen.cli.GenerationProcessMain;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.ports.GenerationRunner;

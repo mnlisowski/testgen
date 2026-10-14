@@ -1,7 +1,7 @@
 package com.mlisows.testgen.app.config;
 
 import com.mlisows.testgen.app.project.ProjectRegistry;
-import com.mlisows.testgen.cli.GenerationProcessMain;
+import com.mlisows.testgen.infrastructure.process.GenerationProcessMain;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.infrastructure.job.InMemoryGenerationJobStore;
 import com.mlisows.testgen.infrastructure.process.JvmGenerationRunner;
