@@ -1,0 +1,11 @@
+testgen:
+  projects:
+    fit-bench:
+      path: examples/fit-bench
+  work-root: target/server-work
+  defaults:
+    seed: 0
+    max-candidates: 50
+    initial-candidates: 10
+    mutated-initial-candidates: 3
+    max-values-per-slot: 10

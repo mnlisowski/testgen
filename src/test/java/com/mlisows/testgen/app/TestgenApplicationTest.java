@@ -1,6 +1,9 @@
 package com.mlisows.testgen.app;
 
+import com.mlisows.testgen.app.project.ProjectRegistry;
+import com.mlisows.testgen.domain.generation.GenerationSettings;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -13,6 +16,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TestgenApplicationTest {
+    @Autowired
+    private ProjectRegistry projects;
+
+    @Autowired
+    private GenerationSettings defaults;
+
+    @Test
+    void shouldLoadBundledYamlConfiguration() {
+        assertEquals(java.util.List.of("fit-bench"), projects.projectIds());
+        assertEquals(GenerationSettings.defaults(), defaults);
+    }
+
     @Value("${local.server.port}")
     private int port;
 
