@@ -11,7 +11,11 @@ import java.util.UUID;
  * Stores job snapshots. Each transition must atomically check and update the current status.
  */
 public interface GenerationJobStore {
-    GenerationJob create(String projectId, GenerationRequest request);
+    default GenerationJob create(String projectId, GenerationRequest request) {
+        return create(projectId, null, request);
+    }
+
+    GenerationJob create(String projectId, UUID profileId, GenerationRequest request);
     Optional<GenerationJob> findById(UUID id);
     GenerationJob start(UUID id);
     GenerationJob succeed(UUID id, GenerationResult result);

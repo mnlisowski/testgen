@@ -23,9 +23,9 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
     }
 
     @Override
-    public GenerationJob create(String projectId, GenerationRequest request) {
+    public GenerationJob create(String projectId, UUID profileId, GenerationRequest request) {
         while (true) {
-            GenerationJob job = GenerationJob.queued(UUID.randomUUID(), projectId, request, clock.instant());
+            GenerationJob job = GenerationJob.queued(UUID.randomUUID(), projectId, profileId, request, clock.instant());
             if (jobs.putIfAbsent(job.id(), job) == null) {
                 return job;
             }

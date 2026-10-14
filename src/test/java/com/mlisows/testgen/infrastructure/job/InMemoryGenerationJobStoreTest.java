@@ -78,8 +78,10 @@ class InMemoryGenerationJobStoreTest {
     @ParameterizedTest
     @EnumSource(value = JobStatus.class, names = {"SUCCEEDED", "FAILED", "TIMED_OUT", "INTERRUPTED"})
     void shouldPreventOverwritingTerminalState(JobStatus terminal) {
-        var id = store.create("fit-bench", request()).id();
-        store.start(id);
+        UUID profileId = UUID.randomUUID();
+        var id = store.create("fit-bench", profileId, request()).id();
+        assertEquals(profileId, store.findById(id).orElseThrow().profileId().orElseThrow());
+        assertEquals(profileId, store.start(id).profileId().orElseThrow());
         var finished = switch (terminal) {
             case SUCCEEDED -> store.succeed(id, result());
             case FAILED -> store.fail(id, "Execution failed");
@@ -89,6 +91,7 @@ class InMemoryGenerationJobStoreTest {
         };
 
         assertEquals(terminal, finished.status());
+        assertEquals(profileId, finished.profileId().orElseThrow());
         assertTrue(finished.finishedAt().isPresent());
         if (terminal != JobStatus.SUCCEEDED) {
             assertTrue(finished.error().isPresent());

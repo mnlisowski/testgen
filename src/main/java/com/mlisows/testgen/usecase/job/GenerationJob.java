@@ -11,6 +11,7 @@ import java.util.UUID;
 public final class GenerationJob {
     private final UUID id;
     private final String projectId;
+    private final UUID profileId;
     private final GenerationRequest request;
     private final JobStatus status;
     private final Instant createdAt;
@@ -19,11 +20,12 @@ public final class GenerationJob {
     private final GenerationResult result;
     private final String error;
 
-    private GenerationJob(UUID id, String projectId, GenerationRequest request, JobStatus status,
+    private GenerationJob(UUID id, String projectId, UUID profileId, GenerationRequest request, JobStatus status,
                           Instant createdAt, Instant startedAt, Instant finishedAt,
                           GenerationResult result, String error) {
         this.id = id;
         this.projectId = projectId;
+        this.profileId = profileId;
         this.request = request;
         this.status = status;
         this.createdAt = createdAt;
@@ -33,7 +35,7 @@ public final class GenerationJob {
         this.error = error;
     }
 
-    public static GenerationJob queued(UUID id, String projectId, GenerationRequest request, Instant now) {
+    public static GenerationJob queued(UUID id, String projectId, UUID profileId, GenerationRequest request, Instant now) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(projectId, "projectId");
         if (projectId.isBlank()) {
@@ -41,12 +43,12 @@ public final class GenerationJob {
         }
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(now, "now");
-        return new GenerationJob(id, projectId, request, JobStatus.QUEUED, now, null, null, null, null);
+        return new GenerationJob(id, projectId, profileId, request, JobStatus.QUEUED, now, null, null, null, null);
     }
 
     public GenerationJob start(Instant now) {
         requireStatus(JobStatus.QUEUED);
-        return new GenerationJob(id, projectId, request, JobStatus.RUNNING, createdAt,
+        return new GenerationJob(id, projectId, profileId, request, JobStatus.RUNNING, createdAt,
                 Objects.requireNonNull(now, "now"), null, null, null);
     }
 
@@ -74,7 +76,7 @@ public final class GenerationJob {
     }
 
     private GenerationJob finish(JobStatus status, GenerationResult result, String error, Instant now) {
-        return new GenerationJob(id, projectId, request, status, createdAt, startedAt,
+        return new GenerationJob(id, projectId, profileId, request, status, createdAt, startedAt,
                 Objects.requireNonNull(now, "now"), result, error);
     }
 
@@ -98,6 +100,10 @@ public final class GenerationJob {
 
     public String projectId() {
         return projectId;
+    }
+
+    public Optional<UUID> profileId() {
+        return Optional.ofNullable(profileId);
     }
 
     public GenerationRequest request() {
