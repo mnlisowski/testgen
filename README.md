@@ -349,8 +349,15 @@ Wymagane JDK 21. Uruchomienie lokalne:
 mvn spring-boot:run
 ```
 
-Serwer domyślnie nasłuchuje na porcie 8080. Endpointy biznesowe nie są jeszcze
-zaimplementowane; żądanie `GET /` zwraca 404.
+Serwer domyślnie nasłuchuje na porcie 8080. Lista skonfigurowanych projektów:
+
+```bash
+curl -i http://localhost:8080/api/projects
+```
+
+Odpowiedź: `200 OK`, domyślnie `[{"id":"fit-bench"}]`.
+Endpoint zwraca identyfikatory bez lokalnych ścieżek projektów.
+Żądanie `GET /` nadal zwraca 404; generowanie przez API nie jest jeszcze dostępne.
 
 Uruchomienie z JAR-a:
 
@@ -362,3 +369,9 @@ java -jar target/testgen-1.0-SNAPSHOT-server.jar
 Port można zmienić argumentem `--server.port=8081`. Zatrzymanie: `Ctrl+C`.
 Dotychczasowe CLI i Docker Compose nadal służą do generowania testów oraz
 przygotowania profilu.
+
+Konfiguracja serwera znajduje się w `src/main/resources/application.yml`:
+`testgen.projects` określa dostępne projekty, `testgen.work-root` katalog roboczy,
+a `testgen.defaults` domyślne parametry generowania. Ścieżki względne są liczone
+od katalogu uruchomienia aplikacji. Domyślnie dostępny jest `examples/fit-bench`.
+Przy starcie sprawdzane są parametry i struktura skonfigurowanych projektów Maven.
