@@ -1,4 +1,5 @@
 testgen:
+  queue-capacity: 10
   projects:
     fit-bench:
       path: examples/fit-bench
@@ -11,3 +12,8 @@ testgen:
     max-values-per-slot: 10
   runner:
     timeout-seconds: 120
+
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true

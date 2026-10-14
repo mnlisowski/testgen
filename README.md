@@ -357,7 +357,7 @@ curl -i http://localhost:8080/api/projects
 
 Odpowiedź: `200 OK`, domyślnie `[{"id":"fit-bench"}]`.
 Endpoint zwraca identyfikatory bez lokalnych ścieżek projektów.
-Żądanie `GET /` nadal zwraca 404; generowanie przez API nie jest jeszcze dostępne.
+Żądanie `GET /` nadal zwraca 404.
 
 Uruchomienie z JAR-a:
 
@@ -390,4 +390,38 @@ istnieć; ponowne zlecenie wymaga nowego identyfikatora. JSON jest wewnętrznym
 formatem komunikacji między procesami tej samej wersji programu, nie publicznym API.
 Po timeoutcie lub przerwaniu wykonawca zatrzymuje proces oraz zaobserwowane procesy
 potomne. Osobna JVM nie stanowi sandboxa dla niezaufanego kodu.
-Kolejka i endpoint zlecania generowania nie są jeszcze podłączone.
+Zlecenie generowania bez profilu:
+
+```bash
+curl -i -X POST http://localhost:8080/api/generations \
+  -H 'Content-Type: application/json' \
+  -d '{"projectId":"fit-bench","seed":42,"maxCandidates":50}'
+```
+
+Odpowiedź `202 Accepted` zawiera identyfikator, status przyjęcia `QUEUED`, efektywne
+ustawienia i nagłówek `Location: /api/jobs/<id>`. Aktualny status odczytasz przez:
+
+```bash
+curl http://localhost:8080/api/jobs/<id>
+```
+
+Zadanie może już wykonywać się w chwili otrzymania odpowiedzi `202`. `GET` zwraca
+bieżący status, czasy, ustawienia oraz podsumowanie po sukcesie albo ogólny komunikat
+błędu. Szczegóły techniczne błędu pozostają w logach serwera i procesu generatora.
+
+Wymagany jest `projectId`. Opcjonalne pola `seed`, `maxCandidates`,
+`initialCandidates`, `mutatedInitialCandidates` i `maxValuesPerSlot` nadpisują
+`testgen.defaults`; pominięcie pola lub `null` oznacza wartość domyślną.
+Nieobsługiwane pola, w tym na razie `profileId`, dają `400`. Import profili
+oraz pobieranie raportu i ZIP-a przez API będą osobnymi przyrostami.
+
+Kolejka wykonuje jedno zadanie naraz. `testgen.queue-capacity` określa liczbę
+oczekujących zadań (domyślnie 10, poza jednym aktywnym). Błędne dane dają `400`,
+nieznany projekt lub zadanie `404`, a pełna lub zamykana kolejka `503`.
+Odpowiedź `503` zawiera `jobId` odrzuconego zadania, które pozostaje jako `FAILED`;
+ponowienie oznacza wysłanie nowego zlecenia. Błędy HTTP mają format Problem Details.
+
+Przy zamykaniu serwera aktywne wykonanie jest przerywane, a oczekujące zadania
+oznaczane jako `FAILED`. Historia i wyniki znajdują się w pamięci i znikają po
+restarcie. Limit kolejki nie ogranicza rozmiaru zachowanej historii ani plików
+roboczych; automatyczne usuwanie starych wyników nie jest jeszcze zaimplementowane.

@@ -1,6 +1,7 @@
 package com.mlisows.testgen.app.config;
 
 import com.mlisows.testgen.app.project.ProjectRegistry;
+import com.mlisows.testgen.app.job.GenerationJobQueue;
 import com.mlisows.testgen.infrastructure.process.GenerationProcessMain;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.infrastructure.job.InMemoryGenerationJobStore;
@@ -84,6 +85,13 @@ public class TestgenConfiguration {
     @Bean
     public ExecuteGenerationJobUseCase executeGenerationJob(GenerationJobStore jobStore, GenerationRunner generationRunner) {
         return new ExecuteGenerationJobUseCase(jobStore, generationRunner);
+    }
+
+    @Bean(destroyMethod = "close")
+    public GenerationJobQueue generationJobQueue(GenerationJobStore jobStore,
+                                                 ExecuteGenerationJobUseCase executeGenerationJob,
+                                                 TestgenProperties properties) {
+        return new GenerationJobQueue(jobStore, executeGenerationJob, properties.queueCapacity());
     }
 
 }

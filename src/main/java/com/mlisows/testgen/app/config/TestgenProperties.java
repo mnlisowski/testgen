@@ -20,7 +20,8 @@ public record TestgenProperties(
         @NotEmpty Map<@Pattern(regexp = "[a-z0-9][a-z0-9-]*") String, @NotNull @Valid Project> projects,
         @NotBlank String workRoot,
         @NotNull @Valid Defaults defaults,
-        @DefaultValue @Valid Runner runner
+        @DefaultValue @Valid Runner runner,
+        @DefaultValue("10") @Min(1) int queueCapacity
 ) {
     public Path workRootPath() {
         return Path.of(workRoot).toAbsolutePath().normalize();
