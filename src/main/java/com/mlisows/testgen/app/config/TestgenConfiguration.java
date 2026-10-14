@@ -1,6 +1,9 @@
 package com.mlisows.testgen.app.config;
 
 import com.mlisows.testgen.app.project.ProjectRegistry;
+import com.mlisows.testgen.infrastructure.job.InMemoryGenerationJobStore;
+import com.mlisows.testgen.usecase.ports.GenerationJobStore;
+import java.time.Clock;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -41,4 +44,9 @@ public class TestgenConfiguration {
     public GenerationSettings generationDefaults(TestgenProperties properties) {
         return properties.defaults().toGenerationSettings();
     }
+    @Bean
+    public GenerationJobStore generationJobStore() {
+        return new InMemoryGenerationJobStore(Clock.systemUTC());
+    }
+
 }
