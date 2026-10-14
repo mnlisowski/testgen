@@ -9,3 +9,5 @@ testgen:
     initial-candidates: 10
     mutated-initial-candidates: 3
     max-values-per-slot: 10
+  runner:
+    timeout-seconds: 120

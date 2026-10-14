@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
 
 import java.nio.file.Path;
@@ -18,10 +19,17 @@ import java.util.Map;
 public record TestgenProperties(
         @NotEmpty Map<@Pattern(regexp = "[a-z0-9][a-z0-9-]*") String, @NotNull @Valid Project> projects,
         @NotBlank String workRoot,
-        @NotNull @Valid Defaults defaults
+        @NotNull @Valid Defaults defaults,
+        @DefaultValue @Valid Runner runner
 ) {
     public Path workRootPath() {
         return Path.of(workRoot).toAbsolutePath().normalize();
+    }
+
+    public record Runner(
+            @DefaultValue("120") @Min(1) long timeoutSeconds,
+            String classpath
+    ) {
     }
 
     public record Project(@NotBlank String path) {

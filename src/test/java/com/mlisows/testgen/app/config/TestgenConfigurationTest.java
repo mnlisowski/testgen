@@ -47,6 +47,7 @@ class TestgenConfigurationTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "testgen.defaults.max-candidates=0",
+            "testgen.runner.timeout-seconds=0",
             "testgen.defaults.initial-candidates=-1",
             "testgen.defaults.mutated-initial-candidates=-1",
             "testgen.defaults.max-values-per-slot=0",

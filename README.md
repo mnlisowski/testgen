@@ -362,8 +362,9 @@ Endpoint zwraca identyfikatory bez lokalnych ścieżek projektów.
 Uruchomienie z JAR-a:
 
 ```bash
-mvn clean package
-java -jar target/testgen-1.0-SNAPSHOT-server.jar
+mvn clean package dependency:copy-dependencies -DincludeScope=runtime
+java -jar target/testgen-1.0-SNAPSHOT-server.jar \
+  --testgen.runner.classpath="target/testgen-1.0-SNAPSHOT.jar:target/dependency/*"
 ```
 
 Port można zmienić argumentem `--server.port=8081`. Zatrzymanie: `Ctrl+C`.
@@ -375,3 +376,18 @@ Konfiguracja serwera znajduje się w `src/main/resources/application.yml`:
 a `testgen.defaults` domyślne parametry generowania. Ścieżki względne są liczone
 od katalogu uruchomienia aplikacji. Domyślnie dostępny jest `examples/fit-bench`.
 Przy starcie sprawdzane są parametry i struktura skonfigurowanych projektów Maven.
+
+
+Wykonawca zadań uruchamia generator w osobnej JVM. Limit wykonania określa
+`testgen.runner.timeout-seconds` (domyślnie 120). Przy uruchomieniu przez Maven
+classpath jest dziedziczony z procesu serwera. Dla wykonywalnego JAR-a Boota
+trzeba podać `testgen.runner.classpath` ze zwykłym JAR-em i jego zależnościami,
+jak wyżej; na Windows separatorem classpath jest `;`.
+
+Wyniki robocze trafiają do `<request.workRoot>/<jobId>/`: `request.json`,
+`result.json`, `process.log` oraz `workspace/`. Katalog zadania nie może już
+istnieć; ponowne zlecenie wymaga nowego identyfikatora. JSON jest wewnętrznym
+formatem komunikacji między procesami tej samej wersji programu, nie publicznym API.
+Po timeoutcie lub przerwaniu wykonawca zatrzymuje proces oraz zaobserwowane procesy
+potomne. Osobna JVM nie stanowi sandboxa dla niezaufanego kodu.
+Kolejka i endpoint zlecania generowania nie są jeszcze podłączone.
