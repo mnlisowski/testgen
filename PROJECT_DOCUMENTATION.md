@@ -226,6 +226,15 @@ cli
 
 #### Usecase
 
+- `usecase/generation/GenerateTestsUseCase.java` - koordynuje analizę, przygotowanie
+  instrumentowanego projektu i generowanie; zwraca `GenerationResult` bez
+  zapisywania końcowych testów i raportów.
+- `usecase/profile/PrepareProfileUseCase.java` - przygotowuje lokalne środowisko
+  profilowania przez port `ProfileWorkspacePreparer`.
+- `usecase/generation/GenerationRequest.java` / `domain/generation/GenerationSettings.java` - dane wejściowe
+  generowania, w tym gotowy obiekt profilu zamiast ścieżki do pliku.
+- `usecase/generation/GeneratedTestRenderer.java` - tworzy listę `GeneratedTestFile`
+  (ścieżka względna i treść), którą wywołujący może zapisać lub wysłać.
 - `usecase/MethodGenerationPlanner.java` - sprawdza, które metody mieszczą się
   w  ograniczeniach generatora.
 - `usecase/InitialTestCandidateFactory.java` - tworzy bazowego kandydata testu
@@ -261,6 +270,11 @@ cli
 - `usecase/ports/SourceInstrumenter.java` - port instrumentacji źródeł.
 - `usecase/ports/TestCandidateExecutor.java` - port wykonania kandydata testu.
 - `usecase/ports/ObservedProfileReader.java` - port odczytu profilu runtime.
+- `usecase/ports/ProjectSourceLocator.java` - port wyszukiwania źródeł projektu.
+- `usecase/ports/CandidateExecutorFactory.java` - port przygotowania wykonawcy
+  kandydatów wraz z instrumentacją i kompilacją projektu.
+- `usecase/ports/ProfileWorkspacePreparer.java` - port przygotowania środowiska
+  do zbierania profilu. Domyślne adaptery składa `infrastructure/TestgenUseCases.java`.
 
 #### Infrastructure - parser
 
@@ -411,7 +425,9 @@ Wartości w puli mają tier:
 
 ## 8. Szczegółowy przepływ 
 
-zgodnie z kolejnością z `Main.generateTests`.
+CLI (`Main`) odczytuje argumenty i profil, a następnie wywołuje
+`GenerateTestsUseCase.generate`. Poniżej opisano kolejność kroków tego przypadku
+użycia i jego adapterów; zapis końcowych plików pozostaje w CLI.
 
 ### 8.1. Wybór trybu i odczyt argumentów
 

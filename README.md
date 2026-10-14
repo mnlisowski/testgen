@@ -276,3 +276,67 @@ Raport generowania pokazuje te ograniczenia: ile metod przeszlo podstawowe regul
 
 ![Przykładowy raport generatora](docs/images/report.png)
 
+
+## Wywołanie generatora z kodu Javy
+
+Wymagane jest JDK 21. CLI zachowuje dotychczasowe argumenty i format plików,
+ale logikę obu trybów można również wywołać bez `Main`:
+
+```java
+import com.mlisows.testgen.domain.profile.ObservedProfile;
+import com.mlisows.testgen.infrastructure.TestgenUseCases;
+import com.mlisows.testgen.domain.generation.GenerationSettings;
+import com.mlisows.testgen.usecase.generation.GenerationRequest;
+import com.mlisows.testgen.usecase.profile.ProfilePreparationRequest;
+import java.nio.file.Path;
+import java.util.List;
+
+var generator = TestgenUseCases.generation();
+var result = generator.generate(new GenerationRequest(
+        Path.of("examples/fit-bench"),
+        Path.of("target/api-demo"),
+        GenerationSettings.defaults(),
+        new ObservedProfile(List.of(), List.of())));
+
+// Wyniki są w pamięci: treść testów, raport i identyfikatory pokrytych celów.
+var tests = result.tests();
+var report = result.report();
+var coveredGoals = result.coveredGoalIds();
+
+var profileWorkspace = TestgenUseCases.profilePreparation().prepare(
+        new ProfilePreparationRequest(
+                Path.of("examples/fit-bench"), Path.of("target/profile-demo")));
+```
+
+`GenerateTestsUseCase` przyjmuje gotowy `ObservedProfile`. Odczyt pliku przez
+`TextObservedProfileReader` pozostaje po stronie wywołującego; w przyszłości
+profil będzie mógł pochodzić z bazy. Wynik zawiera testy jako pary względnej
+ścieżki i treści. CLI zapisuje je przez `GeneratedCandidateTestFileWriter.writeFiles`.
+Sam przypadek użycia zapisuje przez adapter robocze źródła i klasy potrzebne
+do wykonania kandydatów, ale nie zapisuje końcowych testów ani raportów.
+
+`PrepareProfileUseCase` tworzy lokalny katalog z instrumentowanymi źródłami,
+klasami i zasobami. Zwraca też classpath do uruchomienia aplikacji oraz ścieżkę,
+pod którą recorder zapisze profil po jej uruchomieniu. Nie uruchamia aplikacji
+ani nie tworzy przenośnej paczki projektu.
+
+`TestgenUseCases` składa domyślne adaptery Maven/JavaParser. Klasy w `usecase`
+korzystają z portów i nie importują infrastruktury ani Springa. Późniejsza
+konfiguracja Springa będzie mogła złożyć ten sam zestaw zależności.
+
+Generowania trzeba wykonywać kolejno w obrębie jednej JVM ze względu na
+statyczny recorder pokrycia. Każde wywołanie tworzy własny generator losowy,
+a osobne katalogi robocze pozwalają zachować artefakty poszczególnych uruchomień.
+
+Testy projektu:
+
+```bash
+mvn test
+```
+
+Polecenie wymaga, aby Maven korzystał z JDK 21 (`mvn -version`).
+
+Nowe operacje są pogrupowane w pakietach `usecase.generation` i
+`usecase.profile`, razem z ich żądaniami i wynikami. `GenerationSettings`
+znajduje się w `domain.generation`, ponieważ opisuje parametry algorytmu.
+Ścieżki robocze i classpath pozostają w kontraktach przypadków użycia.
