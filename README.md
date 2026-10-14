@@ -300,7 +300,7 @@ var result = generator.generate(new GenerationRequest(
 
 // Wyniki są w pamięci: treść testów, raport i identyfikatory pokrytych celów.
 var tests = result.tests();
-var report = result.report();
+var report = result.reportText();
 var coveredGoals = result.coveredGoalIds();
 
 var profileWorkspace = TestgenUseCases.profilePreparation().prepare(
@@ -413,7 +413,28 @@ Wymagany jest `projectId`. Opcjonalne pola `seed`, `maxCandidates`,
 `initialCandidates`, `mutatedInitialCandidates` i `maxValuesPerSlot` nadpisują
 `testgen.defaults`; pominięcie pola lub `null` oznacza wartość domyślną.
 Nieobsługiwane pola, w tym na razie `profileId`, dają `400`. Import profili
-oraz pobieranie raportu i ZIP-a przez API będą osobnymi przyrostami.
+przez API będzie osobnym przyrostem.
+
+Raport zakończonego sukcesem zadania pobierzesz jako plik tekstowy UTF-8:
+
+```bash
+curl --fail "http://localhost:8080/api/jobs/<id>/report" -o report.txt
+```
+
+Endpoint zwraca `200` i nagłówek `Content-Disposition: attachment` z nazwą
+`report-<id>.txt`. Nieznane zadanie daje `404`, a istniejące zadanie bez wyniku
+(np. oczekujące, wykonywane lub zakończone błędem) daje `409`.
+
+Wygenerowane testy pobierzesz jako archiwum ZIP:
+
+```bash
+curl --fail "http://localhost:8080/api/jobs/<id>/tests" -o tests.zip
+```
+
+Archiwum `tests-<id>.zip` zawiera pliki Javy w katalogach odpowiadających pakietom.
+Treść plików jest kodowana w UTF-8. Jeśli generowanie zakończyło się sukcesem,
+ale nie utworzyło testów, pobierzesz poprawne puste archiwum. Kody `404` i `409`
+mają takie samo znaczenie jak przy pobieraniu raportu.
 
 Kolejka wykonuje jedno zadanie naraz. `testgen.queue-capacity` określa liczbę
 oczekujących zadań (domyślnie 10, poza jednym aktywnym). Błędne dane dają `400`,

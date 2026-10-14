@@ -1,10 +1,11 @@
-    package com.mlisows.testgen.app.job;
+package com.mlisows.testgen.app.job;
 
 import com.mlisows.testgen.app.config.TestgenProperties;
 import com.mlisows.testgen.app.project.ProjectRegistry;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.domain.profile.ObservedProfile;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
+import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,12 @@ public class GenerationJobService {
         GenerationJob queuedJob = jobStore.create(submission.projectId(), generationRequest);
         jobQueue.submit(queuedJob.id());
         return queuedJob;
+    }
+
+    public GenerationResult findResult(UUID jobId) {
+        GenerationJob job = find(jobId);
+        return job.result()
+                .orElseThrow(() -> new JobResultUnavailableException(jobId, job.status()));
     }
 
     public GenerationJob find(UUID jobId) {

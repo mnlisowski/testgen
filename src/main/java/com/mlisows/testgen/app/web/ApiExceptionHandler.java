@@ -1,6 +1,7 @@
 package com.mlisows.testgen.app.web;
 
 import com.mlisows.testgen.app.job.JobQueueFullException;
+import com.mlisows.testgen.app.job.JobResultUnavailableException;
 import com.mlisows.testgen.app.job.JobNotFoundException;
 import com.mlisows.testgen.app.job.ProjectNotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +23,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ProjectNotFoundException.class, JobNotFoundException.class})
     public ProblemDetail handleNotFound(RuntimeException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(JobResultUnavailableException.class)
+    public ProblemDetail handleUnavailableResult(JobResultUnavailableException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(JobQueueFullException.class)
