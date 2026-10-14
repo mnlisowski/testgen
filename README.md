@@ -412,8 +412,11 @@ błędu. Szczegóły techniczne błędu pozostają w logach serwera i procesu ge
 Wymagany jest `projectId`. Opcjonalne pola `seed`, `maxCandidates`,
 `initialCandidates`, `mutatedInitialCandidates` i `maxValuesPerSlot` nadpisują
 `testgen.defaults`; pominięcie pola lub `null` oznacza wartość domyślną.
-Nieobsługiwane pola, w tym na razie `profileId`, dają `400`. Podłączenie zaimportowanego
-profilu do zlecenia generowania będzie kolejnym przyrostem.
+Nieobsługiwane pola dają `400`. Opcjonalne `profileId` wskazuje wcześniej zaimportowany
+profil przypisany do tego samego projektu. Pominięcie `profileId` lub `null` oznacza
+generowanie bez profilu. Niepoprawny UUID daje `400`, nieznany profil `404`,
+a profil należący do innego projektu `400`. Odpowiedź na zlecenie i odczyt statusu
+zawierają `profileId` użytego profilu (lub `null`).
 
 Raport zakończonego sukcesem zadania pobierzesz jako plik tekstowy UTF-8:
 
@@ -466,5 +469,14 @@ Import sprawdza format rekordów, nie zgodność sygnatur metod z kodem projektu
 Niepoprawny format, kodowanie lub brak pola `file` daje `400`, nieznany projekt `404`,
 a przekroczenie limitu uploadu `413`. Limit pliku wynosi 1 MB, całego żądania 2 MB
 (`spring.servlet.multipart.max-file-size` i `max-request-size`).
-Profile są przechowywane w pamięci; restart serwera je usuwa. Ten etap zapisuje profil,
-ale parametr `profileId` w zleceniu generowania nie jest jeszcze obsługiwany.
+Profile są przechowywane w pamięci; restart serwera je usuwa. Identyfikator otrzymany
+po imporcie możesz przekazać przy generowaniu:
+
+```bash
+curl -i -X POST http://localhost:8080/api/generations \
+  -H 'Content-Type: application/json' \
+  -d '{"projectId":"fit-bench","profileId":"<UUID-z-importu>","seed":42,"maxCandidates":50}'
+```
+
+Zadanie zachowuje identyfikator oraz zawartość wybranego profilu. Generator otrzymuje
+jego rekordy, bez potrzeby odczytywania pliku na dysku.

@@ -4,8 +4,11 @@ import com.mlisows.testgen.domain.generation.GenerationSettings;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.UUID;
+
 public record SubmitGenerationRequest(
         @NotBlank String projectId,
+        UUID profileId,
         Long seed,
         @Min(1) Integer maxCandidates,
         @Min(0) Integer initialCandidates,

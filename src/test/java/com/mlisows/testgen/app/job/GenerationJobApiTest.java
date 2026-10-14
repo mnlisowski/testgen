@@ -60,15 +60,17 @@ class GenerationJobApiTest {
     @Autowired
     private GenerationJobStore jobStore;
 
-    @Test
-    void shouldSubmitRealGenerationAndExposeStatusAndSummary() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void shouldSubmitRealGenerationAndExposeStatusAndSummary(boolean explicitNullProfile) throws Exception {
         try (var client = HttpClient.newHttpClient()) {
             HttpResponse<String> accepted = submit(client, """
-                    {"projectId":"fit-bench","seed":42,"initialCandidates":0}
-                    """);
+                    {%s"projectId":"fit-bench","seed":42,"initialCandidates":0}
+                    """.formatted(explicitNullProfile ? "\"profileId\":null," : ""));
             assertEquals(202, accepted.statusCode(), accepted.body());
             JsonObject acceptedBody = JsonParser.parseString(accepted.body()).getAsJsonObject();
             assertEquals("QUEUED", acceptedBody.get("status").getAsString());
+            assertTrue(acceptedBody.get("profileId").isJsonNull());
             JsonObject settings = acceptedBody.getAsJsonObject("settings");
             assertEquals(42, settings.get("seed").getAsInt());
             assertEquals(0, settings.get("initialCandidates").getAsInt());
@@ -88,6 +90,8 @@ class GenerationJobApiTest {
             UUID jobId = UUID.fromString(status.get("id").getAsString());
             GenerationJob completedJob = jobStore.findById(jobId).orElseThrow();
             assertFalse(completedJob.result().orElseThrow().tests().isEmpty());
+            assertTrue(completedJob.profileId().isEmpty());
+            assertTrue(completedJob.request().observedProfile().getArgumentValueHints().isEmpty());
 
             HttpResponse<String> report = get(client, statusLocation + "/report");
             assertEquals(200, report.statusCode());
@@ -130,6 +134,7 @@ class GenerationJobApiTest {
     @ValueSource(strings = {
             "{}", "{", "null",
             "{\"projectId\":\"fit-bench\",\"profileId\":\"unsupported\"}",
+            "{\"projectId\":\"fit-bench\",\"unknownField\":42}",
             "{\"projectId\":\" \"}",
             "{\"projectId\":\"fit-bench\",\"maxCandidates\":0}",
             "{\"projectId\":\"fit-bench\",\"initialCandidates\":-1}",

@@ -11,6 +11,7 @@ import java.util.UUID;
 public record JobResponse(
         UUID id,
         String projectId,
+        UUID profileId,
         JobStatus status,
         GenerationSettings settings,
         Instant createdAt,
@@ -27,7 +28,7 @@ public record JobResponse(
             case INTERRUPTED -> "Generation was interrupted.";
             default -> null;
         };
-        return new JobResponse(job.id(), job.projectId(), job.status(), job.request().settings(),
+        return new JobResponse(job.id(), job.projectId(), job.profileId().orElse(null), job.status(), job.request().settings(),
                 job.createdAt(), job.startedAt().orElse(null), job.finishedAt().orElse(null), summary, publicError);
     }
 }
