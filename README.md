@@ -412,8 +412,8 @@ błędu. Szczegóły techniczne błędu pozostają w logach serwera i procesu ge
 Wymagany jest `projectId`. Opcjonalne pola `seed`, `maxCandidates`,
 `initialCandidates`, `mutatedInitialCandidates` i `maxValuesPerSlot` nadpisują
 `testgen.defaults`; pominięcie pola lub `null` oznacza wartość domyślną.
-Nieobsługiwane pola, w tym na razie `profileId`, dają `400`. Import profili
-przez API będzie osobnym przyrostem.
+Nieobsługiwane pola, w tym na razie `profileId`, dają `400`. Podłączenie zaimportowanego
+profilu do zlecenia generowania będzie kolejnym przyrostem.
 
 Raport zakończonego sukcesem zadania pobierzesz jako plik tekstowy UTF-8:
 
@@ -446,3 +446,25 @@ Przy zamykaniu serwera aktywne wykonanie jest przerywane, a oczekujące zadania
 oznaczane jako `FAILED`. Historia i wyniki znajdują się w pamięci i znikają po
 restarcie. Limit kolejki nie ogranicza rozmiaru zachowanej historii ani plików
 roboczych; automatyczne usuwanie starych wyników nie jest jeszcze zaimplementowane.
+
+### Import profilu przez API
+
+Plik `observed-profile.txt` przygotowany przez istniejący tryb CLI można przesłać
+jako pole `file` formularza multipart:
+
+```bash
+curl -i -X POST http://localhost:8080/api/projects/fit-bench/profiles \
+  -F 'file=@observed-profile.txt'
+```
+
+Odpowiedź `201 Created` zawiera `profileId`, `projectId`, `createdAt`, `hintCount`
+i `invocationCount`. Każdy upload tworzy osobny profil przypisany do projektu z adresu.
+Plik musi być w UTF-8 i zawierać co najmniej jeden rekord `hint` lub `invocation`
+w formacie używanym przez CLI. Puste linie i komentarze zaczynające się od `#` są pomijane.
+Import sprawdza format rekordów, nie zgodność sygnatur metod z kodem projektu.
+
+Niepoprawny format, kodowanie lub brak pola `file` daje `400`, nieznany projekt `404`,
+a przekroczenie limitu uploadu `413`. Limit pliku wynosi 1 MB, całego żądania 2 MB
+(`spring.servlet.multipart.max-file-size` i `max-request-size`).
+Profile są przechowywane w pamięci; restart serwera je usuwa. Ten etap zapisuje profil,
+ale parametr `profileId` w zleceniu generowania nie jest jeszcze obsługiwany.

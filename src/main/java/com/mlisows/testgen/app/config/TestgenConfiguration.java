@@ -10,6 +10,9 @@ import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
 import com.mlisows.testgen.usecase.job.ExecuteGenerationJobUseCase;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import com.mlisows.testgen.usecase.ports.GenerationRunner;
+import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
+import com.mlisows.testgen.infrastructure.profile.InMemoryObservedProfileStore;
+import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +59,16 @@ public class TestgenConfiguration {
     @Bean
     public GenerationJobStore generationJobStore() {
         return new InMemoryGenerationJobStore(Clock.systemUTC());
+    }
+
+    @Bean
+    public ObservedProfileStore observedProfileStore() {
+        return new InMemoryObservedProfileStore(Clock.systemUTC());
+    }
+
+    @Bean
+    public TextObservedProfileReader observedProfileReader() {
+        return new TextObservedProfileReader();
     }
 
     @Bean

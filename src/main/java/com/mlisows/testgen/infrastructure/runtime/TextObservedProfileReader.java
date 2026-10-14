@@ -20,10 +20,17 @@ public final class TextObservedProfileReader implements ObservedProfileReader {
     public ObservedProfile read(Path profilePath) {
         Objects.requireNonNull(profilePath, "profilePath must not be null");
 
+        return parseLines(readLines(profilePath));
+    }
+
+    public ObservedProfile parse(String text) {
+        Objects.requireNonNull(text, "text must not be null");
+        return parseLines(text.lines().toList());
+    }
+
+    private ObservedProfile parseLines(List<String> lines) {
         List<ArgumentValueHint> argumentValueHints = new ArrayList<>();
         List<ObservedInvocation> observedInvocations = new ArrayList<>();
-
-        List<String> lines = readLines(profilePath);
 
         for (int index = 0; index < lines.size(); index++) {
             String line = lines.get(index).trim();

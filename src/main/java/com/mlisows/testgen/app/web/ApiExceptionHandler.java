@@ -4,6 +4,7 @@ import com.mlisows.testgen.app.job.JobQueueFullException;
 import com.mlisows.testgen.app.job.JobResultUnavailableException;
 import com.mlisows.testgen.app.job.JobNotFoundException;
 import com.mlisows.testgen.app.job.ProjectNotFoundException;
+import com.mlisows.testgen.app.profile.InvalidObservedProfileException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -23,6 +24,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ProjectNotFoundException.class, JobNotFoundException.class})
     public ProblemDetail handleNotFound(RuntimeException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidObservedProfileException.class)
+    public ProblemDetail handleInvalidProfile(InvalidObservedProfileException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(JobResultUnavailableException.class)
