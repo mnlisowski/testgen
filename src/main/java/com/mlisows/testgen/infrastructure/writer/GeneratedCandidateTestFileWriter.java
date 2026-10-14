@@ -1,8 +1,9 @@
 package com.mlisows.testgen.infrastructure.writer;
 
-import com.mlisows.testgen.domain.execution.ExecutionOutcome;
 import com.mlisows.testgen.domain.execution.TestCandidateExecutionResult;
 import com.mlisows.testgen.usecase.JUnitCandidateTestWriter;
+import com.mlisows.testgen.usecase.generation.GeneratedTestRenderer;
+import com.mlisows.testgen.usecase.generation.GeneratedTestFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,28 +26,14 @@ public final class GeneratedCandidateTestFileWriter {
         Objects.requireNonNull(outputRoot, "outputRoot must not be null");
         Objects.requireNonNull(selectedResults, "selectedResults must not be null");
 
-        for (String className : selectedResultClassNames(selectedResults)) {
-            String code = testWriter.write(className, selectedResults);
-            writeText(generatedTestPath(outputRoot, className), code);
+        writeFiles(outputRoot, new GeneratedTestRenderer(testWriter).render(selectedResults));
+    }
+
+    public void writeFiles(Path outputRoot, List<GeneratedTestFile> files) {
+        Objects.requireNonNull(outputRoot, "outputRoot");
+        for (GeneratedTestFile file : files) {
+            writeText(outputRoot.resolve(file.relativePath()), file.content());
         }
-    }
-
-    private List<String> selectedResultClassNames(List<TestCandidateExecutionResult> selectedResults) {
-        return selectedResults.stream()
-                .filter(this::canWriteCandidateTest)
-                .map(result -> result.getCandidate().getClassName())
-                .distinct()
-                .sorted()
-                .toList();
-    }
-
-    private boolean canWriteCandidateTest(TestCandidateExecutionResult result) {
-        return result.getOutcome() == ExecutionOutcome.RETURNED
-                || result.getOutcome() == ExecutionOutcome.THREW_EXCEPTION;
-    }
-
-    private Path generatedTestPath(Path outputRoot, String className) {
-        return outputRoot.resolve(className.replace('.', '/') + "Test.java");
     }
 
     private void writeText(Path path, String text) {
