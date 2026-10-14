@@ -340,3 +340,25 @@ Nowe operacje są pogrupowane w pakietach `usecase.generation` i
 `usecase.profile`, razem z ich żądaniami i wynikami. `GenerationSettings`
 znajduje się w `domain.generation`, ponieważ opisuje parametry algorytmu.
 Ścieżki robocze i classpath pozostają w kontraktach przypadków użycia.
+
+## Serwer Spring Boot
+
+Wymagane JDK 21. Uruchomienie lokalne:
+
+```bash
+mvn spring-boot:run
+```
+
+Serwer domyślnie nasłuchuje na porcie 8080. Endpointy biznesowe nie są jeszcze
+zaimplementowane; żądanie `GET /` zwraca 404.
+
+Uruchomienie z JAR-a:
+
+```bash
+mvn clean package
+java -jar target/testgen-1.0-SNAPSHOT-server.jar
+```
+
+Port można zmienić argumentem `--server.port=8081`. Zatrzymanie: `Ctrl+C`.
+Dotychczasowe CLI i Docker Compose nadal służą do generowania testów oraz
+przygotowania profilu.
