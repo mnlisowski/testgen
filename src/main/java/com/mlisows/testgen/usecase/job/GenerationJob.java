@@ -36,7 +36,9 @@ public final class GenerationJob {
     public static GenerationJob queued(UUID id, String projectId, GenerationRequest request, Instant now) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(projectId, "projectId");
-        if (projectId.isBlank()) throw new IllegalArgumentException("projectId must not be blank");
+        if (projectId.isBlank()) {
+            throw new IllegalArgumentException("projectId must not be blank");
+        }
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(now, "now");
         return new GenerationJob(id, projectId, request, JobStatus.QUEUED, now, null, null, null, null);
@@ -78,7 +80,9 @@ public final class GenerationJob {
 
     private static String requireError(String error) {
         Objects.requireNonNull(error, "error");
-        if (error.isBlank()) throw new IllegalArgumentException("error must not be blank");
+        if (error.isBlank()) {
+            throw new IllegalArgumentException("error must not be blank");
+        }
         return error;
     }
 
@@ -88,13 +92,39 @@ public final class GenerationJob {
         }
     }
 
-    public UUID id() { return id; }
-    public String projectId() { return projectId; }
-    public GenerationRequest request() { return request; }
-    public JobStatus status() { return status; }
-    public Instant createdAt() { return createdAt; }
-    public Optional<Instant> startedAt() { return Optional.ofNullable(startedAt); }
-    public Optional<Instant> finishedAt() { return Optional.ofNullable(finishedAt); }
-    public Optional<GenerationResult> result() { return Optional.ofNullable(result); }
-    public Optional<String> error() { return Optional.ofNullable(error); }
+    public UUID id() {
+        return id;
+    }
+
+    public String projectId() {
+        return projectId;
+    }
+
+    public GenerationRequest request() {
+        return request;
+    }
+
+    public JobStatus status() {
+        return status;
+    }
+
+    public Instant createdAt() {
+        return createdAt;
+    }
+
+    public Optional<Instant> startedAt() {
+        return Optional.ofNullable(startedAt);
+    }
+
+    public Optional<Instant> finishedAt() {
+        return Optional.ofNullable(finishedAt);
+    }
+
+    public Optional<GenerationResult> result() {
+        return Optional.ofNullable(result);
+    }
+
+    public Optional<String> error() {
+        return Optional.ofNullable(error);
+    }
 }

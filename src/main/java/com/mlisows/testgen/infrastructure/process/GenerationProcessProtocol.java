@@ -3,8 +3,8 @@ package com.mlisows.testgen.infrastructure.process;
 import com.google.gson.Gson;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.domain.profile.ObservedProfile;
-import com.mlisows.testgen.usecase.GenerationReport;
 import com.mlisows.testgen.usecase.generation.GeneratedTestFile;
+import com.mlisows.testgen.usecase.generation.GenerationMetrics;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 
@@ -15,11 +15,12 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /** Internal format for processes from the same build, not a public API or permanent storage format. */
 public final class GenerationProcessProtocol {
     private static final Gson JSON = new Gson();
-    private static final int PROTOCOL_VERSION = 1;
+    private static final int PROTOCOL_VERSION = 2;
 
     private record ProcessRequest(int version, String projectRoot, String workRoot,
                                   GenerationSettings settings, ObservedProfile profile) {
@@ -28,7 +29,8 @@ public final class GenerationProcessProtocol {
     private record ProcessTestFile(String path, String content) {
     }
 
-    private record ProcessResult(int version, List<ProcessTestFile> tests, GenerationReport report) {
+    private record ProcessResult(int version, List<ProcessTestFile> tests, String reportText,
+                                 GenerationMetrics metrics, Set<String> coveredGoalIds) {
     }
 
     public void writeRequest(Path requestPath, GenerationRequest generationRequest) throws IOException {
@@ -69,7 +71,8 @@ public final class GenerationProcessProtocol {
         }
 
         ProcessResult processResult = new ProcessResult(
-                PROTOCOL_VERSION, processTestFiles, generationResult.report()
+                PROTOCOL_VERSION, processTestFiles, generationResult.reportText(),
+                generationResult.metrics(), generationResult.coveredGoalIds()
         );
         Path temporaryResultPath = resultPath.resolveSibling(resultPath.getFileName() + ".tmp");
         Files.writeString(temporaryResultPath, JSON.toJson(processResult));
@@ -87,11 +90,8 @@ public final class GenerationProcessProtocol {
             generatedTests.add(new GeneratedTestFile(Path.of(processTest.path()), processTest.content()));
         }
 
-        GenerationResult generationResult = new GenerationResult(generatedTests, processResult.report());
-        // Access report data now so an unreadable report cannot be stored as a successful result.
-        generationResult.report().toText();
-        generationResult.coveredGoalIds();
-        return generationResult;
+        return new GenerationResult(generatedTests, processResult.reportText(),
+                processResult.metrics(), processResult.coveredGoalIds());
     }
 
     private static void checkVersion(int version) {

@@ -39,7 +39,7 @@ class TestgenUseCasesTest {
         assertFalse(first.coveredGoalIds().isEmpty());
         assertEquals(first.tests(), repeated.tests());
         assertEquals(first.coveredGoalIds(), repeated.coveredGoalIds());
-        assertEquals(first.report().toText(), repeated.report().toText());
+        assertEquals(first.reportText(), repeated.reportText());
         assertFalse(Files.exists(workRoot.resolve("generated-tests")));
         assertFalse(Files.exists(workRoot.resolve("report.txt")));
         assertFalse(Files.exists(workRoot.resolve("covered-goals.json")));

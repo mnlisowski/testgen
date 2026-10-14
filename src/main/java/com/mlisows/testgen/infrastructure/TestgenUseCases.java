@@ -3,7 +3,9 @@ package com.mlisows.testgen.infrastructure;
 import com.mlisows.testgen.infrastructure.parser.JavaParserClassStructureAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserCodeAnalyzer;
 import com.mlisows.testgen.infrastructure.parser.JavaParserTypeIndexAnalyzer;
-import com.mlisows.testgen.infrastructure.project.*;
+import com.mlisows.testgen.infrastructure.project.InstrumentedCandidateExecutorFactory;
+import com.mlisows.testgen.infrastructure.project.InstrumentedProfileWorkspacePreparer;
+import com.mlisows.testgen.infrastructure.project.MavenProjectSourceLocator;
 import com.mlisows.testgen.usecase.generation.GenerateTestsUseCase;
 import com.mlisows.testgen.usecase.profile.PrepareProfileUseCase;
 

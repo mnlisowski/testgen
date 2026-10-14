@@ -35,7 +35,7 @@ class InMemoryGenerationJobStoreTest {
     }
 
     private GenerationResult result() {
-        return new GenerationResult(List.of(),
+        return GenerationResult.from(List.of(),
                 GenerationReport.from(List.of(), List.of(), CandidateCoverageEvaluation.empty()));
     }
 

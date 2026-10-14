@@ -1,23 +1,22 @@
 package com.mlisows.testgen.cli;
 
+import com.google.gson.GsonBuilder;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
+import com.mlisows.testgen.domain.profile.ObservedProfile;
+import com.mlisows.testgen.infrastructure.TestgenUseCases;
+import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
+import com.mlisows.testgen.infrastructure.writer.GeneratedCandidateTestFileWriter;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
+import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
 import com.mlisows.testgen.usecase.profile.ProfilePreparationRequest;
 import com.mlisows.testgen.usecase.profile.ProfilePreparationResult;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-
-import com.mlisows.testgen.domain.profile.ObservedProfile;
-import com.mlisows.testgen.infrastructure.TestgenUseCases;
-import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
-import com.mlisows.testgen.infrastructure.writer.GeneratedCandidateTestFileWriter;
-import com.google.gson.GsonBuilder;
-import com.mlisows.testgen.usecase.GenerationReport;
-import com.mlisows.testgen.usecase.ports.ObservedProfileReader;
+import java.util.List;
+import java.util.Set;
 
 public final class Main {
     private static final String GENERATE_TESTS_USAGE =
@@ -75,7 +74,7 @@ public final class Main {
                 + "Limit wartości na argument: " + maxValuesPerSlot + "\n"
                 + "Profil: " + (observedProfilePath == null ? "wyłączony"
                         : observedProfilePath.toAbsolutePath().normalize()) + "\n\n";
-        writeReport(workRoot, result.report(), settings);
+        writeReport(workRoot, result, settings);
     }
 
     private static void prepareProfile(String[] args) {
@@ -152,14 +151,14 @@ public final class Main {
         }
     }
 
-    private static void writeReport(Path workRoot, GenerationReport report, String settings) {
+    private static void writeReport(Path workRoot, GenerationResult result, String settings) {
         Path reportPath = workRoot.resolve("report.txt");
         Path coveredGoalsPath = workRoot.resolve("covered-goals.json");
 
         try {
             Files.createDirectories(workRoot);
-            Files.writeString(reportPath, settings + report.toText());
-            writeCoveredGoals(coveredGoalsPath, report.getCoveredBranchIds());
+            Files.writeString(reportPath, settings + result.reportText());
+            writeCoveredGoals(coveredGoalsPath, result.coveredGoalIds());
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot write generation results in: " + workRoot, exception);
         }

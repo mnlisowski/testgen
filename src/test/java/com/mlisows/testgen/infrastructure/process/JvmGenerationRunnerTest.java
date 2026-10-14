@@ -59,7 +59,8 @@ class JvmGenerationRunnerTest {
         GenerationResult actualResult = completedJob.result().orElseThrow();
         assertFalse(actualResult.tests().isEmpty());
         assertEquals(expectedResult.tests(), actualResult.tests());
-        assertEquals(expectedResult.report().toText(), actualResult.report().toText());
+        assertEquals(expectedResult.reportText(), actualResult.reportText());
+        assertEquals(expectedResult.metrics(), actualResult.metrics());
         assertEquals(expectedResult.coveredGoalIds(), actualResult.coveredGoalIds());
         Path jobDirectory = request.workRoot().resolve(generationJob.id().toString());
         assertTrue(Files.isRegularFile(jobDirectory.resolve("process.log")));

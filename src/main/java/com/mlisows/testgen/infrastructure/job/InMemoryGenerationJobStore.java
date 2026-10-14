@@ -25,8 +25,10 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
     @Override
     public GenerationJob create(String projectId, GenerationRequest request) {
         while (true) {
-            var job = GenerationJob.queued(UUID.randomUUID(), projectId, request, clock.instant());
-            if (jobs.putIfAbsent(job.id(), job) == null) return job;
+            GenerationJob job = GenerationJob.queued(UUID.randomUUID(), projectId, request, clock.instant());
+            if (jobs.putIfAbsent(job.id(), job) == null) {
+                return job;
+            }
         }
     }
 
@@ -60,10 +62,11 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
         return update(id, job -> job.interrupt(error, clock.instant()));
     }
 
-    private GenerationJob
-    update(UUID id, UnaryOperator<GenerationJob> transition) {
+    private GenerationJob update(UUID id, UnaryOperator<GenerationJob> transition) {
         return jobs.compute(Objects.requireNonNull(id, "id"), (key, current) -> {
-            if (current == null) throw new NoSuchElementException("Unknown generation job: " + key);
+            if (current == null) {
+                throw new NoSuchElementException("Unknown generation job: " + key);
+            }
             return transition.apply(current);
         });
     }

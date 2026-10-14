@@ -1,23 +1,36 @@
 package com.mlisows.testgen.usecase.generation;
 
-import com.mlisows.testgen.domain.generation.GenerationSettings;
-import com.mlisows.testgen.usecase.CandidateVariantGenerator;
-import com.mlisows.testgen.usecase.MethodGenerationPlanner;
-import com.mlisows.testgen.usecase.CandidateSpaceFactory;
-import com.mlisows.testgen.usecase.CandidateCoverageEvaluator;
-import com.mlisows.testgen.usecase.EvaluateProjectCandidatesUseCase;
-import com.mlisows.testgen.usecase.CandidateCoverageEvaluation;
-import com.mlisows.testgen.usecase.GenerationReport;
-
 import com.mlisows.testgen.domain.analysis.ClassAnalysisResult;
 import com.mlisows.testgen.domain.analysis.CoverageGoal;
 import com.mlisows.testgen.domain.generation.ArgumentValueHint;
+import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.domain.generation.MethodGenerationPlan;
 import com.mlisows.testgen.domain.profile.ObservedProfile;
-import com.mlisows.testgen.domain.structure.*;
-import com.mlisows.testgen.usecase.ports.*;
+import com.mlisows.testgen.domain.structure.ClassStructure;
+import com.mlisows.testgen.domain.structure.ProjectClassStructureIndex;
+import com.mlisows.testgen.domain.structure.ProjectTypeIndex;
+import com.mlisows.testgen.domain.structure.TypeInfo;
+import com.mlisows.testgen.domain.structure.TypeKind;
+import com.mlisows.testgen.usecase.CandidateCoverageEvaluation;
+import com.mlisows.testgen.usecase.CandidateCoverageEvaluator;
+import com.mlisows.testgen.usecase.CandidateSpaceFactory;
+import com.mlisows.testgen.usecase.CandidateVariantGenerator;
+import com.mlisows.testgen.usecase.EvaluateProjectCandidatesUseCase;
+import com.mlisows.testgen.usecase.GenerationReport;
+import com.mlisows.testgen.usecase.MethodGenerationPlanner;
+import com.mlisows.testgen.usecase.ports.CandidateExecutorFactory;
+import com.mlisows.testgen.usecase.ports.ClassStructureAnalyzer;
+import com.mlisows.testgen.usecase.ports.CodeAnalyzer;
+import com.mlisows.testgen.usecase.ports.ProjectSourceLocator;
+import com.mlisows.testgen.usecase.ports.TestCandidateExecutor;
+import com.mlisows.testgen.usecase.ports.TypeIndexAnalyzer;
+
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /** Generates results without persisting reports or test files. Calls must be serialized because of runtime recorders. */
 public final class GenerateTestsUseCase {
@@ -27,9 +40,13 @@ public final class GenerateTestsUseCase {
     private final ClassStructureAnalyzer classStructureAnalyzer;
     private final CandidateExecutorFactory executorFactory;
 
-    public GenerateTestsUseCase(ProjectSourceLocator sourceLocator, TypeIndexAnalyzer typeIndexAnalyzer,
-                               CodeAnalyzer codeAnalyzer, ClassStructureAnalyzer classStructureAnalyzer,
-                               CandidateExecutorFactory executorFactory) {
+    public GenerateTestsUseCase(
+            ProjectSourceLocator sourceLocator,
+            TypeIndexAnalyzer typeIndexAnalyzer,
+            CodeAnalyzer codeAnalyzer,
+            ClassStructureAnalyzer classStructureAnalyzer,
+            CandidateExecutorFactory executorFactory
+    ) {
         this.sourceLocator = Objects.requireNonNull(sourceLocator, "sourceLocator");
         this.typeIndexAnalyzer = Objects.requireNonNull(typeIndexAnalyzer, "typeIndexAnalyzer");
         this.codeAnalyzer = Objects.requireNonNull(codeAnalyzer, "codeAnalyzer");
@@ -67,7 +84,7 @@ public final class GenerateTestsUseCase {
 
         Map<Path, List<CoverageGoal>> coverageGoalsByPath = coverageGoalsByPath(analysisResultsByPath);
 
-        var candidateExecutor = executorFactory.prepare(request.projectRoot(), request.workRoot(), coverageGoalsByPath);
+        TestCandidateExecutor candidateExecutor = executorFactory.prepare(request.projectRoot(), request.workRoot(), coverageGoalsByPath);
 
         List<ArgumentValueHint> argumentValueHints = new ArrayList<>();
 
@@ -94,7 +111,7 @@ public final class GenerateTestsUseCase {
                 observedProfile.getArgumentValueHints()
         );
 
-        return new GenerationResult(
+        return GenerationResult.from(
                 new GeneratedTestRenderer().render(coverageEvaluation.getSelectedResults()),
                 GenerationReport.from(List.copyOf(analysisResultsByPath.values()), methodPlans, coverageEvaluation));
     }
