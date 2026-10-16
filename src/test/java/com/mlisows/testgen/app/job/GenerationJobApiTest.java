@@ -192,6 +192,48 @@ class GenerationJobApiTest {
     }
 
     @Test
+    void shouldReturnProjectHistoryNewestFirstInPages() throws Exception {
+        GenerationRequest request = new GenerationRequest(
+                Path.of("src/test/resources/sample-maven-project"), workDirectory,
+                GenerationSettings.defaults(), new ObservedProfile(List.of(), List.of()));
+        jobStore.create("fit-bench", request);
+        GenerationJob newestJob = jobStore.create("fit-bench", request);
+
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpResponse<String> response = get(client, "/api/projects/fit-bench/jobs?page=0&size=1");
+
+            assertEquals(200, response.statusCode(), response.body());
+            JsonObject history = JsonParser.parseString(response.body()).getAsJsonObject();
+            assertEquals(0, history.get("page").getAsInt());
+            assertEquals(1, history.get("size").getAsInt());
+            assertTrue(history.get("totalElements").getAsLong() >= 2);
+            assertEquals(1, history.getAsJsonArray("jobs").size());
+            JsonObject firstJob = history.getAsJsonArray("jobs").get(0).getAsJsonObject();
+            assertEquals(newestJob.id().toString(), firstJob.get("id").getAsString());
+            assertEquals("QUEUED", firstJob.get("status").getAsString());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"page=-1", "size=0", "size=101", "size=abc"})
+    void shouldRejectInvalidHistoryPageParameters(String query) throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpResponse<String> response = get(client, "/api/projects/fit-bench/jobs?" + query);
+
+            assertEquals(400, response.statusCode(), response.body());
+            assertTrue(response.headers().firstValue("Content-Type").orElse("")
+                    .startsWith("application/problem+json"));
+        }
+    }
+
+    @Test
+    void shouldReturnNotFoundForHistoryOfUnknownProject() throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            assertEquals(404, get(client, "/api/projects/unknown/jobs").statusCode());
+        }
+    }
+
+    @Test
     void shouldRejectUnknownOrMalformedJobIdWhenDownloadingResults() throws Exception {
         try (HttpClient client = HttpClient.newHttpClient()) {
             for (String resource : List.of("report", "tests")) {

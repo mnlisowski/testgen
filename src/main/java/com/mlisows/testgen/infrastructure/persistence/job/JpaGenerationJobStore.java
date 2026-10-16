@@ -8,9 +8,13 @@ import com.mlisows.testgen.infrastructure.persistence.project.ProjectRepository;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.GenerationJobSummary;
+import com.mlisows.testgen.usecase.job.JobPage;
 import com.mlisows.testgen.usecase.job.JobStatus;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
@@ -84,6 +88,20 @@ public class JpaGenerationJobStore implements GenerationJobStore {
         Objects.requireNonNull(status, "status");
 
         return jobRepository.findIdsByStatus(status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobPage findByProject(String projectId, int page, int size) {
+        Objects.requireNonNull(projectId, "projectId");
+
+        Page<GenerationJobSummaryRow> rows =
+                jobRepository.findSummariesByProjectId(projectId, PageRequest.of(page, size));
+        List<GenerationJobSummary> jobs = rows.getContent().stream()
+                .map(GenerationJobSummaryRow::toSummary)
+                .toList();
+
+        return new JobPage(jobs, page, size, rows.getTotalElements());
     }
 
     @Override

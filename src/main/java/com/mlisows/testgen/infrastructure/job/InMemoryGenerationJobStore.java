@@ -3,6 +3,8 @@ package com.mlisows.testgen.infrastructure.job;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.GenerationJobSummary;
+import com.mlisows.testgen.usecase.job.JobPage;
 import com.mlisows.testgen.usecase.job.JobStatus;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 
@@ -18,6 +20,12 @@ import java.util.function.UnaryOperator;
 
 /** Process-local storage: jobs and results are lost on restart. */
 public final class InMemoryGenerationJobStore implements GenerationJobStore {
+    // Newest first; the id only makes the order stable when two jobs have the same timestamp.
+    private static final Comparator<GenerationJob> NEWEST_FIRST = Comparator
+            .comparing(GenerationJob::createdAt)
+            .thenComparing(GenerationJob::id)
+            .reversed();
+
     private final ConcurrentHashMap<UUID, GenerationJob> jobs = new ConcurrentHashMap<>();
     private final Clock clock;
 
@@ -49,6 +57,23 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
                 .sorted(Comparator.comparing(GenerationJob::createdAt))
                 .map(GenerationJob::id)
                 .toList();
+    }
+
+    @Override
+    public JobPage findByProject(String projectId, int page, int size) {
+        Objects.requireNonNull(projectId, "projectId");
+
+        List<GenerationJob> projectJobs = jobs.values().stream()
+                .filter(job -> job.projectId().equals(projectId))
+                .sorted(NEWEST_FIRST)
+                .toList();
+        List<GenerationJobSummary> pageJobs = projectJobs.stream()
+                .skip((long) page * size)
+                .limit(size)
+                .map(GenerationJobSummary::from)
+                .toList();
+
+        return new JobPage(pageJobs, page, size, projectJobs.size());
     }
 
     @Override

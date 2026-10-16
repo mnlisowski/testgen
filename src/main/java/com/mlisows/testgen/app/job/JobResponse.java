@@ -3,6 +3,7 @@ package com.mlisows.testgen.app.job;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
 import com.mlisows.testgen.usecase.generation.GenerationMetrics;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.GenerationJobSummary;
 import com.mlisows.testgen.usecase.job.JobStatus;
 
 import java.time.Instant;
@@ -21,14 +22,21 @@ public record JobResponse(
         String error
 ) {
     public static JobResponse from(GenerationJob job) {
-        GenerationMetrics summary = job.result().map(result -> result.metrics()).orElse(null);
-        String publicError = switch (job.status()) {
+        return from(GenerationJobSummary.from(job));
+    }
+
+    public static JobResponse from(GenerationJobSummary job) {
+        return new JobResponse(job.id(), job.projectId(), job.profileId(), job.status(), job.settings(),
+                job.createdAt(), job.startedAt(), job.finishedAt(), job.metrics(), publicError(job));
+    }
+
+    // Internal error details can contain server paths, so the API returns only a general message.
+    private static String publicError(GenerationJobSummary job) {
+        return switch (job.status()) {
             case FAILED -> "Generation failed. See server logs for job " + job.id();
             case TIMED_OUT -> "Generation exceeded the configured time limit.";
             case INTERRUPTED -> "Generation was interrupted.";
             default -> null;
         };
-        return new JobResponse(job.id(), job.projectId(), job.profileId().orElse(null), job.status(), job.request().settings(),
-                job.createdAt(), job.startedAt().orElse(null), job.finishedAt().orElse(null), summary, publicError);
     }
 }

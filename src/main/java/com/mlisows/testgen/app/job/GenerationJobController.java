@@ -2,6 +2,8 @@ package com.mlisows.testgen.app.job;
 
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -59,6 +62,17 @@ public class GenerationJobController {
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .body(archive);
+    }
+
+    // Spring MVC validates @Min/@Max on these parameters itself and answers 400 for invalid values.
+    // The upper limit protects the server from requests for very large pages.
+    @GetMapping("/api/projects/{projectId}/jobs")
+    public JobHistoryResponse findProjectHistory(
+            @PathVariable String projectId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return JobHistoryResponse.from(generationJobService.findProjectHistory(projectId, page, size));
     }
 
     @GetMapping("/api/jobs/{jobId}")

@@ -3,6 +3,7 @@ package com.mlisows.testgen.usecase.ports;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.JobPage;
 import com.mlisows.testgen.usecase.job.JobStatus;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public interface GenerationJobStore {
 
     /** Returns identifiers of jobs with the given status, oldest first. */
     List<UUID> findIdsByStatus(JobStatus status);
+
+    /** Returns one page of job summaries of a project, newest first. */
+    JobPage findByProject(String projectId, int page, int size);
 
     GenerationJob start(UUID id);
     GenerationJob succeed(UUID id, GenerationResult result);

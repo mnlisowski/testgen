@@ -409,6 +409,18 @@ Zadanie może już wykonywać się w chwili otrzymania odpowiedzi `202`. `GET` z
 bieżący status, czasy, ustawienia oraz podsumowanie po sukcesie albo ogólny komunikat
 błędu. Szczegóły techniczne błędu pozostają w logach serwera i procesu generatora.
 
+Historia zadań projektu, od najnowszych:
+
+```bash
+curl "http://localhost:8080/api/projects/fit-bench/jobs?page=0&size=20"
+```
+
+Odpowiedź zawiera `jobs` (elementy w tym samym formacie co odczyt pojedynczego zadania),
+`page` (numer strony od 0), `size` i `totalElements` (liczba wszystkich zadań projektu).
+Domyślnie `page=0` i `size=20`; `size` musi mieścić się w zakresie 1–100, a `page`
+nie może być ujemne — w przeciwnym razie `400`. Nieznany projekt daje `404`.
+Historia nie zawiera raportu ani treści testów; pobiera się je osobno dla wybranego zadania.
+
 Wymagany jest `projectId`. Opcjonalne pola `seed`, `maxCandidates`,
 `initialCandidates`, `mutatedInitialCandidates` i `maxValuesPerSlot` nadpisują
 `testgen.defaults`; pominięcie pola lub `null` oznacza wartość domyślną.

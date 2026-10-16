@@ -9,6 +9,7 @@ import com.mlisows.testgen.domain.profile.ObservedProfile;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.JobPage;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import com.mlisows.testgen.usecase.profile.StoredObservedProfile;
@@ -72,6 +73,13 @@ public class GenerationJobService {
         GenerationJob job = find(jobId);
         return job.result()
                 .orElseThrow(() -> new JobResultUnavailableException(jobId, job.status()));
+    }
+
+    public JobPage findProjectHistory(String projectId, int page, int size) {
+        if (projects.findProjectRoot(projectId).isEmpty()) {
+            throw new ProjectNotFoundException(projectId);
+        }
+        return jobStore.findByProject(projectId, page, size);
     }
 
     public GenerationJob find(UUID jobId) {
