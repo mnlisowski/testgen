@@ -554,3 +554,20 @@ nie wymagają Dockera.
 ```bash
 mvn test
 ```
+
+### Kafka
+
+Compose zawiera jednowęzłową Kafkę w trybie KRaft (bez ZooKeepera) oraz Kafka UI.
+Na tym etapie aplikacja jeszcze z nich nie korzysta. Uruchomienie:
+
+```bash
+docker compose --profile messaging up -d --wait kafka kafka-ui
+```
+
+Kafka przyjmuje połączenia z komputera pod `localhost:9092`, a z innych kontenerów
+Compose pod `kafka:29092`. Kafka UI jest dostępne pod `http://localhost:8085`.
+Porty zmienisz zmiennymi `TESTGEN_KAFKA_PORT` i `TESTGEN_KAFKA_UI_PORT`.
+Automatyczne tworzenie topiców jest wyłączone; topiki będzie tworzyć aplikacja.
+Dane Kafki nie są zapisywane w wolumenie: `docker compose down` usuwa wiadomości,
+a zatrzymanie i ponowne uruchomienie kontenera (`stop`/`start`) je zachowuje.
+Usługi z profilem `messaging` nie startują przy usługach CLI.
