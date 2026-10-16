@@ -10,9 +10,13 @@ import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
 import com.mlisows.testgen.usecase.job.JobPage;
+import com.mlisows.testgen.usecase.job.JobRequestPublicationException;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
+import com.mlisows.testgen.usecase.ports.JobRequestPublisher;
 import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import com.mlisows.testgen.usecase.profile.StoredObservedProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -21,12 +25,15 @@ import java.util.UUID;
 
 @Service
 public class GenerationJobService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenerationJobService.class);
+
     private final ProjectRegistry projects;
     private final GenerationSettings defaults;
     private final Path workRoot;
     private final GenerationJobStore jobStore;
     private final GenerationJobQueue jobQueue;
     private final ObservedProfileStore profileStore;
+    private final JobRequestPublisher jobRequestPublisher;
 
     public GenerationJobService(
             ProjectRegistry projects,
@@ -34,7 +41,8 @@ public class GenerationJobService {
             TestgenProperties properties,
             GenerationJobStore jobStore,
             GenerationJobQueue jobQueue,
-            ObservedProfileStore profileStore
+            ObservedProfileStore profileStore,
+            JobRequestPublisher jobRequestPublisher
     ) {
         this.projects = projects;
         this.defaults = defaults;
@@ -42,6 +50,7 @@ public class GenerationJobService {
         this.jobStore = jobStore;
         this.jobQueue = jobQueue;
         this.profileStore = profileStore;
+        this.jobRequestPublisher = jobRequestPublisher;
     }
 
     public GenerationJob submit(SubmitGenerationRequest submission) {
@@ -52,9 +61,21 @@ public class GenerationJobService {
                 projectRoot, workRoot, submission.resolveSettings(defaults),
                 resolveProfile(submission.projectId(), submission.profileId())
         );
+        // create() commits its own transaction, so the job is already stored when the request is published.
         GenerationJob queuedJob = jobStore.create(submission.projectId(), submission.profileId(), generationRequest);
+        publishJobRequest(queuedJob);
+        // Until workers consume the requests, the in-memory queue still executes the job.
         jobQueue.submit(queuedJob.id());
         return queuedJob;
+    }
+
+    private void publishJobRequest(GenerationJob queuedJob) {
+        try {
+            jobRequestPublisher.publish(queuedJob.id());
+        } catch (JobRequestPublicationException exception) {
+            // The job is accepted and stored as QUEUED; a later republication will deliver the request.
+            LOGGER.warn("Job {} is stored, but its request was not confirmed by Kafka", queuedJob.id(), exception);
+        }
     }
 
     private ObservedProfile resolveProfile(String projectId, UUID profileId) {

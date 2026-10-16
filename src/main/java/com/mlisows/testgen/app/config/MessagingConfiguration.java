@@ -1,9 +1,16 @@
 package com.mlisows.testgen.app.config;
 
+import com.mlisows.testgen.app.messaging.JobRequestListener;
+import com.mlisows.testgen.infrastructure.messaging.JobRequestMessage;
+import com.mlisows.testgen.infrastructure.messaging.KafkaJobRequestPublisher;
+import com.mlisows.testgen.usecase.ports.JobRequestPublisher;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaTemplate;
+
+import java.time.Duration;
 
 /**
  * Kafka topics used by the server. Spring Boot's {@code KafkaAdmin} creates every {@link NewTopic}
@@ -22,5 +29,22 @@ public class MessagingConfiguration {
                 .partitions(messaging.jobRequestsPartitions())
                 .replicas(LOCAL_REPLICATION_FACTOR)
                 .build();
+    }
+
+    // KafkaTemplate is created by Spring Boot from the spring.kafka.producer settings.
+    @Bean
+    public JobRequestPublisher jobRequestPublisher(
+            KafkaTemplate<String, JobRequestMessage> kafkaTemplate,
+            TestgenProperties properties
+    ) {
+        TestgenProperties.Messaging messaging = properties.messaging();
+
+        return new KafkaJobRequestPublisher(kafkaTemplate, messaging.jobRequestsTopic(),
+                Duration.ofSeconds(messaging.publishTimeoutSeconds()));
+    }
+
+    @Bean
+    public JobRequestListener jobRequestListener() {
+        return new JobRequestListener();
     }
 }

@@ -43,7 +43,8 @@ public record TestgenProperties(
      */
     public record Messaging(
             @DefaultValue("testgen.jobs.requests") @NotBlank String jobRequestsTopic,
-            @DefaultValue("3") @Min(1) int jobRequestsPartitions
+            @DefaultValue("3") @Min(1) int jobRequestsPartitions,
+            @DefaultValue("10") @Min(1) long publishTimeoutSeconds
     ) {
     }
 

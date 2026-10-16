@@ -15,6 +15,7 @@ testgen:
   messaging:
     job-requests-topic: testgen.jobs.requests
     job-requests-partitions: 3
+    publish-timeout-seconds: 10
 
 spring:
   datasource:
@@ -30,6 +31,23 @@ spring:
     locations: classpath:db/migration
   kafka:
     bootstrap-servers: localhost:${TESTGEN_KAFKA_PORT:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      properties:
+        # The message is plain JSON without a Java class name in its headers.
+        spring.json.add.type.headers: false
+        # How long send() may wait for broker metadata before it fails (default: 60 s).
+        max.block.ms: 5000
+    consumer:
+      group-id: testgen-workers
+      # A new consumer group starts with messages sent before it first connected.
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      properties:
+        spring.json.value.default.type: com.mlisows.testgen.infrastructure.messaging.JobRequestMessage
+        spring.json.use.type.headers: false
   servlet:
     multipart:
       max-file-size: 1MB

@@ -572,7 +572,15 @@ Automatyczne tworzenie topiców jest wyłączone. Serwer przy starcie sam tworzy
 zleceń `testgen.jobs.requests` (`testgen.messaging.job-requests-topic`) z 3 partycjami
 (`testgen.messaging.job-requests-partitions`); istniejący topic pozostaje bez zmian.
 Adres brokera ustawia `spring.kafka.bootstrap-servers` (domyślnie `localhost:9092`).
-Na tym etapie serwer nie wysyła jeszcze wiadomości.
+
+Po zapisaniu zlecenia w bazie serwer publikuje na topicu wiadomość JSON
+`{"schemaVersion":1,"eventId":"…","jobId":"…"}` z kluczem równym `jobId` i czeka
+na potwierdzenie brokera (`testgen.messaging.publish-timeout-seconds`, domyślnie 10 s).
+Listener w grupie konsumentów `testgen-workers` na tym etapie tylko loguje odebrane
+wiadomości; zadania nadal wykonuje kolejka w pamięci. Wiadomości można obejrzeć
+w Kafka UI. Jeśli Kafka jest niedostępna, zlecenie i tak zostaje przyjęte (`202`)
+i wykonane, a w logu pojawia się ostrzeżenie; odpowiedź przychodzi wtedy po około
+5 s (`max.block.ms` producenta).
 Dane Kafki nie są zapisywane w wolumenie: `docker compose down` usuwa wiadomości,
 a zatrzymanie i ponowne uruchomienie kontenera (`stop`/`start`) je zachowuje.
 Usługi z profilem `messaging` nie startują przy usługach CLI.
