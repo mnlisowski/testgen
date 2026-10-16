@@ -18,6 +18,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.nio.file.Path;
@@ -40,6 +41,10 @@ class UnfinishedJobsRecoveryTest {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
+
+    @Container
+    @ServiceConnection
+    static final KafkaContainer kafka = new KafkaContainer("apache/kafka:4.1.0");
 
     // The generator itself is not under test; the mock finishes every job immediately.
     @MockitoBean

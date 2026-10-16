@@ -13,6 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.net.URI;
@@ -36,6 +37,10 @@ class GenerationJobPostgresApiTest {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
+
+    @Container
+    @ServiceConnection
+    static final KafkaContainer kafka = new KafkaContainer("apache/kafka:4.1.0");
 
     @TempDir
     static Path workDirectory;

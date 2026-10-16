@@ -21,7 +21,8 @@ public record TestgenProperties(
         @NotBlank String workRoot,
         @NotNull @Valid Defaults defaults,
         @DefaultValue @Valid Runner runner,
-        @DefaultValue("10") @Min(1) int queueCapacity
+        @DefaultValue("10") @Min(1) int queueCapacity,
+        @DefaultValue @Valid Messaging messaging
 ) {
     public Path workRootPath() {
         return Path.of(workRoot).toAbsolutePath().normalize();
@@ -34,6 +35,16 @@ public record TestgenProperties(
     }
 
     public record Project(@NotBlank String path) {
+    }
+
+    /**
+     * Kafka topic for job requests. The number of partitions limits how many workers
+     * of one consumer group can process requests at the same time.
+     */
+    public record Messaging(
+            @DefaultValue("testgen.jobs.requests") @NotBlank String jobRequestsTopic,
+            @DefaultValue("3") @Min(1) int jobRequestsPartitions
+    ) {
     }
 
     public record Defaults(

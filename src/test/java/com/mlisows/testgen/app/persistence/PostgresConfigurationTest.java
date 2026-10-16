@@ -15,6 +15,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.List;
@@ -28,6 +29,10 @@ class PostgresConfigurationTest {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
+
+    @Container
+    @ServiceConnection
+    static final KafkaContainer kafka = new KafkaContainer("apache/kafka:4.1.0");
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

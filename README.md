@@ -343,11 +343,12 @@ znajduje się w `domain.generation`, ponieważ opisuje parametry algorytmu.
 
 ## Serwer Spring Boot
 
-Wymagane JDK 21 i działający PostgreSQL (zob. sekcja „PostgreSQL” niżej).
-CLI opisane wcześniej nie wymaga bazy ani serwera. Uruchomienie lokalne:
+Wymagane JDK 21 oraz działające PostgreSQL i Kafka (zob. sekcje „PostgreSQL” i „Kafka”
+niżej). CLI opisane wcześniej nie wymaga bazy, Kafki ani serwera. Uruchomienie lokalne:
 
 ```bash
 docker compose up -d --wait postgres
+docker compose --profile messaging up -d --wait kafka
 mvn spring-boot:run
 ```
 
@@ -547,8 +548,8 @@ Usługa `postgres` ma w Compose profil `database`, więc nie startuje przy usłu
 uruchamia ją niezależnie od tego profilu.
 
 Testy serwera wymagają działającego Dockera: każda klasa testowa Spring Boot uruchamia
-własny, tymczasowy PostgreSQL przez Testcontainers, na automatycznie wybranym porcie,
-i nie korzysta z bazy uruchomionej przez Compose. Testy silnika generatora i CLI
+własne, tymczasowe PostgreSQL i Kafkę przez Testcontainers, na automatycznie wybranym porcie,
+i nie korzysta z usług uruchomionych przez Compose. Testy silnika generatora i CLI
 nie wymagają Dockera.
 
 ```bash
@@ -558,7 +559,7 @@ mvn test
 ### Kafka
 
 Compose zawiera jednowęzłową Kafkę w trybie KRaft (bez ZooKeepera) oraz Kafka UI.
-Na tym etapie aplikacja jeszcze z nich nie korzysta. Uruchomienie:
+Uruchomienie:
 
 ```bash
 docker compose --profile messaging up -d --wait kafka kafka-ui
@@ -567,7 +568,11 @@ docker compose --profile messaging up -d --wait kafka kafka-ui
 Kafka przyjmuje połączenia z komputera pod `localhost:9092`, a z innych kontenerów
 Compose pod `kafka:29092`. Kafka UI jest dostępne pod `http://localhost:8085`.
 Porty zmienisz zmiennymi `TESTGEN_KAFKA_PORT` i `TESTGEN_KAFKA_UI_PORT`.
-Automatyczne tworzenie topiców jest wyłączone; topiki będzie tworzyć aplikacja.
+Automatyczne tworzenie topiców jest wyłączone. Serwer przy starcie sam tworzy topic
+zleceń `testgen.jobs.requests` (`testgen.messaging.job-requests-topic`) z 3 partycjami
+(`testgen.messaging.job-requests-partitions`); istniejący topic pozostaje bez zmian.
+Adres brokera ustawia `spring.kafka.bootstrap-servers` (domyślnie `localhost:9092`).
+Na tym etapie serwer nie wysyła jeszcze wiadomości.
 Dane Kafki nie są zapisywane w wolumenie: `docker compose down` usuwa wiadomości,
 a zatrzymanie i ponowne uruchomienie kontenera (`stop`/`start`) je zachowuje.
 Usługi z profilem `messaging` nie startują przy usługach CLI.
