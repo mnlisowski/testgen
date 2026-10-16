@@ -1,5 +1,7 @@
 package com.mlisows.testgen.app.config;
 
+import com.mlisows.testgen.app.job.GenerationJobQueue;
+import com.mlisows.testgen.app.job.UnfinishedJobsRecovery;
 import com.mlisows.testgen.app.project.ConfiguredProjectsInitializer;
 import com.mlisows.testgen.app.project.ProjectRegistry;
 import com.mlisows.testgen.infrastructure.persistence.job.GenerationJobEntity;
@@ -58,5 +60,10 @@ public class PostgresPersistenceConfiguration {
     ) {
         return new JpaGenerationJobStore(jobRepository, resultRepository, projectRepository, profileRepository,
                 profileStore, Clock.systemUTC());
+    }
+
+    @Bean
+    public UnfinishedJobsRecovery unfinishedJobsRecovery(GenerationJobStore jobStore, GenerationJobQueue jobQueue) {
+        return new UnfinishedJobsRecovery(jobStore, jobQueue);
     }
 }

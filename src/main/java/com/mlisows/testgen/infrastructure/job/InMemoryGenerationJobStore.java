@@ -3,9 +3,12 @@ package com.mlisows.testgen.infrastructure.job;
 import com.mlisows.testgen.usecase.generation.GenerationRequest;
 import com.mlisows.testgen.usecase.generation.GenerationResult;
 import com.mlisows.testgen.usecase.job.GenerationJob;
+import com.mlisows.testgen.usecase.job.JobStatus;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 
 import java.time.Clock;
+import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,6 +38,17 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
     @Override
     public Optional<GenerationJob> findById(UUID id) {
         return Optional.ofNullable(jobs.get(Objects.requireNonNull(id, "id")));
+    }
+
+    @Override
+    public List<UUID> findIdsByStatus(JobStatus status) {
+        Objects.requireNonNull(status, "status");
+
+        return jobs.values().stream()
+                .filter(job -> job.status() == status)
+                .sorted(Comparator.comparing(GenerationJob::createdAt))
+                .map(GenerationJob::id)
+                .toList();
     }
 
     @Override

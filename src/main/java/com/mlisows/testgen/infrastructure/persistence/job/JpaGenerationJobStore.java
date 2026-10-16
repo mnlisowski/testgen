@@ -79,6 +79,14 @@ public class JpaGenerationJobStore implements GenerationJobStore {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UUID> findIdsByStatus(JobStatus status) {
+        Objects.requireNonNull(status, "status");
+
+        return jobRepository.findIdsByStatus(status);
+    }
+
+    @Override
     @Transactional
     public GenerationJob start(UUID id) {
         return update(id, job -> job.start(now()));

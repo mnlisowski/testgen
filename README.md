@@ -517,9 +517,15 @@ i `covered_goals`. Status, raport i testy są dostępne po restarcie aplikacji.
 Kolumna `version` chroni przed nadpisaniem zmiany statusu wprowadzonej równolegle
 przez inną transakcję.
 
-**Ograniczenie:** kolejka wykonawcza nadal działa w pamięci. Zadania, które w chwili
-zatrzymania serwera miały status `QUEUED` lub `RUNNING`, pozostają w bazie z tym
-statusem i nie są wznawiane. Obsługa takich zadań przy starcie jest kolejnym krokiem.
+Kolejka wykonawcza działa w pamięci, dlatego przy starcie z profilem `postgres`
+aplikacja porządkuje zadania pozostawione przez poprzednie uruchomienie:
+
+- `RUNNING` → `INTERRUPTED` z komunikatem, że serwer zatrzymał się w trakcie zadania;
+- `QUEUED` → ponownie do kolejki, w kolejności zlecenia. Jeśli kolejka jest pełna,
+  nadmiarowe zadania kończą się jako `FAILED`, tak jak przy zwykłym zleceniu.
+
+Reguła zakłada jedną instancję aplikacji. Gdyby działała druga, mogłaby właśnie
+wykonywać zadanie, które pierwsza oznaczy jako przerwane.
 
 Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
 Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi

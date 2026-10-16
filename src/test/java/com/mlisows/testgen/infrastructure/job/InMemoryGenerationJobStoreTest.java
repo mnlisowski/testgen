@@ -40,6 +40,17 @@ class InMemoryGenerationJobStoreTest {
     }
 
     @Test
+    void shouldFindJobIdentifiersByStatus() {
+        UUID queuedJobId = store.create("fit-bench", request()).id();
+        UUID runningJobId = store.create("fit-bench", request()).id();
+        store.start(runningJobId);
+
+        assertEquals(List.of(queuedJobId), store.findIdsByStatus(JobStatus.QUEUED));
+        assertEquals(List.of(runningJobId), store.findIdsByStatus(JobStatus.RUNNING));
+        assertTrue(store.findIdsByStatus(JobStatus.SUCCEEDED).isEmpty());
+    }
+
+    @Test
     void shouldCreateIndependentQueuedJobsAndPreserveRequest() {
         var request = request();
         var first = store.create("fit-bench", request);
