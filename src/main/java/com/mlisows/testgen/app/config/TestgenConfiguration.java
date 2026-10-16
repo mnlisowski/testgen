@@ -4,25 +4,20 @@ import com.mlisows.testgen.app.project.ProjectRegistry;
 import com.mlisows.testgen.app.job.GenerationJobQueue;
 import com.mlisows.testgen.infrastructure.process.GenerationProcessMain;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
-import com.mlisows.testgen.infrastructure.job.InMemoryGenerationJobStore;
 import com.mlisows.testgen.infrastructure.process.JvmGenerationRunner;
 import com.mlisows.testgen.infrastructure.project.MavenProjectLayoutDetector;
 import com.mlisows.testgen.usecase.job.ExecuteGenerationJobUseCase;
 import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import com.mlisows.testgen.usecase.ports.GenerationRunner;
-import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
-import com.mlisows.testgen.infrastructure.profile.InMemoryObservedProfileStore;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Clock;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,20 +50,6 @@ public class TestgenConfiguration {
     @Bean
     public GenerationSettings generationDefaults(TestgenProperties properties) {
         return properties.defaults().toGenerationSettings();
-    }
-
-    // With the postgres profile, PostgresPersistenceConfiguration provides the database-backed store.
-    @Bean
-    @Profile("!postgres")
-    public GenerationJobStore generationJobStore() {
-        return new InMemoryGenerationJobStore(Clock.systemUTC());
-    }
-
-    // With the postgres profile, PostgresPersistenceConfiguration provides the database-backed store.
-    @Bean
-    @Profile("!postgres")
-    public ObservedProfileStore observedProfileStore() {
-        return new InMemoryObservedProfileStore(Clock.systemUTC());
     }
 
     @Bean

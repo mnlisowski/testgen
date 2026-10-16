@@ -14,8 +14,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
@@ -38,7 +42,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         "testgen.projects.fit-bench.path=src/test/resources/sample-maven-project",
         "testgen.projects.other.path=src/test/resources/sample-maven-project"
 })
+@Testcontainers
 class ObservedProfileApiTest {
+    @Container
+    @ServiceConnection
+    static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
+
     @TempDir
     static Path workDirectory;
 

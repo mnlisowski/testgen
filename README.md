@@ -343,9 +343,11 @@ znajduje się w `domain.generation`, ponieważ opisuje parametry algorytmu.
 
 ## Serwer Spring Boot
 
-Wymagane JDK 21. Uruchomienie lokalne:
+Wymagane JDK 21 i działający PostgreSQL (zob. sekcja „PostgreSQL” niżej).
+CLI opisane wcześniej nie wymaga bazy ani serwera. Uruchomienie lokalne:
 
 ```bash
+docker compose up -d --wait postgres
 mvn spring-boot:run
 ```
 
@@ -458,9 +460,9 @@ Odpowiedź `503` zawiera `jobId` odrzuconego zadania, które pozostaje jako `FAI
 ponowienie oznacza wysłanie nowego zlecenia. Błędy HTTP mają format Problem Details.
 
 Przy zamykaniu serwera aktywne wykonanie jest przerywane, a oczekujące zadania
-oznaczane jako `FAILED`. Historia i wyniki znajdują się w pamięci i znikają po
-restarcie. Limit kolejki nie ogranicza rozmiaru zachowanej historii ani plików
-roboczych; automatyczne usuwanie starych wyników nie jest jeszcze zaimplementowane.
+oznaczane jako `FAILED`. Historia i wyniki są zapisane w PostgreSQL i pozostają
+dostępne po restarcie. Limit kolejki nie ogranicza rozmiaru zachowanej historii ani
+plików roboczych; automatyczne usuwanie starych wyników nie jest jeszcze zaimplementowane.
 
 ### Import profilu przez API
 
@@ -481,8 +483,8 @@ Import sprawdza format rekordów, nie zgodność sygnatur metod z kodem projektu
 Niepoprawny format, kodowanie lub brak pola `file` daje `400`, nieznany projekt `404`,
 a przekroczenie limitu uploadu `413`. Limit pliku wynosi 1 MB, całego żądania 2 MB
 (`spring.servlet.multipart.max-file-size` i `max-request-size`).
-Profile są przechowywane w pamięci; restart serwera je usuwa. Identyfikator otrzymany
-po imporcie możesz przekazać przy generowaniu:
+Profile są zapisywane w PostgreSQL i przetrwają restart serwera. Identyfikator
+otrzymany po imporcie możesz przekazać przy generowaniu:
 
 ```bash
 curl -i -X POST http://localhost:8080/api/generations \
@@ -493,13 +495,14 @@ curl -i -X POST http://localhost:8080/api/generations \
 Zadanie zachowuje identyfikator oraz zawartość wybranego profilu. Generator otrzymuje
 jego rekordy, bez potrzeby odczytywania pliku na dysku.
 
-### PostgreSQL — pierwszy etap integracji
+### PostgreSQL
 
-Uruchom bazę, a następnie serwer z profilem `postgres`:
+Serwer przechowuje projekty, profile, zadania i wyniki w PostgreSQL. Przed startem
+serwera uruchom bazę:
 
 ```bash
 docker compose up -d --wait postgres
-mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+mvn spring-boot:run
 ```
 
 PostgreSQL jest dostępny lokalnie na porcie `5432`, z bazą i użytkownikiem `testgen`.
@@ -507,30 +510,30 @@ Domyślne hasło lokalnego demo to `testgen`. Możesz ustawić `TESTGEN_POSTGRES
 i `TESTGEN_POSTGRES_PORT`; użyj tych samych wartości dla Compose i aplikacji.
 Dane bazy są przechowywane w wolumenie `postgres-data`.
 
-Flyway wykonuje migracje z `src/main/resources/db/migration`. Pierwsza migracja tworzy
-tabelę `projects`. Hibernate ma ustawione `ddl-auto=validate`, więc sprawdza zgodność
-encji z tabelami, ale nie tworzy ani nie zmienia schematu.
+Flyway wykonuje migracje z `src/main/resources/db/migration` (V1 — projekty, V2 — profile,
+V3 — zadania i wyniki). Hibernate ma ustawione `ddl-auto=validate`, więc sprawdza
+zgodność encji z tabelami, ale nie tworzy ani nie zmienia schematu.
 
-Przy starcie z profilem `postgres` aplikacja zapisuje brakujące projekty z konfiguracji
+Przy starcie aplikacja zapisuje brakujące projekty z konfiguracji
 przez JPA. Początkowa nazwa projektu jest taka sama jak jego identyfikator.
 Ponowne uruchomienie nie tworzy duplikatów ani nie nadpisuje istniejących nazw.
 Usunięcie projektu z konfiguracji nie usuwa jego rekordu z bazy, ale blokuje nowe
 zlecenia dla niego. Lista dostępnych projektów i ich ścieżki nadal pochodzą z YAML-a.
 Rejestracja jest przeznaczona na obecny etap z jedną instancją aplikacji.
 
-Przy profilu `postgres` wgrane profile argumentów są zapisywane w tabeli
+Wgrane profile argumentów są zapisywane w tabeli
 `observed_profiles` (migracja V2): oryginalna treść pliku, projekt i data
 wgrania. Profil przetrwa restart aplikacji, a jego `profileId` można nadal
 podawać przy zlecaniu generowania. Profil musi należeć do projektu zapisanego w bazie.
 
-Przy profilu `postgres` zadania generowania są zapisywane w tabeli `generation_jobs`
+Zadania generowania są zapisywane w tabeli `generation_jobs`
 (migracja V3), a wynik zakończonego zadania w `generation_results`, `generated_test_files`
 i `covered_goals`. Status, raport i testy są dostępne po restarcie aplikacji.
 Kolumna `version` chroni przed nadpisaniem zmiany statusu wprowadzonej równolegle
 przez inną transakcję.
 
-Kolejka wykonawcza działa w pamięci, dlatego przy starcie z profilem `postgres`
-aplikacja porządkuje zadania pozostawione przez poprzednie uruchomienie:
+Kolejka wykonawcza działa w pamięci, dlatego przy starcie aplikacja porządkuje
+zadania pozostawione przez poprzednie uruchomienie:
 
 - `RUNNING` → `INTERRUPTED` z komunikatem, że serwer zatrzymał się w trakcie zadania;
 - `QUEUED` → ponownie do kolejki, w kolejności zlecenia. Jeśli kolejka jest pełna,
@@ -539,13 +542,14 @@ aplikacja porządkuje zadania pozostawione przez poprzednie uruchomienie:
 Reguła zakłada jedną instancję aplikacji. Gdyby działała druga, mogłaby właśnie
 wykonywać zadanie, które pierwsza oznaczy jako przerwane.
 
-Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
-Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi
-`postgres` w powyższym poleceniu uruchamia ją bez zmiany sposobu korzystania z usług CLI.
+Usługa `postgres` ma w Compose profil `database`, więc nie startuje przy usługach CLI
+(`generate-tests`, `prepare-profile` itd.). Jawne wskazanie jej nazwy, jak wyżej,
+uruchamia ją niezależnie od tego profilu.
 
-Testy wymagają teraz działającego Dockera: `PostgresConfigurationTest` uruchamia
-własny, tymczasowy PostgreSQL przez Testcontainers, na automatycznie wybranym porcie.
-Nie korzysta z bazy uruchomionej przez Compose.
+Testy serwera wymagają działającego Dockera: każda klasa testowa Spring Boot uruchamia
+własny, tymczasowy PostgreSQL przez Testcontainers, na automatycznie wybranym porcie,
+i nie korzysta z bazy uruchomionej przez Compose. Testy silnika generatora i CLI
+nie wymagają Dockera.
 
 ```bash
 mvn test

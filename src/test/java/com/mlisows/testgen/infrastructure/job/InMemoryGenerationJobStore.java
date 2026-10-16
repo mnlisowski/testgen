@@ -18,7 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
-/** Process-local storage: jobs and results are lost on restart. */
+/**
+ * Test double of {@link GenerationJobStore} kept in memory. Unit tests of the queue and the runner
+ * use it to avoid a database; the application itself always uses the PostgreSQL store.
+ */
 public final class InMemoryGenerationJobStore implements GenerationJobStore {
     // Newest first; the id only makes the order stable when two jobs have the same timestamp.
     private static final Comparator<GenerationJob> NEWEST_FIRST = Comparator

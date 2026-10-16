@@ -14,8 +14,17 @@ testgen:
     timeout-seconds: 120
 
 spring:
-  profiles:
-    default: in-memory
+  datasource:
+    url: jdbc:postgresql://localhost:${TESTGEN_POSTGRES_PORT:5432}/testgen
+    username: testgen
+    password: ${TESTGEN_POSTGRES_PASSWORD:testgen}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
   servlet:
     multipart:
       max-file-size: 1MB

@@ -2,6 +2,7 @@ package com.mlisows.testgen.app.config;
 
 import com.mlisows.testgen.app.project.ProjectRegistry;
 import com.mlisows.testgen.domain.generation.GenerationSettings;
+import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,13 +13,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class TestgenConfigurationTest {
     @TempDir
     Path tempDir;
 
+    // Only TestgenConfiguration is loaded here. The job store normally comes from
+    // PersistenceConfiguration, which needs a database, so a mock takes its place.
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withUserConfiguration(TestgenConfiguration.class)
+            .withBean(GenerationJobStore.class, () -> mock(GenerationJobStore.class))
             .withPropertyValues(
                     "testgen.projects.sample.path=src/test/resources/sample-maven-project",
                     "testgen.work-root=target/config-test-work",

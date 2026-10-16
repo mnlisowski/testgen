@@ -19,20 +19,18 @@ import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.time.Clock;
 
 @Configuration(proxyBeanMethods = false)
-@Profile("postgres")
 @EntityScan(basePackageClasses = {ProjectEntity.class, ObservedProfileEntity.class, GenerationJobEntity.class})
 @EnableJpaRepositories(basePackageClasses = {
         ProjectRepository.class,
         ObservedProfileRepository.class,
         GenerationJobRepository.class
 })
-public class PostgresPersistenceConfiguration {
+public class PersistenceConfiguration {
     @Bean
     public ConfiguredProjectsInitializer configuredProjectsInitializer(
             ProjectRegistry projectRegistry,
