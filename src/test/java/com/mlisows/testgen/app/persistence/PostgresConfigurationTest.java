@@ -63,6 +63,7 @@ class PostgresConfigurationTest {
         assertEquals(1L, jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE success = true", Long.class));
     }
+
     @Test
     void shouldRegisterConfiguredProjectsDuringStartup() {
         List<String> storedIds = projectRepository.findAll().stream()

@@ -496,10 +496,18 @@ i `TESTGEN_POSTGRES_PORT`; użyj tych samych wartości dla Compose i aplikacji.
 Dane bazy są przechowywane w wolumenie `postgres-data`.
 
 Flyway wykonuje migracje z `src/main/resources/db/migration`. Pierwsza migracja tworzy
-pustą tabelę `projects`. Hibernate ma ustawione `ddl-auto=validate`, więc nie tworzy
-ani nie zmienia tabel. Zapis projektów, profili i jobów przez JPA będzie dodawany
-w kolejnych krokach. **Obecnie profile i zadania nadal są w pamięci, również przy
-aktywnym profilu `postgres`.**
+tabelę `projects`. Hibernate ma ustawione `ddl-auto=validate`, więc sprawdza zgodność
+encji z tabelami, ale nie tworzy ani nie zmienia schematu.
+
+Przy starcie z profilem `postgres` aplikacja zapisuje brakujące projekty z konfiguracji
+przez JPA. Początkowa nazwa projektu jest taka sama jak jego identyfikator.
+Ponowne uruchomienie nie tworzy duplikatów ani nie nadpisuje istniejących nazw.
+Usunięcie projektu z konfiguracji nie usuwa jego rekordu z bazy, ale blokuje nowe
+zlecenia dla niego. Lista dostępnych projektów i ich ścieżki nadal pochodzą z YAML-a.
+Rejestracja jest przeznaczona na obecny etap z jedną instancją aplikacji.
+
+**Profile i zadania nadal są w pamięci, również przy aktywnym profilu `postgres`.**
+Ich zapis przez JPA będzie dodawany w kolejnych krokach.
 
 Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
 Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi
