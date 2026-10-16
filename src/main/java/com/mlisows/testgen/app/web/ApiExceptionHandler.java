@@ -6,6 +6,7 @@ import com.mlisows.testgen.app.job.ProjectNotFoundException;
 import com.mlisows.testgen.app.profile.InvalidObservedProfileException;
 import com.mlisows.testgen.app.profile.ProfileNotFoundException;
 import com.mlisows.testgen.app.profile.ProfileProjectMismatchException;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Profile("api")
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ProjectNotFoundException.class, JobNotFoundException.class, ProfileNotFoundException.class})

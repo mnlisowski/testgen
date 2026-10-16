@@ -17,12 +17,14 @@ import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import com.mlisows.testgen.usecase.profile.StoredObservedProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+@Profile("api")
 @Service
 public class GenerationJobService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerationJobService.class);

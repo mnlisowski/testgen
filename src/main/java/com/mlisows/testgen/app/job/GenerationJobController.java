@@ -4,6 +4,7 @@ import com.mlisows.testgen.usecase.generation.GenerationResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+@Profile("api")
 @RestController
 public class GenerationJobController {
     private final GenerationJobService generationJobService;

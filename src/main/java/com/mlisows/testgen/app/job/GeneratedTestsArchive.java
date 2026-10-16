@@ -1,6 +1,7 @@
 package com.mlisows.testgen.app.job;
 
 import com.mlisows.testgen.usecase.generation.GeneratedTestFile;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Profile("api")
 @Component
 public class GeneratedTestsArchive {
     public byte[] create(List<GeneratedTestFile> tests) throws IOException {

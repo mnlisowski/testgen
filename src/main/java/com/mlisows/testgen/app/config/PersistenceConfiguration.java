@@ -1,8 +1,5 @@
 package com.mlisows.testgen.app.config;
 
-import com.mlisows.testgen.app.job.UnfinishedJobsRecovery;
-import com.mlisows.testgen.app.project.ConfiguredProjectsInitializer;
-import com.mlisows.testgen.app.project.ProjectRegistry;
 import com.mlisows.testgen.infrastructure.persistence.job.GenerationJobEntity;
 import com.mlisows.testgen.infrastructure.persistence.job.GenerationJobRepository;
 import com.mlisows.testgen.infrastructure.persistence.job.GenerationResultRepository;
@@ -32,14 +29,6 @@ import java.time.Clock;
 })
 public class PersistenceConfiguration {
     @Bean
-    public ConfiguredProjectsInitializer configuredProjectsInitializer(
-            ProjectRegistry projectRegistry,
-            ProjectRepository projectRepository
-    ) {
-        return new ConfiguredProjectsInitializer(projectRegistry, projectRepository);
-    }
-
-    @Bean
     public ObservedProfileStore observedProfileStore(
             ObservedProfileRepository profileRepository,
             ProjectRepository projectRepository,
@@ -59,10 +48,5 @@ public class PersistenceConfiguration {
     ) {
         return new JpaGenerationJobStore(jobRepository, resultRepository, projectRepository, profileRepository,
                 profileStore, transactionTemplate, Clock.systemUTC());
-    }
-
-    @Bean
-    public UnfinishedJobsRecovery unfinishedJobsRecovery(GenerationJobStore jobStore) {
-        return new UnfinishedJobsRecovery(jobStore);
     }
 }

@@ -352,6 +352,10 @@ docker compose --profile messaging up -d --wait kafka
 mvn spring-boot:run
 ```
 
+Bez wskazania profilu jeden proces pełni obie role: API (HTTP, zapis zleceń,
+publikacja do Kafki) i workera (odbiór wiadomości, uruchamianie generatora).
+Obie części można uruchomić jako osobne procesy, zob. sekcja „API i worker”.
+
 Serwer domyślnie nasłuchuje na porcie 8080. Lista skonfigurowanych projektów:
 
 ```bash
@@ -588,3 +592,28 @@ przychodzi ponownie po restarcie.
 Dane Kafki nie są zapisywane w wolumenie: `docker compose down` usuwa wiadomości,
 a zatrzymanie i ponowne uruchomienie kontenera (`stop`/`start`) je zachowuje.
 Usługi z profilem `messaging` nie startują przy usługach CLI.
+
+### API i worker
+
+Serwer składa się z dwóch części, włączanych profilami Springa:
+
+| Profil | Co robi |
+|---|---|
+| `api` | REST API, zapis projektów, profili i zleceń w bazie, publikacja zleceń do Kafki |
+| `worker` | odbiór zleceń z Kafki, uruchamianie generatora, zapis wyników; przy starcie oznacza zadania `RUNNING` z poprzedniego uruchomienia jako `INTERRUPTED` |
+
+Domyślnie aktywne są oba (`spring.profiles.default: api,worker`). Dwa osobne procesy
+z tego samego JAR-a, w dwóch terminalach:
+
+```bash
+mvn clean package dependency:copy-dependencies -DincludeScope=runtime
+java -jar target/testgen-1.0-SNAPSHOT-server.jar --spring.profiles.active=api
+java -jar target/testgen-1.0-SNAPSHOT-server.jar --spring.profiles.active=worker \
+  --spring.main.web-application-type=none \
+  --testgen.runner.classpath="target/testgen-1.0-SNAPSHOT.jar:target/dependency/*"
+```
+
+Worker nie potrzebuje serwera HTTP (`web-application-type=none`), a `testgen.runner.classpath`
+podaje mu tylko on, bo tylko on uruchamia generator. Procesy łączą wyłącznie PostgreSQL
+i Kafka: restart API nie przerywa zadania wykonywanego przez workera. Reguła po restarcie
+zakłada jednego workera.

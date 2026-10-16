@@ -17,6 +17,10 @@ testgen:
     publish-timeout-seconds: 10
 
 spring:
+  profiles:
+    # Without an explicit profile, one process runs both parts (local development and tests).
+    # In Docker Compose the API and the worker run as separate processes with one profile each.
+    default: api,worker
   datasource:
     url: jdbc:postgresql://localhost:${TESTGEN_POSTGRES_PORT:5432}/testgen
     username: testgen

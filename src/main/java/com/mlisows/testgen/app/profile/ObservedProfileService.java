@@ -6,8 +6,10 @@ import com.mlisows.testgen.domain.profile.ObservedProfile;
 import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import com.mlisows.testgen.usecase.profile.StoredObservedProfile;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+@Profile("api")
 @Service
 public class ObservedProfileService {
     private final ProjectRegistry projects;

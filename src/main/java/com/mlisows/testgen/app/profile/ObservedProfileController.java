@@ -1,6 +1,7 @@
 package com.mlisows.testgen.app.profile;
 
 import com.mlisows.testgen.usecase.profile.StoredObservedProfile;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 
+@Profile("api")
 @RestController
 public class ObservedProfileController {
     private final ObservedProfileService profileService;
