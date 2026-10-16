@@ -57,7 +57,9 @@ public class TestgenConfiguration {
         return properties.defaults().toGenerationSettings();
     }
 
+    // With the postgres profile, PostgresPersistenceConfiguration provides the database-backed store.
     @Bean
+    @Profile("!postgres")
     public GenerationJobStore generationJobStore() {
         return new InMemoryGenerationJobStore(Clock.systemUTC());
     }

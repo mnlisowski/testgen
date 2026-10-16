@@ -511,8 +511,15 @@ Przy profilu `postgres` wgrane profile argumentów są zapisywane w tabeli
 wgrania. Profil przetrwa restart aplikacji, a jego `profileId` można nadal
 podawać przy zlecaniu generowania. Profil musi należeć do projektu zapisanego w bazie.
 
-**Zadania generowania nadal są w pamięci, również przy aktywnym profilu `postgres`.**
-Ich zapis przez JPA będzie dodawany w kolejnym kroku.
+Przy profilu `postgres` zadania generowania są zapisywane w tabeli `generation_jobs`
+(migracja V3), a wynik zakończonego zadania w `generation_results`, `generated_test_files`
+i `covered_goals`. Status, raport i testy są dostępne po restarcie aplikacji.
+Kolumna `version` chroni przed nadpisaniem zmiany statusu wprowadzonej równolegle
+przez inną transakcję.
+
+**Ograniczenie:** kolejka wykonawcza nadal działa w pamięci. Zadania, które w chwili
+zatrzymania serwera miały status `QUEUED` lub `RUNNING`, pozostają w bazie z tym
+statusem i nie są wznawiane. Obsługa takich zadań przy starcie jest kolejnym krokiem.
 
 Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
 Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi

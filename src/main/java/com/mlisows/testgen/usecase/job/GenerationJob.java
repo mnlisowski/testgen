@@ -46,6 +46,25 @@ public final class GenerationJob {
         return new GenerationJob(id, projectId, profileId, request, JobStatus.QUEUED, now, null, null, null, null);
     }
 
+    /**
+     * Recreates a job loaded from persistent storage. Status transitions are validated when the job
+     * is changed, so this method only checks the fields that every stored job must have.
+     */
+    public static GenerationJob restore(UUID id, String projectId, UUID profileId, GenerationRequest request,
+                                        JobStatus status, Instant createdAt, Instant startedAt,
+                                        Instant finishedAt, GenerationResult result, String error) {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(projectId, "projectId");
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(status, "status");
+        Objects.requireNonNull(createdAt, "createdAt");
+        if (status == JobStatus.SUCCEEDED && result == null) {
+            throw new IllegalArgumentException("Succeeded job " + id + " must have a result");
+        }
+        return new GenerationJob(id, projectId, profileId, request, status, createdAt, startedAt, finishedAt,
+                result, error);
+    }
+
     public GenerationJob start(Instant now) {
         requireStatus(JobStatus.QUEUED);
         return new GenerationJob(id, projectId, profileId, request, JobStatus.RUNNING, createdAt,
