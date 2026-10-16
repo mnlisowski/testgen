@@ -28,6 +28,14 @@ public interface GenerationJobStore {
     JobPage findByProject(String projectId, int page, int size);
 
     GenerationJob start(UUID id);
+
+    /**
+     * Starts the job if it is still QUEUED. Returns an empty result if the job has another status
+     * or another process changed it at the same time; this is how duplicate requests are skipped.
+     *
+     * @throws java.util.NoSuchElementException if the job does not exist
+     */
+    Optional<GenerationJob> startIfQueued(UUID id);
     GenerationJob succeed(UUID id, GenerationResult result);
     GenerationJob fail(UUID id, String error);
     GenerationJob timeOut(UUID id, String error);

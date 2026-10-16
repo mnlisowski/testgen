@@ -53,7 +53,7 @@ class JvmGenerationRunnerTest {
         GenerationJob generationJob = jobStore.create("sample", request);
         var executeJob = new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(60)));
 
-        GenerationJob completedJob = executeJob.execute(generationJob.id());
+        GenerationJob completedJob = executeJob.execute(generationJob.id()).orElseThrow();
 
         assertEquals(JobStatus.SUCCEEDED, completedJob.status(), () -> completedJob.error().orElse(""));
         GenerationResult actualResult = completedJob.result().orElseThrow();
@@ -68,8 +68,9 @@ class JvmGenerationRunnerTest {
         assertTrue(Files.isDirectory(jobDirectory.resolve("workspace/classes")));
         assertThrows(FileAlreadyExistsException.class,
                 () -> createRunner(Duration.ofSeconds(60)).run(generationJob.id(), request));
-        assertThrows(IllegalStateException.class,
-                () -> new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(60))).execute(generationJob.id()));
+        // A finished job is not executed again, e.g. when its request is delivered twice.
+        assertTrue(new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(60)))
+                .execute(generationJob.id()).isEmpty());
     }
 
     @Test
@@ -78,7 +79,7 @@ class JvmGenerationRunnerTest {
         GenerationJob generationJob = jobStore.create("missing", createRequest(temporaryDirectory.resolve("missing-project")));
         var executeJob = new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(30)));
 
-        GenerationJob completedJob = executeJob.execute(generationJob.id());
+        GenerationJob completedJob = executeJob.execute(generationJob.id()).orElseThrow();
         assertEquals(JobStatus.FAILED, completedJob.status());
         assertTrue(completedJob.error().orElseThrow().contains("exited with code"));
         assertTrue(completedJob.error().orElseThrow().contains("process.log"));
@@ -108,7 +109,7 @@ class JvmGenerationRunnerTest {
         GenerationJob generationJob = jobStore.create("early-exit", createRequest(project));
         var executeJob = new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(30)));
 
-        GenerationJob completedJob = executeJob.execute(generationJob.id());
+        GenerationJob completedJob = executeJob.execute(generationJob.id()).orElseThrow();
         assertEquals(JobStatus.FAILED, completedJob.status());
         assertTrue(completedJob.error().orElseThrow().contains("no result"));
     }
@@ -121,14 +122,14 @@ class JvmGenerationRunnerTest {
         GenerationJob generationJob = jobStore.create("hang", createRequest(project));
         var executeJob = new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(8)));
 
-        GenerationJob completedJob = executeJob.execute(generationJob.id());
+        GenerationJob completedJob = executeJob.execute(generationJob.id()).orElseThrow();
         assertEquals(JobStatus.TIMED_OUT, completedJob.status(), () -> completedJob.error().orElse(""));
         assertTrue(Files.exists(processIdPath), "Candidate must actually start before timing out");
         long pid = Long.parseLong(Files.readString(processIdPath));
         assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
         GenerationJob nextJob = jobStore.create("sample", createRequest(Path.of("src/test/resources/sample-maven-project")));
         var executeNextJob = new ExecuteGenerationJobUseCase(jobStore, createRunner(Duration.ofSeconds(60)));
-        GenerationJob completedNextJob = executeNextJob.execute(nextJob.id());
+        GenerationJob completedNextJob = executeNextJob.execute(nextJob.id()).orElseThrow();
         assertEquals(JobStatus.SUCCEEDED, completedNextJob.status());
     }
 

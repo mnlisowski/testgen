@@ -15,7 +15,9 @@ import com.mlisows.testgen.usecase.ports.GenerationJobStore;
 import com.mlisows.testgen.usecase.ports.ObservedProfileStore;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.file.Path;
 import java.time.Clock;
@@ -41,6 +43,7 @@ public class JpaGenerationJobStore implements GenerationJobStore {
     private final ProjectRepository projectRepository;
     private final ObservedProfileRepository profileRepository;
     private final ObservedProfileStore profileStore;
+    private final TransactionTemplate transactionTemplate;
     private final Clock clock;
 
     public JpaGenerationJobStore(
@@ -49,6 +52,7 @@ public class JpaGenerationJobStore implements GenerationJobStore {
             ProjectRepository projectRepository,
             ObservedProfileRepository profileRepository,
             ObservedProfileStore profileStore,
+            TransactionTemplate transactionTemplate,
             Clock clock
     ) {
         this.jobRepository = Objects.requireNonNull(jobRepository, "jobRepository");
@@ -56,6 +60,7 @@ public class JpaGenerationJobStore implements GenerationJobStore {
         this.projectRepository = Objects.requireNonNull(projectRepository, "projectRepository");
         this.profileRepository = Objects.requireNonNull(profileRepository, "profileRepository");
         this.profileStore = Objects.requireNonNull(profileStore, "profileStore");
+        this.transactionTemplate = Objects.requireNonNull(transactionTemplate, "transactionTemplate");
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
@@ -108,6 +113,31 @@ public class JpaGenerationJobStore implements GenerationJobStore {
     @Transactional
     public GenerationJob start(UUID id) {
         return update(id, job -> job.start(now()));
+    }
+
+    /**
+     * Not annotated with {@code @Transactional}: the version check runs when the transaction commits,
+     * and only code outside the transaction can catch its failure. TransactionTemplate makes
+     * that boundary explicit.
+     */
+    @Override
+    public Optional<GenerationJob> startIfQueued(UUID id) {
+        try {
+            return transactionTemplate.execute(transactionStatus -> startIfQueuedInTransaction(id));
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            // Another transaction changed the job between our read and our commit.
+            return Optional.empty();
+        }
+    }
+
+    private Optional<GenerationJob> startIfQueuedInTransaction(UUID id) {
+        GenerationJobEntity jobEntity = loadEntity(id);
+        if (jobEntity.getStatus() != JobStatus.QUEUED) {
+            return Optional.empty();
+        }
+        GenerationJob runningJob = toDomain(jobEntity).start(now());
+        jobEntity.applyState(runningJob);
+        return Optional.of(runningJob);
     }
 
     @Override

@@ -31,7 +31,6 @@ public class GenerationJobService {
     private final GenerationSettings defaults;
     private final Path workRoot;
     private final GenerationJobStore jobStore;
-    private final GenerationJobQueue jobQueue;
     private final ObservedProfileStore profileStore;
     private final JobRequestPublisher jobRequestPublisher;
 
@@ -40,7 +39,6 @@ public class GenerationJobService {
             GenerationSettings defaults,
             TestgenProperties properties,
             GenerationJobStore jobStore,
-            GenerationJobQueue jobQueue,
             ObservedProfileStore profileStore,
             JobRequestPublisher jobRequestPublisher
     ) {
@@ -48,7 +46,6 @@ public class GenerationJobService {
         this.defaults = defaults;
         this.workRoot = properties.workRootPath();
         this.jobStore = jobStore;
-        this.jobQueue = jobQueue;
         this.profileStore = profileStore;
         this.jobRequestPublisher = jobRequestPublisher;
     }
@@ -64,8 +61,6 @@ public class GenerationJobService {
         // create() commits its own transaction, so the job is already stored when the request is published.
         GenerationJob queuedJob = jobStore.create(submission.projectId(), submission.profileId(), generationRequest);
         publishJobRequest(queuedJob);
-        // Until workers consume the requests, the in-memory queue still executes the job.
-        jobQueue.submit(queuedJob.id());
         return queuedJob;
     }
 

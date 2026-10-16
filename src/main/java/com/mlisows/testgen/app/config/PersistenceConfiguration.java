@@ -1,6 +1,5 @@
 package com.mlisows.testgen.app.config;
 
-import com.mlisows.testgen.app.job.GenerationJobQueue;
 import com.mlisows.testgen.app.job.UnfinishedJobsRecovery;
 import com.mlisows.testgen.app.project.ConfiguredProjectsInitializer;
 import com.mlisows.testgen.app.project.ProjectRegistry;
@@ -20,6 +19,7 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 
@@ -54,14 +54,15 @@ public class PersistenceConfiguration {
             GenerationResultRepository resultRepository,
             ProjectRepository projectRepository,
             ObservedProfileRepository profileRepository,
-            ObservedProfileStore profileStore
+            ObservedProfileStore profileStore,
+            TransactionTemplate transactionTemplate
     ) {
         return new JpaGenerationJobStore(jobRepository, resultRepository, projectRepository, profileRepository,
-                profileStore, Clock.systemUTC());
+                profileStore, transactionTemplate, Clock.systemUTC());
     }
 
     @Bean
-    public UnfinishedJobsRecovery unfinishedJobsRecovery(GenerationJobStore jobStore, GenerationJobQueue jobQueue) {
-        return new UnfinishedJobsRecovery(jobStore, jobQueue);
+    public UnfinishedJobsRecovery unfinishedJobsRecovery(GenerationJobStore jobStore) {
+        return new UnfinishedJobsRecovery(jobStore);
     }
 }

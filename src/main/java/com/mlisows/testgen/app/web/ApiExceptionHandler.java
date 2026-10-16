@@ -1,6 +1,5 @@
 package com.mlisows.testgen.app.web;
 
-import com.mlisows.testgen.app.job.JobQueueFullException;
 import com.mlisows.testgen.app.job.JobResultUnavailableException;
 import com.mlisows.testgen.app.job.JobNotFoundException;
 import com.mlisows.testgen.app.job.ProjectNotFoundException;
@@ -41,14 +40,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(JobResultUnavailableException.class)
     public ProblemDetail handleUnavailableResult(JobResultUnavailableException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
-    }
-
-    @ExceptionHandler(JobQueueFullException.class)
-    public ProblemDetail handleFullQueue(JobQueueFullException exception) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage());
-        problem.setProperty("jobId", exception.jobId());
-        return problem;
     }
 
     @Override

@@ -1,5 +1,4 @@
 testgen:
-  queue-capacity: 10
   projects:
     fit-bench:
       path: examples/fit-bench
@@ -39,8 +38,13 @@ spring:
         spring.json.add.type.headers: false
         # How long send() may wait for broker metadata before it fails (default: 60 s).
         max.block.ms: 5000
+    listener:
+      # Commit the offset after each processed message, i.e. after the job has finished.
+      ack-mode: record
     consumer:
       group-id: testgen-workers
+      # One request at a time: the listener blocks for the whole generation.
+      max-poll-records: 1
       # A new consumer group starts with messages sent before it first connected.
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -48,6 +52,10 @@ spring:
       properties:
         spring.json.value.default.type: com.mlisows.testgen.infrastructure.messaging.JobRequestMessage
         spring.json.use.type.headers: false
+        # If the listener does not ask Kafka for the next message within this time, Kafka assumes
+        # the consumer is dead and gives its partitions to another one. It must be longer than
+        # the longest job: testgen.runner.timeout-seconds (120 s) plus stopping the process.
+        max.poll.interval.ms: 600000
   servlet:
     multipart:
       max-file-size: 1MB

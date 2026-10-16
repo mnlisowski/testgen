@@ -6,10 +6,11 @@ import com.mlisows.testgen.usecase.ports.GenerationRunner;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-/** Synchronous execution; scheduling and queue capacity belong to the caller. */
+/** Synchronous execution of one job; the caller decides on which thread it runs. */
 public final class ExecuteGenerationJobUseCase {
     private final GenerationJobStore jobStore;
     private final GenerationRunner generationRunner;
@@ -19,8 +20,20 @@ public final class ExecuteGenerationJobUseCase {
         this.generationRunner = Objects.requireNonNull(generationRunner, "generationRunner");
     }
 
-    public GenerationJob execute(UUID jobId) {
-        GenerationJob runningJob = jobStore.start(jobId);
+    /**
+     * Executes the job if it is still QUEUED and returns its final state. Returns an empty result
+     * when the job was already started or finished, e.g. for a duplicate request.
+     */
+    public Optional<GenerationJob> execute(UUID jobId) {
+        Optional<GenerationJob> startedJob = jobStore.startIfQueued(jobId);
+        if (startedJob.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(runStartedJob(startedJob.get()));
+    }
+
+    private GenerationJob runStartedJob(GenerationJob runningJob) {
+        UUID jobId = runningJob.id();
         GenerationResult generationResult;
         try {
             generationResult = generationRunner.run(jobId, runningJob.request());

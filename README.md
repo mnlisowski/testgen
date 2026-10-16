@@ -454,16 +454,13 @@ Treść plików jest kodowana w UTF-8. Jeśli generowanie zakończyło się sukc
 ale nie utworzyło testów, pobierzesz poprawne puste archiwum. Kody `404` i `409`
 mają takie samo znaczenie jak przy pobieraniu raportu.
 
-Kolejka wykonuje jedno zadanie naraz. `testgen.queue-capacity` określa liczbę
-oczekujących zadań (domyślnie 10, poza jednym aktywnym). Błędne dane dają `400`,
-nieznany projekt lub zadanie `404`, a pełna lub zamykana kolejka `503`.
-Odpowiedź `503` zawiera `jobId` odrzuconego zadania, które pozostaje jako `FAILED`;
-ponowienie oznacza wysłanie nowego zlecenia. Błędy HTTP mają format Problem Details.
+Zadania wykonuje listener Kafki (zob. sekcja „Kafka”), jedno naraz. Błędne dane dają `400`,
+a nieznany projekt lub zadanie `404`. Błędy HTTP mają format Problem Details.
 
-Przy zamykaniu serwera aktywne wykonanie jest przerywane, a oczekujące zadania
-oznaczane jako `FAILED`. Historia i wyniki są zapisane w PostgreSQL i pozostają
-dostępne po restarcie. Limit kolejki nie ogranicza rozmiaru zachowanej historii ani
-plików roboczych; automatyczne usuwanie starych wyników nie jest jeszcze zaimplementowane.
+Przy zamykaniu serwera trwające generowanie jest przerywane: proces generatora zostaje
+zatrzymany, a zadanie kończy się jako `INTERRUPTED`. Historia i wyniki są zapisane
+w PostgreSQL i pozostają dostępne po restarcie. Automatyczne usuwanie starych wyników
+i plików roboczych nie jest jeszcze zaimplementowane.
 
 ### Import profilu przez API
 
@@ -533,15 +530,12 @@ i `covered_goals`. Status, raport i testy są dostępne po restarcie aplikacji.
 Kolumna `version` chroni przed nadpisaniem zmiany statusu wprowadzonej równolegle
 przez inną transakcję.
 
-Kolejka wykonawcza działa w pamięci, dlatego przy starcie aplikacja porządkuje
-zadania pozostawione przez poprzednie uruchomienie:
-
-- `RUNNING` → `INTERRUPTED` z komunikatem, że serwer zatrzymał się w trakcie zadania;
-- `QUEUED` → ponownie do kolejki, w kolejności zlecenia. Jeśli kolejka jest pełna,
-  nadmiarowe zadania kończą się jako `FAILED`, tak jak przy zwykłym zleceniu.
-
-Reguła zakłada jedną instancję aplikacji. Gdyby działała druga, mogłaby właśnie
-wykonywać zadanie, które pierwsza oznaczy jako przerwane.
+Przy starcie, zanim listener Kafki zacznie odbierać wiadomości, aplikacja oznacza
+zadania `RUNNING` pozostawione przez poprzednie uruchomienie jako `INTERRUPTED`
+(ich proces generatora zakończył się razem z serwerem). Zadań `QUEUED` nie zmienia:
+czekają na swoją wiadomość w Kafce. Reguła zakłada jedną instancję aplikacji.
+Gdyby działała druga, mogłaby właśnie wykonywać zadanie, które pierwsza oznaczy
+jako przerwane.
 
 Usługa `postgres` ma w Compose profil `database`, więc nie startuje przy usługach CLI
 (`generate-tests`, `prepare-profile` itd.). Jawne wskazanie jej nazwy, jak wyżej,
@@ -576,11 +570,21 @@ Adres brokera ustawia `spring.kafka.bootstrap-servers` (domyślnie `localhost:90
 Po zapisaniu zlecenia w bazie serwer publikuje na topicu wiadomość JSON
 `{"schemaVersion":1,"eventId":"…","jobId":"…"}` z kluczem równym `jobId` i czeka
 na potwierdzenie brokera (`testgen.messaging.publish-timeout-seconds`, domyślnie 10 s).
-Listener w grupie konsumentów `testgen-workers` na tym etapie tylko loguje odebrane
-wiadomości; zadania nadal wykonuje kolejka w pamięci. Wiadomości można obejrzeć
-w Kafka UI. Jeśli Kafka jest niedostępna, zlecenie i tak zostaje przyjęte (`202`)
-i wykonane, a w logu pojawia się ostrzeżenie; odpowiedź przychodzi wtedy po około
-5 s (`max.block.ms` producenta).
+Listener w grupie konsumentów `testgen-workers` odbiera wiadomości po jednej
+i wykonuje zadanie: zmienia status z `QUEUED` na `RUNNING` (z kontrolą wersji wiersza),
+uruchamia generator i zapisuje wynik. Offset wiadomości jest zatwierdzany dopiero
+po zakończeniu zadania. Jeśli ta sama wiadomość przyjdzie ponownie, a zadanie nie jest
+już `QUEUED`, listener ją pomija — generator nie uruchamia się drugi raz.
+`max.poll.interval.ms` (10 min) musi być dłuższe niż najdłuższe zadanie
+(`testgen.runner.timeout-seconds`), inaczej Kafka uzna zajętego konsumenta za martwego.
+Wiadomości można obejrzeć w Kafka UI.
+
+Jeśli Kafka jest niedostępna, zlecenie i tak zostaje przyjęte (`202`) i zapisane jako
+`QUEUED`, a w logu pojawia się ostrzeżenie; odpowiedź przychodzi wtedy po około 5 s
+(`max.block.ms` producenta). **Ograniczenie obecnego etapu:** takie zadanie nie zostanie
+wykonane, dopóki jego wiadomość nie zostanie wysłana ponownie — automatyczna ponowna
+publikacja jest kolejnym krokiem. Po nagłej awarii serwera niepotwierdzona wiadomość
+przychodzi ponownie po restarcie.
 Dane Kafki nie są zapisywane w wolumenie: `docker compose down` usuwa wiadomości,
 a zatrzymanie i ponowne uruchomienie kontenera (`stop`/`start`) je zachowuje.
 Usługi z profilem `messaging` nie startują przy usługach CLI.

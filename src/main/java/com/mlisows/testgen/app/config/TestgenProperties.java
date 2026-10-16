@@ -21,7 +21,6 @@ public record TestgenProperties(
         @NotBlank String workRoot,
         @NotNull @Valid Defaults defaults,
         @DefaultValue @Valid Runner runner,
-        @DefaultValue("10") @Min(1) int queueCapacity,
         @DefaultValue @Valid Messaging messaging
 ) {
     public Path workRootPath() {

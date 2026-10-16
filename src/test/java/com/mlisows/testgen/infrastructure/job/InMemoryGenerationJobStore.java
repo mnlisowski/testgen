@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 
 /**
@@ -82,6 +83,23 @@ public final class InMemoryGenerationJobStore implements GenerationJobStore {
     @Override
     public GenerationJob start(UUID id) {
         return update(id, job -> job.start(clock.instant()));
+    }
+
+    @Override
+    public Optional<GenerationJob> startIfQueued(UUID id) {
+        AtomicReference<GenerationJob> startedJob = new AtomicReference<>();
+        jobs.compute(Objects.requireNonNull(id, "id"), (key, current) -> {
+            if (current == null) {
+                throw new NoSuchElementException("Unknown generation job: " + key);
+            }
+            if (current.status() != JobStatus.QUEUED) {
+                return current;
+            }
+            GenerationJob runningJob = current.start(clock.instant());
+            startedJob.set(runningJob);
+            return runningJob;
+        });
+        return Optional.ofNullable(startedJob.get());
     }
 
     @Override

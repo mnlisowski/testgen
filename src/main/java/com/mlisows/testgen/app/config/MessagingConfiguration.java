@@ -1,5 +1,6 @@
 package com.mlisows.testgen.app.config;
 
+import com.mlisows.testgen.app.job.GenerationJobExecutor;
 import com.mlisows.testgen.app.messaging.JobRequestListener;
 import com.mlisows.testgen.infrastructure.messaging.JobRequestMessage;
 import com.mlisows.testgen.infrastructure.messaging.KafkaJobRequestPublisher;
@@ -44,7 +45,7 @@ public class MessagingConfiguration {
     }
 
     @Bean
-    public JobRequestListener jobRequestListener() {
-        return new JobRequestListener();
+    public JobRequestListener jobRequestListener(GenerationJobExecutor jobExecutor) {
+        return new JobRequestListener(jobExecutor);
     }
 }
