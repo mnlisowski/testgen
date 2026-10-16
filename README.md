@@ -506,8 +506,13 @@ Usunięcie projektu z konfiguracji nie usuwa jego rekordu z bazy, ale blokuje no
 zlecenia dla niego. Lista dostępnych projektów i ich ścieżki nadal pochodzą z YAML-a.
 Rejestracja jest przeznaczona na obecny etap z jedną instancją aplikacji.
 
-**Profile i zadania nadal są w pamięci, również przy aktywnym profilu `postgres`.**
-Ich zapis przez JPA będzie dodawany w kolejnych krokach.
+Przy profilu `postgres` wgrane profile argumentów są zapisywane w tabeli
+`observed_profiles` (migracja V2): oryginalna treść pliku, projekt i data
+wgrania. Profil przetrwa restart aplikacji, a jego `profileId` można nadal
+podawać przy zlecaniu generowania. Profil musi należeć do projektu zapisanego w bazie.
+
+**Zadania generowania nadal są w pamięci, również przy aktywnym profilu `postgres`.**
+Ich zapis przez JPA będzie dodawany w kolejnym kroku.
 
 Bez wskazania profilu aplikacja korzysta z domyślnego `in-memory` i nie wymaga bazy.
 Profil Compose `database` jest niezależny od profilu Springa; jawne wskazanie usługi

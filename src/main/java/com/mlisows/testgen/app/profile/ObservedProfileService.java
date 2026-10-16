@@ -35,6 +35,6 @@ public class ObservedProfileService {
         if (profile.getArgumentValueHints().isEmpty() && profile.getObservedInvocations().isEmpty()) {
             throw new InvalidObservedProfileException("Profile must contain at least one hint or invocation");
         }
-        return profileStore.create(projectId, profile);
+        return profileStore.create(projectId, text, profile);
     }
 }

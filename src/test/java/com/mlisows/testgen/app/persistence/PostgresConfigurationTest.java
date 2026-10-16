@@ -52,15 +52,15 @@ class PostgresConfigurationTest {
     @Test
     void shouldApplyMigrationAndInitializeHibernate() {
         assertTrue(entityManagerFactory.isOpen());
-        assertEquals("1", flyway.info().current().getVersion().getVersion());
+        assertEquals("2", flyway.info().current().getVersion().getVersion());
         assertEquals((long) projectRegistry.projectIds().size(),
                 jdbcTemplate.queryForObject("SELECT count(*) FROM projects", Long.class));
-        assertEquals(1L, jdbcTemplate.queryForObject(
+        assertEquals(2L, jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE success = true", Long.class));
 
         flyway.migrate();
 
-        assertEquals(1L, jdbcTemplate.queryForObject(
+        assertEquals(2L, jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE success = true", Long.class));
     }
 

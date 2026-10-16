@@ -17,6 +17,7 @@ import com.mlisows.testgen.infrastructure.runtime.TextObservedProfileReader;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.net.URL;
 import java.nio.file.Files;
@@ -61,7 +62,9 @@ public class TestgenConfiguration {
         return new InMemoryGenerationJobStore(Clock.systemUTC());
     }
 
+    // With the postgres profile, PostgresPersistenceConfiguration provides the database-backed store.
     @Bean
+    @Profile("!postgres")
     public ObservedProfileStore observedProfileStore() {
         return new InMemoryObservedProfileStore(Clock.systemUTC());
     }

@@ -19,7 +19,7 @@ public final class InMemoryObservedProfileStore implements ObservedProfileStore 
     }
 
     @Override
-    public StoredObservedProfile create(String projectId, ObservedProfile profile) {
+    public StoredObservedProfile create(String projectId, String profileText, ObservedProfile profile) {
         while (true) {
             StoredObservedProfile storedProfile = new StoredObservedProfile(
                     UUID.randomUUID(), projectId, clock.instant(), profile);
